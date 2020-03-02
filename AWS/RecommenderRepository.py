@@ -6,25 +6,25 @@ class RecommenderRepository:
     repositories = {}
 
     def __init__(self):
-        repositories_list = ['slim_bpr_recommender',
-                             'slim_elastic_net_recommender',
-                             'item_cf_recommender',
-                             'item_cbf_recommender',
-                             'user_cf_recommender',
-                             'user_cbf_recommender',
-                             'p3_alpha_recommender',
-                             'rp3_beta_recommender',
-                             'ials_recommender',
-                             'pure_svd_recommender',
-                             'funk_svd_recommender',
-                             'asy_svd_recommender',
-                             'matrix_factorization_bpr_recommender',
-                             'dataset']
+        repositories_list = ['slim-bpr-recommender',
+                             'slim-elastic-net-recommender',
+                             'item-cf-recommender',
+                             'item-cbf-recommender',
+                             'user-cf-recommender',
+                             'user-cbf-recommender',
+                             'p3-alpha-recommender',
+                             'rp3-beta-recommender',
+                             'ials-recommender',
+                             'pure-svd-recommender',
+                             'funk-svd-recommender',
+                             'asy-svd-recommender',
+                             'matrix-factorization-bpr-recommender',
+                             'twitter-2014-dataset']
         for repository in repositories_list:
             self.repositories[repository] = Repository(bucket_name=repository)
 
     def sync_all(self):
-        for repository in self.repositories:
+        for repository in self.repositories.values():
             repository.sync_all()
 
     def sync_repository(self, repository_name):

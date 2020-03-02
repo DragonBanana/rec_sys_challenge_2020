@@ -31,7 +31,7 @@ class Repository:
                 CreateBucketConfiguration=location
             )
         except ClientError as e:
-            print(e)
+            pass
 
     def list_remote(self) -> List[str]:
         return [object.key for object in self.s3_bucket.objects.all()]
@@ -74,9 +74,11 @@ class Repository:
         diff = self.resource_diff()
 
         to_be_downloaded = diff['to_be_downloaded_resources']
+        [print(f"---> Downloading from {self.bucket_name} ---> {resource}")for resource in to_be_downloaded]
         [self.download(resource) for resource in to_be_downloaded]
 
         to_be_uploaded = diff['to_be_uploaded_resources']
+        [print(f"<--- Uploading to {self.bucket_name} <--- {resource}")for resource in to_be_uploaded]
         [self.upload(resource) for resource in to_be_uploaded]
 
     def _init_bucket(self):
