@@ -113,3 +113,8 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# AWS files
+AWS/aws
+AWS/aws_local
+AWS/credentials
