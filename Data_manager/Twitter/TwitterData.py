@@ -61,7 +61,3 @@ class TwitterData:
         dataframe['tweet_in_json'] = tweets_in_json
 
         return dataframe
-
-if __name__ == '__main__':
-    data = TwitterData()
-    x = data.load_from_file()
