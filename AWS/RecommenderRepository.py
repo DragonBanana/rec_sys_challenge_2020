@@ -19,7 +19,8 @@ class RecommenderRepository:
                              'funk-svd-recommender',
                              'asy-svd-recommender',
                              'matrix-factorization-bpr-recommender',
-                             'twitter-2014-dataset']
+                             'twitter-2014-dataset',
+                             'twitter-2014-cached-dataset']
         for repository in repositories_list:
             self.repositories[repository] = Repository(bucket_name=repository)
 

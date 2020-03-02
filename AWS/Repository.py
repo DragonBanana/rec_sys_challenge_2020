@@ -6,6 +6,9 @@ import os
 
 
 # Repository class
+from Utils import PathUtils
+
+
 class Repository:
     s3_client = None
     s3_bucket = None
@@ -20,6 +23,7 @@ class Repository:
 
         self.bucket_name = bucket_name
         self.local_dir = os.path.join(local_dir, bucket_name)
+        self.local_dir = os.path.join(PathUtils.get_project_root(), self.local_dir)
         self._init_bucket()
         self._init_local_dir()
 

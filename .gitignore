@@ -116,5 +116,5 @@ ENV/
 
 # AWS files
 AWS/aws
-AWS/aws_local
 AWS/credentials
+/aws_local/
