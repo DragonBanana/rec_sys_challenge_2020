@@ -10,5 +10,5 @@ class CachedReader:
     def save_to_cache(self):
         pass
 
-    def load_from_file(self):
+    def load_from_raw(self):
         pass
