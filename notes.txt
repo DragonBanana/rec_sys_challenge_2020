@@ -4,6 +4,8 @@
 
 - Features:
     engaged with user features vs. engaging user features, cosa è l'engagement? !!!!!!!!!!!!!
+            -> engaged with user riceve cose, like etc
+            -> engaging user pubblica cose, tweets etc
     text tokens: tutti iniziano per 101 e finiscono per 102 -> eos e sos? 
 
 - Testing:
@@ -14,3 +16,14 @@
     prediction: format <tweet id>,<user id>,<prediction> ma non sappiamo quale user id (engager o engagee user?)
                 dobbiamo predirre timestamps (long), bool, o cosa?
 
+------------------------------------------------------------------------------------------------------------------------
+
+- map IDs to smaller numbers with a dictionary (save the dictionary to keep the mapping in the reverse order) !!!!!!!!
+
+- check that only one of the last 4 features is non-null ---> no? some of them have both reply and like, etc
+
+- find characteristics of the data: stagionalità, timestamps legati a lingue (aree geografiche), etc
+
+- BERT : tokens + come funziona
+
+- RGB + XGBOOST : gradient boosting tree, lightgbm, lightboost 
