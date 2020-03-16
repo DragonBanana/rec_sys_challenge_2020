@@ -4,6 +4,20 @@ The TwitterData class is a wrapper that allow users to access the twitter datase
 The data that can be accessed can be of multiple type.
 The following sections the data and shows how to access them.
 
+# Example
+To list all resources:
+
+```python
+import TwitterData
+resource_keys = TwitterData.switcher.keys()
+```
+To retrieve a resource:
+
+```python
+import TwitterData
+resource = TwitterData.get_resource("training_raw_creator_is_verified")
+```
+
 
 # Training Raw columns
 
