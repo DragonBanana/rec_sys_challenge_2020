@@ -1,0 +1,29 @@
+- 100 milioni negative samples: dove sono? se ci sono come le riconosciamo?
+
+- 2 metriche: come gestirle contemporaneamente, e.g. come sapere se ottimizzare una o l'altra
+
+- Features:
+    engaged with user features vs. engaging user features, cosa è l'engagement? !!!!!!!!!!!!!
+            -> engaged with user riceve cose, like etc
+            -> engaging user pubblica cose, tweets etc
+    text tokens: tutti iniziano per 101 e finiscono per 102 -> eos e sos? 
+
+- Testing:
+    val.tsv ha 20 righe, ma il training set ne ha 24 -> vengono esclusi le ultime 4 features, che sono timestamps
+                                                        (retweet, reply, retweet+comment, like)
+
+    leaderboard: probabile che i campi da predire sono quei 4 mancanti nel training set
+    prediction: format <tweet id>,<user id>,<prediction> ma non sappiamo quale user id (engager o engagee user?)
+                dobbiamo predirre timestamps (long), bool, o cosa?
+
+------------------------------------------------------------------------------------------------------------------------
+
+- map IDs to smaller numbers with a dictionary (save the dictionary to keep the mapping in the reverse order) !!!!!!!!
+
+- check that only one of the last 4 features is non-null ---> no? some of them have both reply and like, etc
+
+- find characteristics of the data: stagionalità, timestamps legati a lingue (aree geografiche), etc
+
+- BERT : tokens + come funziona
+
+- RGB + XGBOOST : gradient boosting tree, lightgbm, lightboost 
