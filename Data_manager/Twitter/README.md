@@ -134,7 +134,7 @@ The validation set is composed by ~ 15M rows. Those columns are saved both as cs
 | **validation_mapped_tweet_features_domains**      | Tab separated list of domains included in the Tweet (twitter.com, dogs.com) | Arrary of Int32 |
 | **validation_mapped_tweet_features_language**     | Identifier corresponding to the inferred language of the Tweet              | Int32           |
 | **validation_mapped_creator_user_id**             | User identifier                                                             | Int32           |
-| **validation_mapped_engager_user_id**             | User identifier      
+| **validation_mapped_engager_user_id**             | User identifier                                                             | Int32           |      
 
 
 # Dictionaries
