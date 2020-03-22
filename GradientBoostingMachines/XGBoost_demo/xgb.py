@@ -8,6 +8,7 @@ import pickle
 import os.path
 
 def main():
+    '''
     #dataframe è uguale a ciò che importa il notebook (in questo caso limitato a 50k di record)
     dataframe = pd.read_csv('dataset.csv', sep='\x01', nrows=50000)
     
@@ -21,10 +22,6 @@ def main():
 
     #Removing timestamps leaving 1/0 interactions
     #Setting to 1 non-null timestamps
-    #onehot["tmstp_rpl"] = onehot["tmstp_rpl"].map(lambda x: x/x)
-    #onehot["tmstp_rtw"] = onehot["tmstp_rtw"].map(lambda x: x/x)
-    #onehot["tmstp_rtw_c"] = onehot["tmstp_rtw_c"].map(lambda x: x/x)
-    #onehot["tmstp_lik"] = onehot["tmstp_lik"].map(lambda x: x/x)
     onehot[["tmstp_rpl", 
             "tmstp_rtw", 
             "tmstp_rtw_c", 
@@ -50,49 +47,97 @@ def main():
     onehot = onehot.replace({"twt_id": i_dict}) 
 
     #Saving the remapped dataframe and the dictionaries
-    #onehot.to_csv("obj/onehot.csv", sep='\x01')
+    #onehot.to_csv("onehot.csv", sep='\x01')
     #save_obj(u_dict, "u_dict")
     #save_obj(i_dict, "i_dict")
-    
+    '''
+
     #Loading everything back (For tuning purposes, 
     #in order to avoid to re-preprocess the data).
-    #onehot = pd.read_csv("obj/onehot.csv", sep='\x01')
+    onehot = pd.read_csv("onehot.csv", sep='\x01')
     #u_dict = load_obj("u_dict")
     #i_dict = load_obj("i_dict")
     
-
     #XGBoost part
+    test_size = 0.2
     #Dividing the dataset splitting the column i need to predict from the others
     X = onehot[["usr_id", "twt_id", "tmstp_rpl", "tmstp_rtw", "tmstp_rtw_c"]].to_numpy()
     Y = onehot["tmstp_lik"].to_numpy()
     XGB = XGBoost(name="LIKE")
 
-    XGB.train_model(X, Y)
-    XGB.evaluate()
+    X_train, X_test, Y_train, Y_test = train_test_split(X, 
+                                                        Y, 
+                                                        test_size=test_size, 
+                                                        random_state=int(time.time()))
 
-    '''
+    XGB.train_model(X_train, Y_train)
+    XGB.evaluate(X_test, Y_test)
+
+    
     X = onehot[["usr_id", "twt_id", "tmstp_rpl", "tmstp_rtw", "tmstp_lik"]].to_numpy()
     Y = onehot["tmstp_rtw_c"].to_numpy()
     XGB = XGBoost(name="RETWEET WITH COMMENT")
-    XGB.train_model(X, Y)
-    XGB.evaluate()
+    X_train, X_test, Y_train, Y_test = train_test_split(X, 
+                                                        Y, 
+                                                        test_size=test_size, 
+                                                        random_state=int(time.time()))
+
+    XGB.train_model(X_train, Y_train)
+    XGB.evaluate(X_test, Y_test)
 
     X = onehot[["usr_id", "twt_id", "tmstp_rpl", "tmstp_lik", "tmstp_rtw_c"]].to_numpy()
     Y = onehot["tmstp_rtw"].to_numpy()
     XGB = XGBoost(name="RETWEET")
-    XGB.train_model(X, Y)
-    XGB.evaluate()
+    X_train, X_test, Y_train, Y_test = train_test_split(X, 
+                                                        Y, 
+                                                        test_size=test_size, 
+                                                        random_state=int(time.time()))
+
+    XGB.train_model(X_train, Y_train)
+    XGB.evaluate(X_test, Y_test)
 
     X = onehot[["usr_id", "twt_id", "tmstp_lik", "tmstp_rtw", "tmstp_rtw_c"]].to_numpy()
     Y = onehot["tmstp_rpl"].to_numpy()
     XGB = XGBoost(name="REPLY")
-    XGB.train_model(X, Y)
-    XGB.evaluate()
-    '''
+    X_train, X_test, Y_train, Y_test = train_test_split(X, 
+                                                        Y, 
+                                                        test_size=test_size, 
+                                                        random_state=int(time.time()))
+
+    XGB.train_model(X_train, Y_train)
+    XGB.evaluate(X_test, Y_test)
+
+    #---------------------------------------------------------------------------------------
+    #LEARNING PHASE
+    XGB = XGBoost(name="LIKE_BATCH_EXAMPLE", batch=True)
+    #Fetching 4 batch of size 10k each
+    for i in range(4):
+        size = 10**4
+        step = i*size
+        #Using 10k of rows at time
+        onehot = pd.read_csv("onehot.csv", 
+                             sep='\x01', 
+                             skiprows = range(1, step), 
+                             nrows = size)
+        #For each iteration split the DataFrame
+        X = onehot[["usr_id", "twt_id", "tmstp_rpl", "tmstp_rtw", "tmstp_rtw_c"]].to_numpy()
+        Y = onehot["tmstp_lik"].to_numpy()
+        #For each iteration train the model
+        XGB.train_model(X, Y)    
     
-
-
-
+    #EVALUATION PHASE
+    #Fetching the last batch of size 10k to use it as test set
+    step = 40000
+    onehot = pd.read_csv("onehot.csv", 
+                             sep='\x01', 
+                             skiprows = range(1, step), 
+                             nrows = size)
+    #Splitting the dataframe
+    X = onehot[["usr_id", "twt_id", "tmstp_rpl", "tmstp_rtw", "tmstp_rtw_c"]].to_numpy()
+    Y = onehot["tmstp_lik"].to_numpy()
+    #Providing the evaluation for the current test set
+    XGB.evaluate(X_tst=X, Y_tst=Y)
+    #---------------------------------------------------------------------------------------
 
 
 
@@ -118,98 +163,55 @@ class XGBoost(object):
                           'lambda': 0.01, #L2 regularization
                           'num_parallel_tree': 4, #Number of parallel trees
                          },
-                 name = "NO_NAME_GIVEN"):
+                 name = "NO_NAME_GIVEN",
+                 batch = False):
         
         #Inputs
         self.num_rounds = num_rounds
         self.param = param
         self.name = name
+        self.batch = batch  #The type of learning is now explicitated when you declare the model
 
         #LOCAL VARIABLES
         #Model
-        self.model = None
-        #Evaluation
-        self.test = None
-        self.Y_test = None
+        self.sround_model = None
+        self.batch_model = None
 
+            
     
-    #--------------------------------------------------------------------------------------------------
-    #                       train_model(...)
-    #--------------------------------------------------------------------------------------------------
+    #------------------------------------------------
+    #               train_model(...)
+    #------------------------------------------------
     #X:         Learning features of the dataset
     #Y:         Target feature of the dataset
-    #X_tst:     To provide a personal test set's learning features
-    #Y_tst:     To provide a personal test set's target feature
-    #user_test:  Is the user providing a custom test set
-    #tst_size:  In case user don't provide a custom test set, size of the split to create the test set
-    #batch:     [NOT TESTED]Enable learning by batch
-    #filename:  [NOT TESTED]To provide in order to save and load the model at each batch learning step
-    #---------------------------------------------------------------------------------------------------
-    def train_model(self, X, Y, X_tst=None, Y_tst=None, user_test=False, tst_size=0.2, batch=False, filename=None):
-
-        #Splitting train and test set
-        if user_test is True and (X_tst is not None) and (Y_tst is not None):
-            #The user provides a custom test set
-            print("You provided a test set.")
-            X_train = X
-            X_test = X_tst
-            Y_train = Y
-            Y_test = Y_tst
-        else:
-            #Test set gets extrapolated from the provided set
-            #print("No test set was provided.")
-            print("Test set will be split by your set with size {0}".format(tst_size))
-            X_train, X_test, Y_train, Y_test = train_test_split(X, 
-                                                                Y, 
-                                                                test_size=tst_size, 
-                                                                random_state=int(time.time()))
+    #batch:     Enable learning by batch
+    #------------------------------------------------
+    # sround_model and batch_model are differentiated
+    # in order to avoid overwriting.
+    #------------------------------------------------
+    def train_model(self, X, Y):
 
         #Learning in a single round
-        if batch is False:
+        if self.batch is False:
             #Transforming matrices in DMatrix type
-            train = xgb.DMatrix(X_train, 
-                                label=Y_train)
-            test = xgb.DMatrix(X_test, 
-                            label=Y_test)
+            train = xgb.DMatrix(X, 
+                                label=Y)
      	
             #Defining and fitting the models
-            self.model = xgb.train(self.param, 
+            self.sround_model = xgb.train(self.param, 
                                    train, 
                                    self.num_rounds)
-            #Variable used in evaluation
-            self.Y_test = Y_test
-            self.test = test
-
-
-        #NOTA: self.model tiene traccia del modello all'interno della classe
-        #non dovrebbe essere necessario salvarlo, ma trainarlo di nuovo con
-        #un altro batch, da approfondire.
-        #-------------------------NOT TESTED----------------------------
+            
         #Learning by consecutive batches
         else:
-            #Loading model if it does exist
-            if filename is not None:
-                if os.path.exists(filename):
-                    model = load_obj(filename)
-                else:
-                    print("No previous model available.")
-                #Transforming matrices in DMatrix type
-                train = xgb.DMatrix(X_train, 
-                                    label=Y_train)
-                test = xgb.DMatrix(X_test, 
-                                label=Y_test)
-                #Defining and training the models
-                self.model = xgb.train(self.param, 
-                                       train, 
-                                       self.num_rounds)
-                #Saving the model
-                save_obj(self.model, filename)
-
-
-            else:
-                print("Filename not valid.")
-            
-        #---------------------------------------------------------------
+            #Transforming matrices in DMatrix type
+            train = xgb.DMatrix(X, 
+                                label=Y)
+            #Defining and training the models
+            self.batch_model = xgb.train(self.param, 
+                                         train, 
+                                         self.num_rounds,
+                                         xgb_model=self.batch_model)
 
 
 
@@ -217,23 +219,35 @@ class XGBoost(object):
     #---------------------------------------------------------------------------
     #                           evaluate(...)
     #---------------------------------------------------------------------------
-    #batch:             [NOT IMPLEMENTED]Enables batch evaluation
+    #X_tst:     Features of the test set
+    #Y_tst      Ground truth, target of the test set
     #---------------------------------------------------------------------------
-    def evaluate(self, batch=False):
-        if (self.Y_test is None) and (batch is False):
-            print("There is no available set.")
-        elif batch is False:
+    #           Works for both for batch and single training
+    #---------------------------------------------------------------------------
+    def evaluate(self, X_tst=None, Y_tst=None):
+        Y_pred = None
+        if (X_tst is None) or (Y_tst is None):
+            print("No test set is provided.")
+        else:
+            #Selecting the coherent model for the evaluation
+            #According to the initial declaration (batch/single round)
+            if self.batch is False:
+                model = self.sround_model
+            else:
+                model = self.batch_model
+            
+            #Preparing DMatrix
+            d_test = xgb.DMatrix(X_tst,
+                                 label = Y_tst)
+
             #Making predictions
-            Y_pred = self.model.predict(self.test)
+            Y_pred = model.predict(d_test)
 
             #Evaluating
-            prauc = self.compute_prauc(Y_pred, self.Y_test)
-            rce = self.compute_rce(Y_pred, self.Y_test)
+            prauc = self.compute_prauc(Y_pred, Y_tst)
+            rce = self.compute_rce(Y_pred, Y_tst)
             print("PRAUC "+self.name+": {0}".format(prauc))
-            print("RCE "+self.name+": {0}\n".format(rce))
-
-        elif batch is True:
-            None #***TO IMPLEMENT***
+            print("RCE "+self.name+": {0}\n".format(rce))            
 
         return Y_pred
 
@@ -254,9 +268,6 @@ class XGBoost(object):
         strawman_cross_entropy = log_loss(gt, [data_ctr for _ in range(len(gt))])
         return (1.0 - cross_entropy/strawman_cross_entropy)*100.0
 
-
-
-
 #To save/load almost everything in pickle
 def save_obj(obj, name ):
     with open('obj/'+ name + '.pkl', 'wb') as f:
@@ -265,9 +276,6 @@ def save_obj(obj, name ):
 def load_obj(name ):
     with open('obj/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
-
-   
-
 
 
 
