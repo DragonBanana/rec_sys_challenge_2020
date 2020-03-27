@@ -19,7 +19,6 @@ def main():
                            'tmstp_rtw': dataframe["engagement_features_retweet_engagement_timestamp"],
                            'tmstp_rtw_c': dataframe["engagement_features_with_comment_engagement_timestamp"],
                            'tmstp_lik': dataframe["engagement_features_like_engagement_timestamp"]})
-
     #Removing timestamps leaving 1/0 interactions
     #Setting to 1 non-null timestamps
     onehot[["tmstp_rpl", 
@@ -31,7 +30,6 @@ def main():
                                     "tmstp_lik"]].applymap(lambda x: x/x)
     #Setting to 0 null timestamps
     onehot = onehot.fillna(0)
-
     #Remapping users and items to integer due to xgboost requirements
     #Preparing dictionaries
     #Users' dictionary
@@ -45,7 +43,6 @@ def main():
     #Applying the mapping
     onehot = onehot.replace({"usr_id": u_dict}) #It is possible to use other dictionaries
     onehot = onehot.replace({"twt_id": i_dict}) 
-
     #Saving the remapped dataframe and the dictionaries
     #onehot.to_csv("onehot.csv", sep='\x01')
     #save_obj(u_dict, "u_dict")
