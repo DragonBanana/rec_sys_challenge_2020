@@ -6,6 +6,10 @@ from sklearn.metrics import precision_recall_curve, auc, log_loss
 import time
 import pickle
 import os.path
+import sys
+
+sys.path.append("../../../Utils/Eval")
+from Metrics import computeMetrics as cm
 
 def main():
     '''
@@ -138,8 +142,9 @@ def main():
 
 
 
-
-
+#---------------------------#
+#Class may be older version #
+#---------------------------#
 class XGBoost(object):
     #---------------------------------------------------------------------------------------------------
     #n_rounds:      Number of rounds for boosting
@@ -239,31 +244,17 @@ class XGBoost(object):
 
             #Making predictions
             Y_pred = model.predict(d_test)
-
+            
+            cme = cm(Y_pred, Y_tst)
             #Evaluating
-            prauc = self.compute_prauc(Y_pred, Y_tst)
-            rce = self.compute_rce(Y_pred, Y_tst)
+            prauc = cme.compute_prauc()
+            rce = cme.compute_rce()
             print("PRAUC "+self.name+": {0}".format(prauc))
             print("RCE "+self.name+": {0}\n".format(rce))            
 
         return Y_pred
 
-    #Evaluation metrics
-    def compute_prauc(self, pred, gt):
-        prec, recall, thresh = precision_recall_curve(gt, pred)
-        prauc = auc(recall, prec)
-        return prauc
 
-    def calculate_ctr(self, gt):
-        positive = len([x for x in gt if x == 1])
-        ctr = positive/float(len(gt))
-        return ctr
-
-    def compute_rce(self, pred, gt):
-        cross_entropy = log_loss(gt, pred)
-        data_ctr = self.calculate_ctr(gt)
-        strawman_cross_entropy = log_loss(gt, [data_ctr for _ in range(len(gt))])
-        return (1.0 - cross_entropy/strawman_cross_entropy)*100.0
 
 #To save/load almost everything in pickle
 def save_obj(obj, name ):

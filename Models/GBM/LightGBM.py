@@ -1,4 +1,4 @@
-import xgboost as xgb
+import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -13,84 +13,86 @@ from RecommenderBase import RecommenderBase
 sys.path.append("../../Utils/Eval")
 from Metrics import ComputeMetrics as CoMe
 
-class XGBoost(RecommenderBase):
+
+class LightGBM(RecommenderBase):
     #---------------------------------------------------------------------------------------------------
     #n_rounds:      Number of rounds for boosting
     #param:         Parameters of the XGB model
     #kind:          Name of the kind of prediction to print [LIKE, REPLY, REWTEET, RETWEET WITH COMMENT]
     #---------------------------------------------------------------------------------------------------
     #Not all the parameters are explicitated
-    #PARAMETERS DOCUMENTATION:https://xgboost.readthedocs.io/en/latest/parameter.html
+    #PARAMETERS DOCUMENTATION:  https://lightgbm.readthedocs.io/en/latest/Parameters.html
     #---------------------------------------------------------------------------------------------------
 
-    def __init__(self, 
-                 num_rounds = 10, 
-                 param = {'objective': 'binary:logistic', #outputs the binary classification probability
-                          'colsample_bytree': 0.5,
-                          'learning_rate': 0.4,
-                          'max_depth': 35, #Max depth per tree
-                          'alpha': 0.01, #L1 regularization
-                          'lambda': 0.01, #L2 regularization
-                          'num_parallel_tree': 4, #Number of parallel trees
-                          'min_child_weight' : 1,#Minimum sum of instance weight (hessian) needed in a child.
-                          'scale_pos_weight' : 1.2,                        
-                          'subsample': 0.8},
-                 kind = "NO_KIND_GIVEN",
-                 batch = False):
+    def __init__(self,
+                 kind="NO_NAME_GIVEN",
+                 num_rounds=1500,
+                 batch=False,
+                 param={'objective': 'binary',
+                        'num_leaves': 31,
+                        'learning_rate': 0.2,
+                        'num_threads': 4,
+                        'num_iterations': 10,
+                        #Learning control parameters
+                        'max_depth': 150, #Used to deal with overfitting when data is small.
+                        'lambda_l1': 0.01,
+                        'lambda_l2': 0.01,
+                        'colsample_bynode': 0.5,
+                        'colsample_bytree': 0.5,
+                        'subsample': 0.7,
+                        'pos_subsample': 0.5, #In classification positive and negative-
+                        'neg_subsample': 0.5, #-subsample ratio.
+                        'bagging_freq': 5, #Default 0 perform bagging every k iterations
+                        'metric':    ('auc', 'binary_logloss')}): #Multiple metric allowed
 
-        super(XGBoost, self).__init__(
-            name="xgboost_classifier", #name of the recommender
-            kind=kind,                 #what does it recommends
-            batch=batch)               #if it's a batch type
+        super(LightGBM, self).__init__(
+                name="lightgbm_classifier", #name of the recommender
+                kind=kind,                 #what does it recommends
+                batch=batch)               #if it's a batch type
 
-        
-        #Inputs
-        self.num_rounds = num_rounds
-        self.param = param
-        self.kind = kind
-        self.batch = batch  #The type of learning is now explicitated when you declare the model
 
-        #Dictionary contaning the range of parameters
-        #Should be here or in an apposit dicionary file DUNNO
-        slef.param_dict = {'colsample_bytree': (0,1),
-                          'learning_rate': (0.5,0.00001),
-                          'max_depth': (5,100),
-                          'alpha': (0.01, 0.0001),
-                          'lambda': (0.01,0.0001), 
-                          'min_child_weight' : (1, 10),
-                          'scale_pos_weight' : (1, 1.5),
-                          'subsample': (0.6, 1)}
+        self.param_dict={'objective': 'binary',
+                        'metric':    ('auc', 'binary_logloss'),
+                        'num_leaves': (15,500),
+                        'learning_rate': (0.00001,0.1),
+                        'num_iterations': (10,600),
+                        'max_depth': (15,500),
+                        'lambda_l1': (0.00001,0.1),
+                        'lambda_l2': (0.00001,0.1),
+                        'colsample_bynode': (0,1),
+                        'colsample_bytree': (0,1),
+                        'subsample': (0,1),
+                        'pos_subsample': (0,1),
+                        'neg_subsample': (0,1), 
+                        'bagging_freq': (0,1)}
 
-        #CLASS VARIABLES
-        #Model
-        self.sround_model = None
-        self.batch_model = None
-        #Prediction
-        self.Y_pred = None
-        #Train set
+        # Inputs
+        self.param=param
+        self.kind=kind
+        self.batch=batch
+        self.num_rounds=num_rounds
+
+        # Class variables
+        #Models
+        self.sround_model = None    #No need to differentiate, but it's
+        self.batch_model = None     #way more readable.
+        # Train
         self.X_train = None
         self.Y_train = None
-        #Test set
+        # Test
         self.X_test = None
         self.Y_test = None
+        # List of categorical features
+        # Must contain name of the column
+        self.cat_feat = "auto" #auto is default value
 
-            
     
-    #-----------------------------------------------------
-    #                    fit(...)
-    #-----------------------------------------------------
-    #X:         Learning features of the dataset
-    #Y:         Target feature of the dataset
-    #batch:     Enable learning by batch
-    #-----------------------------------------------------
-    # sround_model and batch_model are differentiated
-    # in order to avoid overwriting. (Maybe not necessary)
-    #-----------------------------------------------------
-    def fit(self, X=None, Y=None):
-        #--------------------------------------
+
+    def fit(self, X=None, Y=None, cat_feat=None):
+        #------------------------------------------------
         #Let the loading of the dataset by
         #apposite method work.
-        #--------------------------------------
+        #------------------------------------------------
         #Tries to load X and Y if not directly passed        
         if (X is None) and (self.X_train is not None):
             X = self.X_train
@@ -100,29 +102,40 @@ class XGBoost(RecommenderBase):
         if ((X is None) or (Y is None)):
             print("Training set not provided.")
             return -1
-        #--------------------------------------
+
+        #If cat_feat is not null I take cat_feat as a new
+        #categorical features list
+        if (cat_feat is not None):
+            cat_feat = self.cat_feat            
+        #------------------------------------------------
 
         #Learning in a single round
         if self.batch is False:
-            #Transforming matrices in DMatrix type
-            train = xgb.DMatrix(X, 
-                                label=Y)
-     	
-            #Defining and fitting the models
-            self.sround_model = xgb.train(self.param,  #Don't care if overwritten by a new
-                                   train,              #run it's single round training
-                                   self.num_rounds)
+            #Declaring LightGBM Dataset
+            train = lgb.Dataset(data=X,
+                                label=Y,
+                                categorical_feature=self.cat_feat) 
+
+            #Defining and fitting the model
+            self.sround_model = lgb.train(self.param,  
+                                          train,       
+                                          self.num_rounds)
+
             
         #Learning by consecutive batches
         else:
-            #Transforming matrices in DMatrix type
-            train = xgb.DMatrix(X, 
-                                label=Y)
+            #Declaring LightGBM Dataset
+            train = lgb.Dataset(data=X,
+                                label=Y,
+                                categorical_feature=self.cat_feat)
+
             #Defining and training the models
-            self.batch_model = xgb.train(self.param, #Overwrites the old model with an incremented 
-                                         train,      #new one, so new run won't cause trouble
+            self.batch_model = lgb.train(self.param,  
+                                         train,      
                                          self.num_rounds,
-                                         xgb_model=self.batch_model)
+                                         init_model=self.batch_model)
+
+
 
 
 
@@ -135,13 +148,16 @@ class XGBoost(RecommenderBase):
     #---------------------------------------------------------------------------
     #           Works for both for batch and single training
     #---------------------------------------------------------------------------
-    def evaluate(self, X_tst=None, Y_tst=None):
+    def evaluate(self, X_tst=None, Y_tst=None, cat_feat=None):
         Y_pred = None
         if ((X_tst is None) or (Y_tst is None))and(self.X_test is None)and(self.Y_test is None):
             print("No test set is provided.")
         elif (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
+            #Adapting with the cat_feat
+            if (cat_feat is not None):
+                self.cat_feat = cat_feat
             #-----------------------
             #Making work the not yet
             #implmented method for
@@ -159,11 +175,14 @@ class XGBoost(RecommenderBase):
             else:
                 model = self.batch_model
             
-            #Preparing DMatrix
-            d_test = xgb.DMatrix(X_tst)
+            #Preparing LightGBM's Dataset ----------> ERROR: wants row data
+            #test = lgb.Dataset(data=X_tst,
+            #                   categorical_feature=self.cat_feat)
+
+            test = X_tst
 
             #Making predictions
-            Y_pred = model.predict(d_test)
+            Y_pred = model.predict(test)
 
             # Declaring the class containing the
             # metrics.
@@ -178,6 +197,8 @@ class XGBoost(RecommenderBase):
             print("MIN: {0}\n".format(min(Y_pred)))
         return Y_pred
 
+
+
     # This method returns only the predictions
     #-------------------------------------------
     #           get_predictions(...)
@@ -186,13 +207,15 @@ class XGBoost(RecommenderBase):
     #-------------------------------------------
     # As above, but without computing the scores
     #-------------------------------------------
-    def get_prediction(self, X_tst=None):
+    def get_prediction(self, X_tst=None, cat_feat=None):
         Y_pred = None
         if (X_tst is None) and (self.X_test is None):
             print("No test set is provided.")
         elif (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
+            if (cat_feat is not None):
+                self.cat_feat=cat_feat
             #----------------------
             #Make the loading dataset
             #method work.
@@ -207,12 +230,17 @@ class XGBoost(RecommenderBase):
             else:
                 model = self.batch_model
             
-            #Preparing DMatrix
-            d_test = xgb.DMatrix(X_tst)
+            #Preparing LightGBM's Dataset ----------> ERROR: wants row data
+            #test = lgb.Dataset(data=X_tst,
+            #                   categorical_feature=self.cat_feat)
+
+            test = X_tst
 
             #Making predictions
-            Y_pred = model.predict(d_test)
+            Y_pred = model.predict(test)
             return Y_pred
+
+
 
     #This method saves the model
     #------------------------------------------------------
@@ -223,7 +251,7 @@ class XGBoost(RecommenderBase):
     #------------------------------------------------------
     def save_model(self, path=None, filename=None):
         #Defining the extension
-        ext = ".model"
+        ext = ".txt"
         #Saving the model with premade name in working folder
         if (path is None) and (filename is None):
             date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
@@ -268,6 +296,8 @@ class XGBoost(RecommenderBase):
         return model_name
 
 
+
+
     #This method loads a model
     #-------------------------
     #path: path to the model
@@ -275,43 +305,51 @@ class XGBoost(RecommenderBase):
     def load_model(self, path):
         if (self.batch is False):
             #Reinitializing model
-            self.sround_model = xgb.Booster()
-            self.sround_model.load_model(path)
+            self.sround_model = lgb.Booster(model_file=path)
             print("Model correctly loaded.\n")    
 
         else:
             #By loading in this way it is possible to keep on learning            
-            self.batch_model = xgb.Booster()
-            self.batch_model.load_model(path)
+            self.batch_model = lgb.Booster(model_file=path)
             print("Batch model correctly loaded.\n")
-    
+
+
     #-------------------------------
     #Setting the parameters
     #-------------------------------
     #param:     new parameters pack
     #-------------------------------
     #Unlike the 2019 model this one
-    #declares xgb in train phase
+    #declares lgb in train phase
     #so it's possible to set again
     #parameters. (maybe useful)
     #-------------------------------
     def set_parameters(self, param):
         self.param = param
-    
+
+
     #Returns/prints the importance of the features
     #-------------------------------------------------
     #verbose:   it also prints the features importance
     #-------------------------------------------------
+    # TODO: improve the verbosity, it is possible to 
+    # put aside the name of the feature, if we have
+    # a list with the feature names.
     def get_feat_importance(self, verbose = False):
         
         if (self.batch is False):
-            importance = self.sround_model.get_score(importance_type='gain')
+            model = self.sround_model
         else:
-            importance = self.batch_model.get_score(importance_type='gain')
+            model = self.batch_model
+        
+        #Getting the importance
+        importance = model.feature_importance(importance_type="gain")
 
         if verbose is True:
-            for k, v in importance.items():
-                print("{0}:\t{1}".format(k,v))
+            print("F_pos\tF_importance")
+            for k in range(len(importance)):
+                print("{0}:\t{1}".format(k,importance[k]))
+            
             
         return importance
 
@@ -342,5 +380,3 @@ class XGBoost(RecommenderBase):
         self.Y_test = pandas_data["label"]
     '''
 #---------------------------------------------------------------------------------------------------------
-
-

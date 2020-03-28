@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from abc import ABC
-import numpy as np
-from sklearn.metrics import precision_recall_curve, auc, log_loss
+import sys
+
 
 
 class RecommenderBase(ABC):
@@ -55,6 +55,12 @@ class RecommenderBase(ABC):
         '''
         pass
 
+    def get_param_dict(self):
+        '''
+        Returns the parameters' dictionary containing the values' range. 
+        '''
+        return self.param_dict
+
     #----------------------------------------------------------------
     # Yet to be implemented, need a data class first
     #----------------------------------------------------------------
@@ -85,25 +91,6 @@ class RecommenderBase(ABC):
         # Save this shit into a file
         pass
     #--------------------------------------------------------------------
-
-
-    #Evaluation metrics
-    def compute_prauc(self, pred, gt):
-        prec, recall, thresh = precision_recall_curve(gt, pred)
-        prauc = auc(recall, prec)
-        return prauc
-
-    def calculate_ctr(self, gt):
-        positive = len([x for x in gt if x == 1])
-        ctr = positive/float(len(gt))
-        return ctr
-
-    def compute_rce(self, pred, gt):
-        cross_entropy = log_loss(gt, pred)
-        data_ctr = self.calculate_ctr(gt)
-        strawman_cross_entropy = log_loss(gt, [data_ctr for _ in range(len(gt))])
-        return (1.0 - cross_entropy/strawman_cross_entropy)*100.0
-
 
 
         
