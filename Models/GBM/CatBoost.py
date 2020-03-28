@@ -1,4 +1,4 @@
-import xgboost as xgb
+from catboost import CatBoostClassifier, Pool
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -12,54 +12,31 @@ sys.path.append("../../Utils/Base")
 from RecommenderBase import RecommenderBase
 sys.path.append("../../Utils/Eval")
 from Metrics import ComputeMetrics as CoMe
+#---------------------
+#DA FINIRE MA FUNZIONA
+#---------------------
+class CatBoost(RecommenderBase):
+    def __init__(self,
+                 kind="NO_NAME_GIVEN",
+                 batch=False,
+                 param={"iterations": 2,    #NOT SURE BOUT THIS
+                         "depth":2,
+                         "learning_rate": 0.1,
+                         "loss_function": "Logloss",
+                         "verbose": True}):
 
-class XGBoost(RecommenderBase):
-    #---------------------------------------------------------------------------------------------------
-    #n_rounds:      Number of rounds for boosting
-    #param:         Parameters of the XGB model
-    #kind:          Name of the kind of prediction to print [LIKE, REPLY, REWTEET, RETWEET WITH COMMENT]
-    #---------------------------------------------------------------------------------------------------
-    #Not all the parameters are explicitated
-    #PARAMETERS DOCUMENTATION:https://xgboost.readthedocs.io/en/latest/parameter.html
-    #---------------------------------------------------------------------------------------------------
+        super(CatBoost, self).__init__(
+              name="catboost_classifier",
+              kind=kind,
+              batch=batch)
 
-    def __init__(self, 
-                 num_rounds = 10, 
-                 param = {'objective': 'binary:logistic', #outputs the binary classification probability
-                          'colsample_bytree': 0.5,
-                          'learning_rate': 0.4,
-                          'max_depth': 35, #Max depth per tree
-                          'alpha': 0.01, #L1 regularization
-                          'lambda': 0.01, #L2 regularization
-                          'num_parallel_tree': 4, #Number of parallel trees
-                          'min_child_weight' : 1,#Minimum sum of instance weight (hessian) needed in a child.
-                          'scale_pos_weight' : 1.2,                        
-                          'subsample': 0.8},
-                 kind = "NO_KIND_GIVEN",
-                 batch = False):
-
-        super(XGBoost, self).__init__(
-            name="xgboost_classifier", #name of the recommender
-            kind=kind,                 #what does it recommends
-            batch=batch)               #if it's a batch type
-
-        
         #Inputs
-        self.num_rounds = num_rounds
-        self.param = param
-        self.kind = kind
-        self.batch = batch  #The type of learning is now explicitated when you declare the model
+        self.param=param
+        self.kind=kind
+        self.batch=batch
 
-        #Dictionary contaning the range of parameters
-        #Should be here or in an apposit dicionary file DUNNO
-        self.param_dict = {'colsample_bytree': (0,1),
-                          'learning_rate': (0.5,0.00001),
-                          'max_depth': (5,100),
-                          'alpha': (0.01, 0.0001),
-                          'lambda': (0.01,0.0001), 
-                          'min_child_weight' : (1, 10),
-                          'scale_pos_weight' : (1, 1.5),
-                          'subsample': (0.6, 1)}
+        #TODO: Dictionary containing pamarameters' range
+        self.param_dict = None
 
         #CLASS VARIABLES
         #Model
@@ -73,19 +50,21 @@ class XGBoost(RecommenderBase):
         #Test set
         self.X_test = None
         self.Y_test = None
+        #Categorical features
+        self.cat_feat = None #Default value --> No categorical features
 
-            
-    
+
+
     #-----------------------------------------------------
     #                    fit(...)
     #-----------------------------------------------------
     #X:         Learning features of the dataset
     #Y:         Target feature of the dataset
-    #batch:     Enable learning by batch
     #-----------------------------------------------------
     # sround_model and batch_model are differentiated
     # in order to avoid overwriting. (Maybe not necessary)
     #-----------------------------------------------------
+
     def fit(self, X=None, Y=None):
         #--------------------------------------
         #Let the loading of the dataset by
@@ -104,25 +83,33 @@ class XGBoost(RecommenderBase):
 
         #Learning in a single round
         if self.batch is False:
-            #Transforming matrices in DMatrix type
-            train = xgb.DMatrix(X, 
-                                label=Y)
+            #Getting the CatBoost Pool matrix format
+            train = Pool(data=X, 
+                         label=Y,
+                         cat_features=self.cat_feat)
      	
             #Defining and fitting the models
-            self.sround_model = xgb.train(self.param,  #Don't care if overwritten by a new
-                                   train,              #run it's single round training
-                                   self.num_rounds)
-            
+            self.sround_model = CatBoostClassifier(iterations=2, depth=2, learning_rate=0.1, loss_function="Logloss", verbose=True)
+            self.sround_model.fit(train)
+
         #Learning by consecutive batches
         else:
-            #Transforming matrices in DMatrix type
-            train = xgb.DMatrix(X, 
-                                label=Y)
-            #Defining and training the models
-            self.batch_model = xgb.train(self.param, #Overwrites the old model with an incremented 
-                                         train,      #new one, so new run won't cause trouble
-                                         self.num_rounds,
-                                         xgb_model=self.batch_model)
+            #Getting the CatBoost Pool matrix format
+            train = Pool(data=X, 
+                         label=Y,
+                         cat_features=self.cat_feat)
+
+            #Declaring and training the model
+            #Initializing the model only if it wasn't already
+            if (self.batch_model is None):
+                self.batch_model = CatBoostClassifier(num_trees=10, depth=10, learning_rate=0.1, loss_function="Logloss", verbose=True)
+                #Fitting the model 
+                self.batch_model.fit(train)
+
+            else:
+                self.batch_model.fit(train, init_model=self.batch_model)
+
+
 
 
 
@@ -160,10 +147,10 @@ class XGBoost(RecommenderBase):
                 model = self.batch_model
             
             #Preparing DMatrix
-            d_test = xgb.DMatrix(X_tst)
+            p_test = Pool(X_tst)
 
             #Making predictions
-            Y_pred = model.predict(d_test)
+            Y_pred = model.predict(p_test)
 
             # Declaring the class containing the
             # metrics.
@@ -178,6 +165,7 @@ class XGBoost(RecommenderBase):
             print("MIN: {0}\n".format(min(Y_pred)))
         return Y_pred
 
+    
     # This method returns only the predictions
     #-------------------------------------------
     #           get_predictions(...)
@@ -208,11 +196,14 @@ class XGBoost(RecommenderBase):
                 model = self.batch_model
             
             #Preparing DMatrix
-            d_test = xgb.DMatrix(X_tst)
+            p_test = Pool(X_tst)
 
             #Making predictions
-            Y_pred = model.predict(d_test)
+            Y_pred = model.predict(p_test)
             return Y_pred
+
+
+
 
     #This method saves the model
     #------------------------------------------------------
@@ -223,7 +214,7 @@ class XGBoost(RecommenderBase):
     #------------------------------------------------------
     def save_model(self, path=None, filename=None):
         #Defining the extension
-        ext = ".model"
+        ext = ".cbm"
         #Saving the model with premade name in working folder
         if (path is None) and (filename is None):
             date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
@@ -275,23 +266,23 @@ class XGBoost(RecommenderBase):
     def load_model(self, path):
         if (self.batch is False):
             #Reinitializing model
-            self.sround_model = xgb.Booster()
+            self.sround_model = CatBoostClassifier()
             self.sround_model.load_model(path)
             print("Model correctly loaded.\n")    
 
         else:
             #By loading in this way it is possible to keep on learning            
-            self.batch_model = xgb.Booster()
+            self.batch_model = CatBoostClassifier()
             self.batch_model.load_model(path)
             print("Batch model correctly loaded.\n")
-    
+
     #-------------------------------
     #Setting the parameters
     #-------------------------------
     #param:     new parameters pack
     #-------------------------------
     #Unlike the 2019 model this one
-    #declares xgb in train phase
+    #declares catboost in train phase
     #so it's possible to set again
     #parameters. (maybe useful)
     #-------------------------------
@@ -305,13 +296,11 @@ class XGBoost(RecommenderBase):
     def get_feat_importance(self, verbose = False):
         
         if (self.batch is False):
-            importance = self.sround_model.get_score(importance_type='gain')
+            model = self.sround_model
         else:
-            importance = self.batch_model.get_score(importance_type='gain')
-
-        if verbose is True:
-            for k, v in importance.items():
-                print("{0}:\t{1}".format(k,v))
+            model = self.batch_model
+        #Getting feature importance
+        importance = model.get_feature_importance(verbose=verbose)
             
         return importance
 
@@ -342,5 +331,6 @@ class XGBoost(RecommenderBase):
         self.Y_test = pandas_data["label"]
     '''
 #---------------------------------------------------------------------------------------------------------
-
-
+#Miao
+#Meaw
+#Nyan
