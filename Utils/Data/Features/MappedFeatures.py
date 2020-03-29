@@ -29,11 +29,14 @@ class MappedFeaturePickle(Feature):
         self.csv_path = pl.Path(f"{Feature.ROOT_PATH}/{self.dataset_id}/mapped/{self.feature_name}.csv.gz")
 
     def has_feature(self):
-        return self.csv_path.is_file()
+        return self.pck_path.is_file()
 
     def load_feature(self):
         assert self.has_feature(), f"The feature {self.feature_name} does not exists. Create it first."
-        return pd.read_pickle(self.pck_path, compression="gzip")
+        df = pd.read_pickle(self.pck_path, compression="gzip")
+        # Renaming the column for consistency purpose
+        df.columns = [self.feature_name]
+        return df
 
     @abstractmethod
     def create_feature(self):
