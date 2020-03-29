@@ -1,11 +1,11 @@
 from Utils.Data.DataUtils import FEATURES, DICTIONARIES, DICT_ARRAYS
 import pandas as pd
+import numpy as np
 
-
-def get_dataset_xgb(dataset_id: str = "train", X_label: list = None, Y_label: str = None):
+def get_dataset_xgb(dataset_id: str = "train", X_label: list = None, Y_label: list = None):
     """
-    :param features: Features in the X_Train matrix, if not specified returns all the known features
     :param dataset_id: The dataset id ("train", "test", etc.)
+    :param X_label: The X features, the ones the model is trained on.
     :param Y_label:  The Y feature, the one to be predicted.
     :return: 2 dataframes: 1) X_Train, 2) Y_Train
     """
@@ -20,8 +20,15 @@ def get_dataset_xgb(dataset_id: str = "train", X_label: list = None, Y_label: st
         ]
     return get_dataset(X_label, dataset_id), get_dataset(Y_label, dataset_id)
 
+
 def get_dataset(features: list, dataset_id: str):
-    return pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
+    dataframe = pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
+
+    # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
+    for column in dataframe.columns:
+        if str(dataframe[column].dtype).lower()[:3] == "int":
+            dataframe[column] = dataframe[column].astype(np.int64, copy=False)
+    return dataframe
 
 
 def get_feature(feature_name: str, dataset_id: str):

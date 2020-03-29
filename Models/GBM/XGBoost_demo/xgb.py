@@ -7,9 +7,7 @@ import time
 import pickle
 import os.path
 import sys
-
-sys.path.append("../../../Utils/Eval")
-from Metrics import computeMetrics as cm
+from Utils.Eval.Metrics import ComputeMetrics as cm
 
 def main():
     '''
