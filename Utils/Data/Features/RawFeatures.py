@@ -19,8 +19,11 @@ class RawFeatureCSV(Feature):
 
     def load_feature(self):
         assert self.has_feature(), f"The feature {self.feature_name} does not exists. Create it first."
-        return pd.read_csv(self.csv_path, compression="gzip", index_col=0, header=0,
-                           dtype={self.feature_name: pd.StringDtype()})
+        df = pd.read_csv(self.csv_path, compression="gzip", index_col=0, header=0,
+                         dtype={self.feature_name: pd.StringDtype()})
+        # Renaming the column for consistency purpose
+        df.columns = [self.feature_name]
+        return df
 
     def create_feature(self):
         df = _get_raw_column(self.feature_name, self.dataset_id)
@@ -43,7 +46,10 @@ class RawFeaturePickle(Feature):
 
     def load_feature(self):
         assert self.has_feature(), f"The feature {self.feature_name} does not exists. Create it first."
-        return pd.read_pickle(self.pck_path, compression="gzip")
+        df = pd.read_pickle(self.pck_path, compression="gzip")
+        # Renaming the column for consistency purpose
+        df.columns = [self.feature_name]
+        return df
 
     def create_feature(self):
         df = _get_raw_column(self.feature_name, self.dataset_id)
@@ -199,8 +205,60 @@ class RawFeatureEngagementLikeTimestamp(RawFeaturePickle):
 
 
 def _get_raw_column(column, dataset_id):
+    if dataset_id == "test":
+        return pd.read_csv(f"{RootPath.get_dataset_path()}/{dataset_id}.csv.gz",
+                           compression='gzip',
+                           sep='',
+                           names=[
+                               "raw_feature_tweet_text_token",
+                               "raw_feature_tweet_hashtags",
+                               "raw_feature_tweet_id",
+                               "raw_feature_tweet_media",
+                               "raw_feature_tweet_links",
+                               "raw_feature_tweet_domains",
+                               "raw_feature_tweet_type",
+                               "raw_feature_tweet_language",
+                               "raw_feature_tweet_timestamp",
+                               "raw_feature_creator_id",
+                               "raw_feature_creator_follower_count",
+                               "raw_feature_creator_following_count",
+                               "raw_feature_creator_is_verified",
+                               "raw_feature_creator_creation_timestamp",
+                               "raw_feature_engager_id",
+                               "raw_feature_engager_follower_count",
+                               "raw_feature_engager_following_count",
+                               "raw_feature_engager_is_verified",
+                               "raw_feature_engager_creation_timestamp",
+                               "raw_feature_engagement_creator_follows_engager"
+                           ],
+                           dtype={
+                               "raw_feature_tweet_text_token": pd.StringDtype(),
+                               "raw_feature_tweet_hashtags": pd.StringDtype(),
+                               "raw_feature_tweet_id": pd.StringDtype(),
+                               "raw_feature_tweet_media": pd.StringDtype(),
+                               "raw_feature_tweet_links": pd.StringDtype(),
+                               "raw_feature_tweet_domains": pd.StringDtype(),
+                               "raw_feature_tweet_type": pd.StringDtype(),
+                               "raw_feature_tweet_language": pd.StringDtype(),
+                               "raw_feature_tweet_timestamp": pd.Int32Dtype(),
+                               "raw_feature_creator_id": pd.StringDtype(),
+                               "raw_feature_creator_follower_count": pd.Int32Dtype(),
+                               "raw_feature_creator_following_count": pd.Int32Dtype(),
+                               "raw_feature_creator_is_verified": pd.BooleanDtype(),
+                               "raw_feature_creator_creation_timestamp": pd.Int32Dtype(),
+                               "raw_feature_engager_id": pd.StringDtype(),
+                               "raw_feature_engager_follower_count": pd.Int32Dtype(),
+                               "raw_feature_engager_following_count": pd.Int32Dtype(),
+                               "raw_feature_engager_is_verified": pd.BooleanDtype(),
+                               "raw_feature_engager_creation_timestamp": pd.Int32Dtype(),
+                               "raw_feature_engagement_creator_follows_engager": pd.BooleanDtype()
+                           },
+                           usecols=[
+                               column
+                           ]
+                           )
     # Read the dataframe
-    if dataset_id == "train":
+    else:
         return pd.read_csv(f"{RootPath.get_dataset_path()}/{dataset_id}.csv.gz",
                            compression='gzip',
                            sep='',
@@ -260,57 +318,3 @@ def _get_raw_column(column, dataset_id):
                                column
                            ]
                            )
-    elif dataset_id == "test":
-        return pd.read_csv(f"{RootPath.get_dataset_path()}/{dataset_id}.csv.gz",
-                           compression='gzip',
-                           sep='',
-                           names=[
-                               "raw_feature_tweet_text_token",
-                               "raw_feature_tweet_hashtags",
-                               "raw_feature_tweet_id",
-                               "raw_feature_tweet_media",
-                               "raw_feature_tweet_links",
-                               "raw_feature_tweet_domains",
-                               "raw_feature_tweet_type",
-                               "raw_feature_tweet_language",
-                               "raw_feature_tweet_timestamp",
-                               "raw_feature_creator_id",
-                               "raw_feature_creator_follower_count",
-                               "raw_feature_creator_following_count",
-                               "raw_feature_creator_is_verified",
-                               "raw_feature_creator_creation_timestamp",
-                               "raw_feature_engager_id",
-                               "raw_feature_engager_follower_count",
-                               "raw_feature_engager_following_count",
-                               "raw_feature_engager_is_verified",
-                               "raw_feature_engager_creation_timestamp",
-                               "raw_feature_engagement_creator_follows_engager"
-                           ],
-                           dtype={
-                               "raw_feature_tweet_text_token": pd.StringDtype(),
-                               "raw_feature_tweet_hashtags": pd.StringDtype(),
-                               "raw_feature_tweet_id": pd.StringDtype(),
-                               "raw_feature_tweet_media": pd.StringDtype(),
-                               "raw_feature_tweet_links": pd.StringDtype(),
-                               "raw_feature_tweet_domains": pd.StringDtype(),
-                               "raw_feature_tweet_type": pd.StringDtype(),
-                               "raw_feature_tweet_language": pd.StringDtype(),
-                               "raw_feature_tweet_timestamp": pd.Int32Dtype(),
-                               "raw_feature_creator_id": pd.StringDtype(),
-                               "raw_feature_creator_follower_count": pd.Int32Dtype(),
-                               "raw_feature_creator_following_count": pd.Int32Dtype(),
-                               "raw_feature_creator_is_verified": pd.BooleanDtype(),
-                               "raw_feature_creator_creation_timestamp": pd.Int32Dtype(),
-                               "raw_feature_engager_id": pd.StringDtype(),
-                               "raw_feature_engager_follower_count": pd.Int32Dtype(),
-                               "raw_feature_engager_following_count": pd.Int32Dtype(),
-                               "raw_feature_engager_is_verified": pd.BooleanDtype(),
-                               "raw_feature_engager_creation_timestamp": pd.Int32Dtype(),
-                               "raw_feature_engagement_creator_follows_engager": pd.BooleanDtype()
-                           },
-                           usecols=[
-                               column
-                           ]
-                           )
-    else:
-        raise Exception(f"The dataset id {dataset_id} is not valid.")
