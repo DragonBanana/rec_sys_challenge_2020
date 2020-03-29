@@ -118,3 +118,6 @@ ENV/
 AWS/aws
 AWS/credentials
 /aws_local/
+
+*.swo
+*.swp
