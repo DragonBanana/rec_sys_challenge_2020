@@ -1,7 +1,7 @@
 from bayes_opt import BayesianOptimization
 from bayes_opt import JSONLogger
 from bayes_opt import Events
-from ModelInterface import ModelInterface
+from ParamTuning.ModelInterface import ModelInterface
 
 #bayes_opt documentation @
 #https://github.com/fmfn/BayesianOptimization

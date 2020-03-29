@@ -8,12 +8,12 @@ import pickle
 import os.path
 import datetime as dt
 import sys
-sys.path.append("../../Utils/Base")
-from RecommenderBase import RecommenderBase
-sys.path.append("../../Utils/Eval")
-from Metrics import ComputeMetrics as CoMe
+from Utils.Base.RecommenderBase import RecommenderBase
+from Utils.Base.RecommenderGBM import RecommenderGBM
+from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
-class XGBoost(RecommenderBase):
+
+class XGBoost(RecommenderGBM):
     #---------------------------------------------------------------------------------------------------
     #n_rounds:      Number of rounds for boosting
     #param:         Parameters of the XGB model
@@ -73,6 +73,8 @@ class XGBoost(RecommenderBase):
         #Test set
         self.X_test = None
         self.Y_test = None
+        #Extension of saved file
+        self.ext=".model"
 
             
     
@@ -160,10 +162,10 @@ class XGBoost(RecommenderBase):
                 model = self.batch_model
             
             #Preparing DMatrix
-            d_test = xgb.DMatrix(X_tst)
-
+            #d_test = xgb.DMatrix(X_tst)
             #Making predictions
-            Y_pred = model.predict(d_test)
+            #Y_pred = model.predict(d_test)
+            Y_pred = self.get_prediction(X_tst)
 
             # Declaring the class containing the
             # metrics.
@@ -214,6 +216,7 @@ class XGBoost(RecommenderBase):
             Y_pred = model.predict(d_test)
             return Y_pred
 
+    '''
     #This method saves the model
     #------------------------------------------------------
     #path:      path where to save the model
@@ -266,7 +269,7 @@ class XGBoost(RecommenderBase):
             print("Model {0} saved successfully.".format(model_name))
             
         return model_name
-
+    '''
 
     #This method loads a model
     #-------------------------

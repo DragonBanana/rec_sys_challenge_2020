@@ -8,13 +8,13 @@ import pickle
 import os.path
 import datetime as dt
 import sys
-sys.path.append("../../Utils/Base")
-from RecommenderBase import RecommenderBase
-sys.path.append("../../Utils/Eval")
-from Metrics import ComputeMetrics as CoMe
+from Utils.Base.RecommenderBase import RecommenderBase
+from Utils.Base.RecommenderGBM import RecommenderGBM
+from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
 
-class LightGBM(RecommenderBase):
+
+class LightGBM(RecommenderGBM):
     #---------------------------------------------------------------------------------------------------
     #n_rounds:      Number of rounds for boosting
     #param:         Parameters of the XGB model
@@ -85,6 +85,8 @@ class LightGBM(RecommenderBase):
         # List of categorical features
         # Must contain name of the column
         self.cat_feat = "auto" #auto is default value
+        #Extension of saving file
+        self.ext=".txt"
 
     
 
@@ -179,10 +181,10 @@ class LightGBM(RecommenderBase):
             #test = lgb.Dataset(data=X_tst,
             #                   categorical_feature=self.cat_feat)
 
-            test = X_tst
-
+            #test = X_tst
             #Making predictions
-            Y_pred = model.predict(test)
+            #Y_pred = model.predict(test)
+            Y_pred = self.get_prediction(X_tst)
 
             # Declaring the class containing the
             # metrics.
@@ -241,7 +243,7 @@ class LightGBM(RecommenderBase):
             return Y_pred
 
 
-
+    '''
     #This method saves the model
     #------------------------------------------------------
     #path:      path where to save the model
@@ -294,7 +296,7 @@ class LightGBM(RecommenderBase):
             print("Model {0} saved successfully.".format(model_name))
             
         return model_name
-
+    '''
 
 
 
@@ -348,8 +350,7 @@ class LightGBM(RecommenderBase):
         if verbose is True:
             print("F_pos\tF_importance")
             for k in range(len(importance)):
-                print("{0}:\t{1}".format(k,importance[k]))
-            
+                print("{0}:\t{1}".format(k,importance[k]))            
             
         return importance
 

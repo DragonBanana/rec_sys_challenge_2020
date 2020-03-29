@@ -8,22 +8,27 @@ import pickle
 import os.path
 import datetime as dt
 import sys
-sys.path.append("../../Utils/Base")
-from RecommenderBase import RecommenderBase
-sys.path.append("../../Utils/Eval")
-from Metrics import ComputeMetrics as CoMe
+from Utils.Base.RecommenderBase import RecommenderBase
+from Utils.Base.RecommenderGBM import RecommenderGBM
+from Utils.Eval.Metrics import ComputeMetrics as CoMe
+
+
+
+
 #---------------------
 #DA FINIRE MA FUNZIONA
 #---------------------
-class CatBoost(RecommenderBase):
+class CatBoost(RecommenderGBM):
     def __init__(self,
                  kind="NO_NAME_GIVEN",
                  batch=False,
-                 param={"iterations": 2,    #NOT SURE BOUT THIS
-                         "depth":2,
-                         "learning_rate": 0.1,
-                         "loss_function": "Logloss",
-                         "verbose": True}):
+                 loss_function="Logloss",
+                 eval_metric="AUC",
+                 verbose=False,
+                 iterations=10,
+                 depth=10,
+                 learning_rate = 0.1,
+                 l2_leaf_reg = 0.01):
 
         super(CatBoost, self).__init__(
               name="catboost_classifier",
@@ -31,7 +36,7 @@ class CatBoost(RecommenderBase):
               batch=batch)
 
         #Inputs
-        self.param=param
+        #self.param=param
         self.kind=kind
         self.batch=batch
 
@@ -52,6 +57,27 @@ class CatBoost(RecommenderBase):
         self.Y_test = None
         #Categorical features
         self.cat_feat = None #Default value --> No categorical features
+        #Save extension
+        self.ext=".cbm"
+
+        #Cannot pass parameters as a dict
+        #Explicitating parameters (set to default)
+        self.loss_function=loss_function
+        self.eval_metric=eval_metric
+        self.verbose=verbose
+        self.iterations=iterations
+        self.depth=depth
+        self.learning_rate=learning_rate
+        self.l2_leaf_reg=l2_leaf_reg
+
+        self.classifier = CatBoostClassifier(loss_function= self.loss_function,
+                                             eval_metric= self.eval_metric,
+                                             verbose= self.verbose,
+                                             iterations= self.iterations,
+                                             depth= self.depth,
+                                             learning_rate= self.learning_rate,
+                                             l2_leaf_reg= self.l2_leaf_reg)
+        
 
 
 
@@ -89,7 +115,7 @@ class CatBoost(RecommenderBase):
                          cat_features=self.cat_feat)
      	
             #Defining and fitting the models
-            self.sround_model = CatBoostClassifier(iterations=2, depth=2, learning_rate=0.1, loss_function="Logloss", verbose=True)
+            self.sround_model = self.classifier
             self.sround_model.fit(train)
 
         #Learning by consecutive batches
@@ -102,8 +128,7 @@ class CatBoost(RecommenderBase):
             #Declaring and training the model
             #Initializing the model only if it wasn't already
             if (self.batch_model is None):
-                self.batch_model = CatBoostClassifier(num_trees=10, depth=10, learning_rate=0.1, loss_function="Logloss", verbose=True)
-                #Fitting the model 
+                self.batch_model = self.classifier#Fitting the model 
                 self.batch_model.fit(train)
 
             else:
@@ -147,10 +172,10 @@ class CatBoost(RecommenderBase):
                 model = self.batch_model
             
             #Preparing DMatrix
-            p_test = Pool(X_tst)
-
+            #p_test = Pool(X_tst)
             #Making predictions
-            Y_pred = model.predict(p_test)
+            #Y_pred = model.predict(p_test)
+            Y_pred = self.get_prediction(X_tst)
 
             # Declaring the class containing the
             # metrics.
@@ -204,7 +229,7 @@ class CatBoost(RecommenderBase):
 
 
 
-
+    '''
     #This method saves the model
     #------------------------------------------------------
     #path:      path where to save the model
@@ -258,7 +283,7 @@ class CatBoost(RecommenderBase):
             
         return model_name
 
-
+    '''
     #This method loads a model
     #-------------------------
     #path: path to the model

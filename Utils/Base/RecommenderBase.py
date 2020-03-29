@@ -9,6 +9,8 @@ class RecommenderBase(ABC):
 
     def __init__ (self, batch=False, name="recommenderbase", kind="NOT_GIVEN"):
 
+        super(RecommenderBase, self).__init__()
+
         self.name = name
         self.batch = batch
         self.kind = kind
@@ -19,7 +21,7 @@ class RecommenderBase(ABC):
         Fit the model on the data (train). 
         Inherited class should extend this method in appropriate way.
         '''
-        pass
+        raise NotImplementedError("error :)")
 
     @abstractmethod
     def evaluate(self):
@@ -27,7 +29,7 @@ class RecommenderBase(ABC):
         Compute the predictions then performs the evaluation of the predicted values. 
         Inherited class should extend this method in appropriate way.
         '''
-        pass
+        raise NotImplementedError("errror :))")
 
     @abstractmethod
     def get_prediction(self):
@@ -35,17 +37,7 @@ class RecommenderBase(ABC):
         Compute the predictions without performing the evaluation. 
         Inherited class should extend this method in appropriate way.
         '''
-        pass
-
-    # Could have made save and load not abstract by using pickle, but in this
-    # way specific model methods (that should be optimized) can be exploited
-    @abstractmethod
-    def save_model(self):
-        '''
-        Saves the trained model.
-        Inherited class should extend this method in appropriate way.
-        '''
-        pass
+        raise NotImplementedError("error :)))")
 
     @abstractmethod
     def load_model(self):
@@ -53,13 +45,21 @@ class RecommenderBase(ABC):
         Load a compatible model. 
         Inherited class should extend this method in appropriate way.
         '''
-        pass
+        raise NotImplementedError("error :)))")
+
 
     def get_param_dict(self):
         '''
         Returns the parameters' dictionary containing the values' range. 
         '''
         return self.param_dict
+
+    
+    
+
+
+
+
 
     #----------------------------------------------------------------
     # Yet to be implemented, need a data class first

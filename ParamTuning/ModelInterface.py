@@ -1,6 +1,5 @@
 import sys
-#Importing Models
-sys.path.append("../Models/GBM")
+from Models import *
 
 
 class ModelInterface(object):
