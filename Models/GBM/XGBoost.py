@@ -73,31 +73,6 @@ class XGBoost(RecommenderGBM):
         #Extension of saved file
         self.ext=".model"
 
-        #DATASET VARIABLES
-        self.train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75"
-        self.test_dataset = "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75"
-        # Define the X label
-        self.X_label = [
-            # "mapped_feature_tweet_id",
-            # "mapped_feature_creator_id",
-            # "mapped_feature_engager_id",
-            "raw_feature_creator_follower_count",
-            "raw_feature_creator_following_count",
-            "raw_feature_engager_follower_count",
-            "raw_feature_engager_following_count"
-            "tweet_feature_number_of_photo",
-            "tweet_feature_number_of_video",
-            "tweet_feature_number_of_gif",
-            "tweet_feature_is_reply",
-            "tweet_feature_is_retweet",
-            "tweet_feature_is_quote",
-            "tweet_feature_is_top_level"
-        ]
-        # Define the Y label
-        self.Y_label = [
-            "tweet_feature_engagement_is_like"
-        ]
-
     
     #-----------------------------------------------------
     #                    fit(...)
@@ -113,7 +88,7 @@ class XGBoost(RecommenderGBM):
         
         #Tries to load X and Y if not directly passed        
         if (X is None) or (Y is None):
-            X, Y = self.load_data(self.train_dataset)
+            X, Y = Data.get_dataset_xgb_default_train()
             print("Train set loaded from file.")
 
         #Learning in a single round
@@ -153,7 +128,7 @@ class XGBoost(RecommenderGBM):
 
         #Tries to load X and Y if not directly passed        
         if (X_tst is None) or (Y_tst is None):
-            X_tst, Y_tst = self.load_data(self.test_dataset)
+            X_tst, Y_tst = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
         if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
@@ -182,7 +157,7 @@ class XGBoost(RecommenderGBM):
             print("RCE "+self.kind+": {0}".format(rce))
             print("MAX: {0}".format(max(Y_pred)))
             print("MIN: {0}\n".format(min(Y_pred)))
-        return prauc, rce
+            return prauc, rce
 
 
     # This method returns only the predictions
@@ -197,7 +172,7 @@ class XGBoost(RecommenderGBM):
         Y_pred = None
         #Tries to load X and Y if not directly passed        
         if (X_tst is None):
-            X_tst, _ = self.load_data(self.test_dataset)
+            X_tst, _ = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
         if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
@@ -267,15 +242,3 @@ class XGBoost(RecommenderGBM):
                       'subsample':self.subsample}
         
         return param_dict
-
-    #This method loads the dataset from file
-    #-----------------------------------------------
-    #dataset:   defines if will be load the train or
-    #           test set, should be equal to either:
-    #
-    #           self.train_dataset
-    #           self.test_dataset
-    #-----------------------------------------------
-    def load_data(self, dataset):
-        X, Y = Data.get_dataset_xgb(dataset, self.X_label, self.Y_label)
-        return X, Y

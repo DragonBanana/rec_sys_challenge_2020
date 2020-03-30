@@ -2,6 +2,7 @@ from Utils.Data.DataUtils import FEATURES, DICTIONARIES, DICT_ARRAYS
 import pandas as pd
 import numpy as np
 
+
 def get_dataset_xgb(dataset_id: str = "train", X_label: list = None, Y_label: list = None):
     """
     :param dataset_id: The dataset id ("train", "test", etc.)
@@ -19,6 +20,58 @@ def get_dataset_xgb(dataset_id: str = "train", X_label: list = None, Y_label: li
             "tweet_feature_engagement_is_like"
         ]
     return get_dataset(X_label, dataset_id), get_dataset(Y_label, dataset_id)
+
+
+def get_dataset_xgb_default_train():
+    train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
+    # Define the X label
+    X_label = [
+        # "mapped_feature_tweet_id",
+        # "mapped_feature_creator_id",
+        # "mapped_feature_engager_id",
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count",
+        "raw_feature_engager_follower_count",
+        "raw_feature_engager_following_count"
+        "tweet_feature_number_of_photo",
+        "tweet_feature_number_of_video",
+        "tweet_feature_number_of_gif",
+        "tweet_feature_is_reply",
+        "tweet_feature_is_retweet",
+        "tweet_feature_is_quote",
+        "tweet_feature_is_top_level"
+    ]
+    # Define the Y label
+    Y_label = [
+        "tweet_feature_engagement_is_like"
+    ]
+    return get_dataset_xgb(dataset_id=train_dataset, X_label=X_label, Y_label=Y_label)
+
+
+def get_dataset_xgb_default_test():
+    train_dataset = "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
+    # Define the X label
+    X_label = [
+        # "mapped_feature_tweet_id",
+        # "mapped_feature_creator_id",
+        # "mapped_feature_engager_id",
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count",
+        "raw_feature_engager_follower_count",
+        "raw_feature_engager_following_count"
+        "tweet_feature_number_of_photo",
+        "tweet_feature_number_of_video",
+        "tweet_feature_number_of_gif",
+        "tweet_feature_is_reply",
+        "tweet_feature_is_retweet",
+        "tweet_feature_is_quote",
+        "tweet_feature_is_top_level"
+    ]
+    # Define the Y label
+    Y_label = [
+        "tweet_feature_engagement_is_like"
+    ]
+    return get_dataset_xgb(dataset_id=train_dataset, X_label=X_label, Y_label=Y_label)
 
 
 def get_dataset(features: list, dataset_id: str):

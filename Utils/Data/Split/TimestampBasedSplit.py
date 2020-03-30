@@ -10,9 +10,13 @@ def split_with_timestamp(input_dataset_id: str, pc_hold_out: float = 0.75, times
     train_file = gzip.open(train_file_name, "wb")
     test_file = gzip.open(val_file_name, "wb")
 
+    r = random.Random(random_seed)
+
+    r.random()
+
     with gzip.open(input_file_name, "rb") as file:
         for line in file:
-            if random.random() < pc_hold_out:
+            if r.random() < pc_hold_out:
                 _, _, _, _, _, _, _, _, timestamp, _ = line.decode('utf-8').split("\x01", 9)
                 if int(timestamp) <= timestamp_threshold:
                     train_file.write(line)

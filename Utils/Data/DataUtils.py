@@ -1,5 +1,6 @@
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
+from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
 from Utils.Data.Features.Generated.TweetFeature.NumberOfMedia import *
@@ -12,7 +13,11 @@ DATASET_IDS = [
     "train",
     "test",
     "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75",
-    "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75"
+    "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75",
+    "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_10",
+    "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_10",
+    "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1",
+    "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
 ]
 
 def populate_features():
@@ -71,6 +76,12 @@ def populate_features():
             result[("tweet_feature_engagement_is_comment", dataset_id)] = TweetFeatureEngagementIsComment(dataset_id)
             result[("tweet_feature_engagement_is_reply", dataset_id)] = TweetFeatureEngagementIsReply(dataset_id)
             result[("tweet_feature_engagement_is_positive", dataset_id)] = TweetFeatureEngagementIsPositive(dataset_id)
+        # CREATOR FEATURE
+        # KNOWN COUNT OF ENGAGEMENT
+            result[("engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(dataset_id)
+            result[("engager_feature_known_number_of_reply_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfReplyEngagement(dataset_id)
+            result[("engager_feature_known_number_of_retweet_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfRetweetEngagement(dataset_id)
+            result[("engager_feature_known_number_of_comment_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfCommentEngagement(dataset_id)
 
     return result
 
@@ -132,7 +143,16 @@ def create_dictionary(dictionary: Dictionary):
     else:
         print(f"already created: {dictionary.dictionary_name}")
 
-def is_test_or_val_set(dataset_id: str):
-    is_test = dataset_id[:4] == "test"
-    is_val = dataset_id[:3] == "val"
-    return is_test or is_val
+def consistency_check(dataset_id: str):
+    features = np.array(FEATURES.items())
+    lenghts = np.array([len(v.load_or_create()) for k, v in FEATURES.items() if k[1] == dataset_id])
+    if all(lenghts == lenghts[0]):
+        print(f"{dataset_id} is consistent")
+    else:
+        not_consistent_features_mask = lenghts != lenghts[0]
+        for feature in features[lenghts][not_consistent_features_mask]:
+            print(feature)
+
+def consistency_check_all():
+    for dataset_id in DATASET_IDS:
+        consistency_check(dataset_id)

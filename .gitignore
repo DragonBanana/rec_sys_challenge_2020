@@ -121,3 +121,6 @@ AWS/credentials
 
 *.swo
 *.swp
+
+Dataset/Dictionary/*
+Dataset/Features/*

@@ -1,50 +1,19 @@
 from Utils.Data import Data
 from Utils.Data.Data import get_dataset_xgb, get_feature
-from Utils.Data.DataUtils import create_all
+from Utils.Data.DataUtils import create_all, consistency_check, consistency_check_all
+from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
+from Utils.Data.Features.MappedFeatures import MappedFeatureCreatorId
 from Utils.Data.Split import TimestampBasedSplit
 import pandas as pd
+import numpy as np
+
+from Utils.Data.Statistic.ColdUsers import analyze_cold_user
 
 if __name__ == '__main__':
-
-    # x = get_dataset_xgb()
+    TimestampBasedSplit.split_with_timestamp("train", pc_hold_out=0.01)
     #
-    # pd.set_option('display.max_rows', 500)
-    # pd.set_option('display.max_columns', 500)
-    # pd.set_option('display.width', 1000)
+    create_all(nthread=6)
     #
-    # x = Data.get_dataset([
-    #     "raw_feature_tweet_id",
-    #     # "tweet_feature_number_of_photo",
-    #     # "tweet_feature_number_of_video",
-    #     # "tweet_feature_number_of_gif",
-    #     # "tweet_feature_is_reply",
-    #     # "tweet_feature_is_retweet",
-    #     # "tweet_feature_is_quote",
-    #     # "tweet_feature_is_top_level",
-    #     "tweet_feature_engagement_is_like",
-    #     "tweet_feature_engagement_is_retweet",
-    #     "tweet_feature_engagement_is_comment",
-    #     "tweet_feature_engagement_is_reply",
-    #     "tweet_feature_engagement_is_positive"
-    # ], "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75")
-    #
-    # for column in x.columns:
-    #     print(x[column])
+    # analyze_cold_user("train")
 
-    X_label = [
-        "mapped_feature_tweet_id",
-        "mapped_feature_creator_id",
-        "mapped_feature_engager_id",
-        "tweet_feature_number_of_photo",
-        "tweet_feature_number_of_video",
-        "tweet_feature_number_of_gif",
-        "tweet_feature_is_reply",
-        "tweet_feature_is_retweet",
-        "tweet_feature_is_quote",
-        "tweet_feature_is_top_level"
-    ]
-    # Define the Y label
-    Y_label = "tweet_feature_engagement_is_like"
-
-    for x in X_label:
-        print(get_feature(x, "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75"))
+    consistency_check_all()

@@ -13,7 +13,7 @@ def main():
     model_choice = "xgboost_classifier"
     kind = "LIKE"
     init_pts = 10
-    n_itr = 10
+    n_itr = 50
 
     #Declare object
     MI = ModelInterface(model_choice, kind)
