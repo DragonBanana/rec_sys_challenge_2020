@@ -23,7 +23,7 @@ def get_dataset_xgb(dataset_id: str = "train", X_label: list = None, Y_label: li
 
 
 def get_dataset_xgb_default_train():
-    train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
+    train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_10"
     # Define the X label
     X_label = [
         # "mapped_feature_tweet_id",
@@ -49,7 +49,7 @@ def get_dataset_xgb_default_train():
 
 
 def get_dataset_xgb_default_test():
-    train_dataset = "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
+    train_dataset = "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_10"
     # Define the X label
     X_label = [
         # "mapped_feature_tweet_id",

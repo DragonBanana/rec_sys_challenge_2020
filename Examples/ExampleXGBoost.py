@@ -31,7 +31,7 @@ if __name__ == '__main__':
     ]
     # Define the Y label
     Y_label = [
-        "tweet_feature_engagement_is_like"
+        "tweet_feature_engagement_is_retweet"
     ]
 
     # Load train data
