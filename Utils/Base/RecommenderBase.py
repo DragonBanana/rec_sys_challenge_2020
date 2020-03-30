@@ -14,7 +14,7 @@ class RecommenderBase(ABC):
         self.name = name
         self.batch = batch
         self.kind = kind
-
+        
     @abstractmethod
     def fit(self):
         '''
@@ -47,39 +47,7 @@ class RecommenderBase(ABC):
         '''
         raise NotImplementedError("error :)))")
 
-
-    def get_param_dict(self):
-        '''
-        Returns the parameters' dictionary containing the values' range. 
-        '''
-        return self.param_dict
-
-    
-    
-
-
-
-
-
-    #----------------------------------------------------------------
-    # Yet to be implemented, need a data class first
-    #----------------------------------------------------------------
-    # Commented the @abstractmethod to let the models work
-    #@abstractmethod
-    def load_train_set(self):
-        '''
-        Load an appropriately shaped training set for the model. 
-        Inherited class should extend this method in appropriate way.
-        '''
-        pass
-
-    #@abstractmethod
-    def load_test_set(self):
-        '''
-        Load an appropriately shaped test set for the model. 
-        Inherited class should extend this method in appropriate way.
-        '''
-        pass    
+   
     #--------------------------------------------------------------------
     # Still to be implemented, need dictionaries
     #--------------------------------------------------------------------

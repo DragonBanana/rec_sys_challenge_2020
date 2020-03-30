@@ -11,27 +11,32 @@ def main():
 
     #Choosing the model to tune
     model_choice = "xgboost_classifier"
+    kind = "LIKE"
     init_pts = 10
     n_itr = 10
 
     #Declare object
-    MI = ModelInterface(model_choice)
+    MI = ModelInterface(model_choice, kind)
 
     #Retrieve param dictionary
-    param = MI.get_param()
+    param = MI.getParams()
     
+    #To drop elements from the dictionary
+    #del param['key']
+    #To fix manually a value should work like this
+    #param['key'] = (same_value, same_value)
+
     #Define the optimizer
-    oprimizer = BayesianOptimization(f=MI.black_box(),
-                                     pbounds=pbounds,
-                                     random_state=1)
+    optimizer = BayesianOptimization(f=MI.blackBoxXGB,
+                                     pbounds=param,
+                                     random_state=5)
     
     #Setting the logger to save log files
     logger = JSONLogger(path="./logs.json")
-    optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
+    optimizer.subscribe('optimization:step', logger)
 
     #Optimization of the model
-    optimizer.maximize(init_points=init_pts,
-                       n_iter=n_itr)
+    optimizer.maximize(init_points=10, n_iter=10)
 
 
 if __name__ == "__main__":

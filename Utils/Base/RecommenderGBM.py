@@ -11,10 +11,15 @@ class RecommenderGBM(RecommenderBase):
         super(RecommenderGBM, self).__init__(
                 batch=batch,
                 name=name,
-                kind=kind)
+                kind=kind)    
 
-
-    def save_model(self, path=None, filename=None):
+    #------------------------------------------------------
+    #               save_model(...)
+    #------------------------------------------------------
+    #filename:      [optional] defines name of saved model
+    #path:          [optional] defines the path saved model
+    #------------------------------------------------------
+    def save_model(self, filename=None, path=None):
         #Defining the extension
         #Saving the model with premade name in working folder
         if (path is None) and (filename is None):

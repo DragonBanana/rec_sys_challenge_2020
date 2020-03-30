@@ -8,9 +8,11 @@ import pickle
 import os.path
 import datetime as dt
 import sys
-from Utils.Base.RecommenderBase import RecommenderBase
+import math
 from Utils.Base.RecommenderGBM import RecommenderGBM
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
+from Utils.Data import Data
+from Utils.Submission.Submission import create_submission_file
 
 
 class XGBoost(RecommenderGBM):
@@ -24,42 +26,43 @@ class XGBoost(RecommenderGBM):
     #---------------------------------------------------------------------------------------------------
 
     def __init__(self, 
-                 num_rounds = 10, 
-                 param = {'objective': 'binary:logistic', #outputs the binary classification probability
-                          'colsample_bytree': 0.5,
-                          'learning_rate': 0.4,
-                          'max_depth': 35, #Max depth per tree
-                          'alpha': 0.01, #L1 regularization
-                          'lambda': 0.01, #L2 regularization
-                          'num_parallel_tree': 4, #Number of parallel trees
-                          'min_child_weight' : 1,#Minimum sum of instance weight (hessian) needed in a child.
-                          'scale_pos_weight' : 1.2,                        
-                          'subsample': 0.8},
                  kind = "NO_KIND_GIVEN",
-                 batch = False):
+                 batch = False,
+                 #Not in tuning dict
+                 objective="binary:logistic", #outputs the binary classification probability
+                 num_parallel_tree= 4, #Number of parallel trees
+                 eval_metric= ("rmse","auc"),
+                 #In tuning dict
+                 num_rounds = 10,
+                 colsample_bytree= 0.5,
+                 learning_rate= 0.4,
+                 max_depth= 35, #Max depth per tree
+                 reg_alpha= 0.01, #L1 regularization
+                 reg_lambda= 0.01, #L2 regularization
+                 min_child_weight= 1,#Minimum sum of instance weight (hessian) needed in a child.
+                 scale_pos_weight= 1.2,                        
+                 subsample= 0.8):
 
         super(XGBoost, self).__init__(
             name="xgboost_classifier", #name of the recommender
             kind=kind,                 #what does it recommends
             batch=batch)               #if it's a batch type
-
         
-        #Inputs
-        self.num_rounds = num_rounds
-        self.param = param
+        #INPUTS
         self.kind = kind
-        self.batch = batch  #The type of learning is now explicitated when you declare the model
-
-        #Dictionary contaning the range of parameters
-        #Should be here or in an apposit dicionary file DUNNO
-        self.param_dict = {'colsample_bytree': (0,1),
-                          'learning_rate': (0.5,0.00001),
-                          'max_depth': (5,100),
-                          'alpha': (0.01, 0.0001),
-                          'lambda': (0.01,0.0001), 
-                          'min_child_weight' : (1, 10),
-                          'scale_pos_weight' : (1, 1.5),
-                          'subsample': (0.6, 1)}
+        self.batch = batch  #False: single round| True: batch learning
+        #Parameters
+        self.num_rounds=num_rounds
+        self.objective=objective
+        self.colsample_bytree=colsample_bytree
+        self.learning_rate=learning_rate
+        self.max_depth=max_depth
+        self.reg_alpha=reg_alpha
+        self.reg_lambda=reg_lambda
+        self.num_parallel_tree=num_parallel_tree
+        self.min_child_weight=min_child_weight
+        self.scale_pos_weight=scale_pos_weight
+        self.subsample=subsample
 
         #CLASS VARIABLES
         #Model
@@ -67,16 +70,34 @@ class XGBoost(RecommenderGBM):
         self.batch_model = None
         #Prediction
         self.Y_pred = None
-        #Train set
-        self.X_train = None
-        self.Y_train = None
-        #Test set
-        self.X_test = None
-        self.Y_test = None
         #Extension of saved file
         self.ext=".model"
 
-            
+        #DATASET VARIABLES
+        self.train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75"
+        self.test_dataset = "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75"
+        # Define the X label
+        self.X_label = [
+            # "mapped_feature_tweet_id",
+            # "mapped_feature_creator_id",
+            # "mapped_feature_engager_id",
+            "raw_feature_creator_follower_count",
+            "raw_feature_creator_following_count",
+            "raw_feature_engager_follower_count",
+            "raw_feature_engager_following_count"
+            "tweet_feature_number_of_photo",
+            "tweet_feature_number_of_video",
+            "tweet_feature_number_of_gif",
+            "tweet_feature_is_reply",
+            "tweet_feature_is_retweet",
+            "tweet_feature_is_quote",
+            "tweet_feature_is_top_level"
+        ]
+        # Define the Y label
+        self.Y_label = [
+            "tweet_feature_engagement_is_like"
+        ]
+
     
     #-----------------------------------------------------
     #                    fit(...)
@@ -89,43 +110,33 @@ class XGBoost(RecommenderGBM):
     # in order to avoid overwriting. (Maybe not necessary)
     #-----------------------------------------------------
     def fit(self, X=None, Y=None):
-        #--------------------------------------
-        #Let the loading of the dataset by
-        #apposite method work.
-        #--------------------------------------
+        
         #Tries to load X and Y if not directly passed        
-        if (X is None) and (self.X_train is not None):
-            X = self.X_train
-        if (Y is None) and (self.Y_train is not None):
-            Y = self.Y_train
-        #If something miss error message gets displayied
-        if ((X is None) or (Y is None)):
-            print("Training set not provided.")
-            return -1
-        #--------------------------------------
+        if (X is None) or (Y is None):
+            X, Y = self.load_data(self.train_dataset)
+            print("Train set loaded from file.")
 
         #Learning in a single round
         if self.batch is False:
             #Transforming matrices in DMatrix type
             train = xgb.DMatrix(X, 
-                                label=Y)
-     	
+                                label=Y)     	    
+            
             #Defining and fitting the models
-            self.sround_model = xgb.train(self.param,  #Don't care if overwritten by a new
-                                   train,              #run it's single round training
-                                   self.num_rounds)
+            self.sround_model = xgb.train(self.get_param_dict(),
+                                          dtrain=train,
+                                          num_boost_round=math.ceil(self.num_rounds))
             
         #Learning by consecutive batches
         else:
             #Transforming matrices in DMatrix type
             train = xgb.DMatrix(X, 
                                 label=Y)
-            #Defining and training the models
-            self.batch_model = xgb.train(self.param, #Overwrites the old model with an incremented 
-                                         train,      #new one, so new run won't cause trouble
-                                         self.num_rounds,
+            
+            #Defining and training the model
+            self.batch_model = xgb.train(self.get_param_dict(),
+                                         dtrain=train,      
                                          xgb_model=self.batch_model)
-
 
 
     # Returns the predictions and evaluates them
@@ -139,21 +150,14 @@ class XGBoost(RecommenderGBM):
     #---------------------------------------------------------------------------
     def evaluate(self, X_tst=None, Y_tst=None):
         Y_pred = None
-        if ((X_tst is None) or (Y_tst is None))and(self.X_test is None)and(self.Y_test is None):
-            print("No test set is provided.")
-        elif (self.sround_model is None) and (self.batch_model is None):
+
+        #Tries to load X and Y if not directly passed        
+        if (X_tst is None) or (Y_tst is None):
+            X_tst, Y_tst = self.load_data(self.test_dataset)
+            print("Test set loaded from file.")
+        if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
-            #-----------------------
-            #Making work the not yet
-            #implmented method for
-            #importing the dataset
-            #-----------------------
-            if (X_tst is None):
-                X_tst = self.X_test
-            if (Y_tst is None):
-                Y_tst = self.Y_test
-            #-----------------------
             #Selecting the coherent model for the evaluation
             #According to the initial declaration (batch/single round)
             if self.batch is False:
@@ -178,7 +182,8 @@ class XGBoost(RecommenderGBM):
             print("RCE "+self.kind+": {0}".format(rce))
             print("MAX: {0}".format(max(Y_pred)))
             print("MIN: {0}\n".format(min(Y_pred)))
-        return Y_pred
+        return prauc, rce
+
 
     # This method returns only the predictions
     #-------------------------------------------
@@ -190,18 +195,13 @@ class XGBoost(RecommenderGBM):
     #-------------------------------------------
     def get_prediction(self, X_tst=None):
         Y_pred = None
-        if (X_tst is None) and (self.X_test is None):
-            print("No test set is provided.")
-        elif (self.sround_model is None) and (self.batch_model is None):
+        #Tries to load X and Y if not directly passed        
+        if (X_tst is None):
+            X_tst, _ = self.load_data(self.test_dataset)
+            print("Test set loaded from file.")
+        if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
-            #----------------------
-            #Make the loading dataset
-            #method work.
-            #----------------------
-            if (X_tst is None):
-                X_tst = self.X_test
-            #----------------------
             #Selecting the coherent model for the evaluation
             #According to the initial declaration (batch/single round)
             if self.batch is False:
@@ -216,60 +216,6 @@ class XGBoost(RecommenderGBM):
             Y_pred = model.predict(d_test)
             return Y_pred
 
-    '''
-    #This method saves the model
-    #------------------------------------------------------
-    #path:      path where to save the model
-    #filename:  name of the file to save
-    #------------------------------------------------------
-    #By calling this function the models gets saved anyway
-    #------------------------------------------------------
-    def save_model(self, path=None, filename=None):
-        #Defining the extension
-        ext = ".model"
-        #Saving the model with premade name in working folder
-        if (path is None) and (filename is None):
-            date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
-            if (self.batch is False):
-                model_name = date+"_sround"+ext
-                self.sround_model.save_model(model_name)
-            else:
-                model_name = date+"_batch"+ext
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully in working fodler.".format(model_name))
-
-        #Saving model with given name in working folder
-        elif (path is None) and (filename is not None):
-            model_name = filename+ext
-            if (self.batch is False):
-                self.sround_model.save_model(model_name)
-            else:
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully in working fodler.".format(model_name))
-
-        #Saving model with given path but no name
-        elif (path is not None) and (filename is None):
-            date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
-            if (self.batch is False):
-                model_name = path+"/"+date+"_sround"+ext
-                self.sround_model.save_model(model_name)
-            else:
-                model_name = path+"/"+date+"_sround"+ext
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully.".format(model_name))
-        
-        #Save with given path and filename
-        else:
-            model_name = path+"/"+filename+ext
-            print(model_name)
-            if (self.batch is False):
-                self.sround_model.save_model(model_name)
-            else:
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully.".format(model_name))
-            
-        return model_name
-    '''
 
     #This method loads a model
     #-------------------------
@@ -287,19 +233,7 @@ class XGBoost(RecommenderGBM):
             self.batch_model = xgb.Booster()
             self.batch_model.load_model(path)
             print("Batch model correctly loaded.\n")
-    
-    #-------------------------------
-    #Setting the parameters
-    #-------------------------------
-    #param:     new parameters pack
-    #-------------------------------
-    #Unlike the 2019 model this one
-    #declares xgb in train phase
-    #so it's possible to set again
-    #parameters. (maybe useful)
-    #-------------------------------
-    def set_parameters(self, param):
-        self.param = param
+
     
     #Returns/prints the importance of the features
     #-------------------------------------------------
@@ -319,31 +253,29 @@ class XGBoost(RecommenderGBM):
         return importance
 
 
-#-----------------------FUTURE IMPLEMENTATION--------------------------------------------------------------
-    '''
-    #NOTA: PRIMA DI IMPLEMENTARE E' NECESSARIO CREARE UNA CLASSE DATA
-    #CON LA TOPOLOGIA DEI DATASET SALVATI.
-    def load_train_set():
-        #Here declaring an object
-        magical_retrieving_object = magical_retrieving_class()
-        #Using some voodoo to invoke data BULA BULA
-        pandas_data = magical_retrieving_object.retrieve(train, batch) #batch tells which rows are to fetch
-        #Perform the split of the data
-        self.X_train = pandas_data.drop("label")
-        self.Y_train = pandas_data["label"]
+    #Returns parameters in dicrionary form
+    def get_param_dict(self):
+        param_dict = {'objective':self.objective,
+                      'colsample_bytree':self.colsample_bytree,
+                      'learning_rate':self.learning_rate,
+                      'max_depth':math.ceil(self.max_depth),
+                      'reg_alpha':self.reg_alpha,
+                      'reg_lambda':self.reg_lambda,
+                      'num_parallel_tree':self.num_parallel_tree,
+                      'min_child_weight':self.min_child_weight,
+                      'scale_pos_weight':self.scale_pos_weight,
+                      'subsample':self.subsample}
         
+        return param_dict
 
-    #NOTA: PRIMA DI IMPLEMENTARE E' NECESSARIO CREARE UNA CLASSE DATA
-    #CONSIDERANDO LA TOPOLOGIA DEI DATASET SALAVATI.
-    def load_test_set():
-        #Here declaring an object
-        magical_retrieving_object = magical_retrieving_class()
-        #Using some voodoo to invoke data BULA BULA
-        pandas_data = magical_retrieving_object.retrieve(test, batch) #batch tells which rows are to fetch
-        #Perform the split of the data
-        self.X_test = pandas_data.drop("label")
-        self.Y_test = pandas_data["label"]
-    '''
-#---------------------------------------------------------------------------------------------------------
-
-
+    #This method loads the dataset from file
+    #-----------------------------------------------
+    #dataset:   defines if will be load the train or
+    #           test set, should be equal to either:
+    #
+    #           self.train_dataset
+    #           self.test_dataset
+    #-----------------------------------------------
+    def load_data(self, dataset):
+        X, Y = Data.get_dataset_xgb(dataset, self.X_label, self.Y_label)
+        return X, Y

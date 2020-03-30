@@ -8,23 +8,20 @@ import pickle
 import os.path
 import datetime as dt
 import sys
-from Utils.Base.RecommenderBase import RecommenderBase
 from Utils.Base.RecommenderGBM import RecommenderGBM
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
+#TODO: The categorical features must be imported from load_data() method
 
-
-
-#---------------------
-#DA FINIRE MA FUNZIONA
-#---------------------
 class CatBoost(RecommenderGBM):
     def __init__(self,
                  kind="NO_NAME_GIVEN",
                  batch=False,
+                 #Not in tuning dict
+                 verbose=False,
                  loss_function="Logloss",
                  eval_metric="AUC",
-                 verbose=False,
+                 #In tuning dict
                  iterations=10,
                  depth=10,
                  learning_rate = 0.1,
@@ -49,17 +46,10 @@ class CatBoost(RecommenderGBM):
         self.batch_model = None
         #Prediction
         self.Y_pred = None
-        #Train set
-        self.X_train = None
-        self.Y_train = None
-        #Test set
-        self.X_test = None
-        self.Y_test = None
         #Categorical features
         self.cat_feat = None #Default value --> No categorical features
         #Save extension
         self.ext=".cbm"
-
         #Cannot pass parameters as a dict
         #Explicitating parameters (set to default)
         self.loss_function=loss_function
@@ -70,16 +60,7 @@ class CatBoost(RecommenderGBM):
         self.learning_rate=learning_rate
         self.l2_leaf_reg=l2_leaf_reg
 
-        self.classifier = CatBoostClassifier(loss_function= self.loss_function,
-                                             eval_metric= self.eval_metric,
-                                             verbose= self.verbose,
-                                             iterations= self.iterations,
-                                             depth= self.depth,
-                                             learning_rate= self.learning_rate,
-                                             l2_leaf_reg= self.l2_leaf_reg)
         
-
-
 
     #-----------------------------------------------------
     #                    fit(...)
@@ -90,22 +71,10 @@ class CatBoost(RecommenderGBM):
     # sround_model and batch_model are differentiated
     # in order to avoid overwriting. (Maybe not necessary)
     #-----------------------------------------------------
-
     def fit(self, X=None, Y=None):
-        #--------------------------------------
-        #Let the loading of the dataset by
-        #apposite method work.
-        #--------------------------------------
-        #Tries to load X and Y if not directly passed        
-        if (X is None) and (self.X_train is not None):
-            X = self.X_train
-        if (Y is None) and (self.Y_train is not None):
-            Y = self.Y_train
-        #If something miss error message gets displayied
-        if ((X is None) or (Y is None)):
-            print("Training set not provided.")
-            return -1
-        #--------------------------------------
+        if (X is None) or (Y is None):
+            X, Y = self.load_data(self.test_dataset)
+            print("Test set loaded from file.")
 
         #Learning in a single round
         if self.batch is False:
@@ -115,7 +84,7 @@ class CatBoost(RecommenderGBM):
                          cat_features=self.cat_feat)
      	
             #Defining and fitting the models
-            self.sround_model = self.classifier
+            self.sround_model = self.init_model()
             self.sround_model.fit(train)
 
         #Learning by consecutive batches
@@ -128,14 +97,11 @@ class CatBoost(RecommenderGBM):
             #Declaring and training the model
             #Initializing the model only if it wasn't already
             if (self.batch_model is None):
-                self.batch_model = self.classifier#Fitting the model 
+                self.batch_model = self.init_model() 
                 self.batch_model.fit(train)
 
             else:
                 self.batch_model.fit(train, init_model=self.batch_model)
-
-
-
 
 
     # Returns the predictions and evaluates them
@@ -149,21 +115,12 @@ class CatBoost(RecommenderGBM):
     #---------------------------------------------------------------------------
     def evaluate(self, X_tst=None, Y_tst=None):
         Y_pred = None
-        if ((X_tst is None) or (Y_tst is None))and(self.X_test is None)and(self.Y_test is None):
-            print("No test set is provided.")
-        elif (self.sround_model is None) and (self.batch_model is None):
+        if (X_tst is None) or (Y_tst is None):
+            X_tst, Y_tst = self.load_data(self.test_dataset)
+            print("Train set loaded from file.")
+        if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
-            #-----------------------
-            #Making work the not yet
-            #implmented method for
-            #importing the dataset
-            #-----------------------
-            if (X_tst is None):
-                X_tst = self.X_test
-            if (Y_tst is None):
-                Y_tst = self.Y_test
-            #-----------------------
             #Selecting the coherent model for the evaluation
             #According to the initial declaration (batch/single round)
             if self.batch is False:
@@ -188,7 +145,7 @@ class CatBoost(RecommenderGBM):
             print("RCE "+self.kind+": {0}".format(rce))
             print("MAX: {0}".format(max(Y_pred)))
             print("MIN: {0}\n".format(min(Y_pred)))
-        return Y_pred
+        return prauc, rce
 
     
     # This method returns only the predictions
@@ -201,18 +158,13 @@ class CatBoost(RecommenderGBM):
     #-------------------------------------------
     def get_prediction(self, X_tst=None):
         Y_pred = None
-        if (X_tst is None) and (self.X_test is None):
-            print("No test set is provided.")
-        elif (self.sround_model is None) and (self.batch_model is None):
+        #Tries to load X and Y if not directly passed        
+        if (X_tst is None):
+            X_tst, _ = self.load_data(self.test_dataset)
+            print("Test set loaded from file.")
+        if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
-            #----------------------
-            #Make the loading dataset
-            #method work.
-            #----------------------
-            if (X_tst is None):
-                X_tst = self.X_test
-            #----------------------
             #Selecting the coherent model for the evaluation
             #According to the initial declaration (batch/single round)
             if self.batch is False:
@@ -224,66 +176,17 @@ class CatBoost(RecommenderGBM):
             p_test = Pool(X_tst)
 
             #Making predictions
+            '''
+            #Commented part gives probability but 2 columns
+            Y_pred = model.predict(p_test, prediction_type="Probability")
+            Y_pred = Y_pred[:,1]
+            '''
             Y_pred = model.predict(p_test)
+            
+            print(Y_pred.shape)
             return Y_pred
 
 
-
-    '''
-    #This method saves the model
-    #------------------------------------------------------
-    #path:      path where to save the model
-    #filename:  name of the file to save
-    #------------------------------------------------------
-    #By calling this function the models gets saved anyway
-    #------------------------------------------------------
-    def save_model(self, path=None, filename=None):
-        #Defining the extension
-        ext = ".cbm"
-        #Saving the model with premade name in working folder
-        if (path is None) and (filename is None):
-            date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
-            if (self.batch is False):
-                model_name = date+"_sround"+ext
-                self.sround_model.save_model(model_name)
-            else:
-                model_name = date+"_batch"+ext
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully in working fodler.".format(model_name))
-
-        #Saving model with given name in working folder
-        elif (path is None) and (filename is not None):
-            model_name = filename+ext
-            if (self.batch is False):
-                self.sround_model.save_model(model_name)
-            else:
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully in working fodler.".format(model_name))
-
-        #Saving model with given path but no name
-        elif (path is not None) and (filename is None):
-            date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
-            if (self.batch is False):
-                model_name = path+"/"+date+"_sround"+ext
-                self.sround_model.save_model(model_name)
-            else:
-                model_name = path+"/"+date+"_sround"+ext
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully.".format(model_name))
-        
-        #Save with given path and filename
-        else:
-            model_name = path+"/"+filename+ext
-            print(model_name)
-            if (self.batch is False):
-                self.sround_model.save_model(model_name)
-            else:
-                self.batch_model.save_model(model_name)
-            print("Model {0} saved successfully.".format(model_name))
-            
-        return model_name
-
-    '''
     #This method loads a model
     #-------------------------
     #path: path to the model
@@ -300,19 +203,7 @@ class CatBoost(RecommenderGBM):
             self.batch_model = CatBoostClassifier()
             self.batch_model.load_model(path)
             print("Batch model correctly loaded.\n")
-
-    #-------------------------------
-    #Setting the parameters
-    #-------------------------------
-    #param:     new parameters pack
-    #-------------------------------
-    #Unlike the 2019 model this one
-    #declares catboost in train phase
-    #so it's possible to set again
-    #parameters. (maybe useful)
-    #-------------------------------
-    def set_parameters(self, param):
-        self.param = param
+            
     
     #Returns/prints the importance of the features
     #-------------------------------------------------
@@ -330,32 +221,105 @@ class CatBoost(RecommenderGBM):
         return importance
 
 
-#-----------------------FUTURE IMPLEMENTATION--------------------------------------------------------------
-    '''
-    #NOTA: PRIMA DI IMPLEMENTARE E' NECESSARIO CREARE UNA CLASSE DATA
-    #CON LA TOPOLOGIA DEI DATASET SALVATI.
-    def load_train_set():
-        #Here declaring an object
-        magical_retrieving_object = magical_retrieving_class()
-        #Using some voodoo to invoke data BULA BULA
-        pandas_data = magical_retrieving_object.retrieve(train, batch) #batch tells which rows are to fetch
-        #Perform the split of the data
-        self.X_train = pandas_data.drop("label")
-        self.Y_train = pandas_data["label"]
-        
+    def init_model(self):
+        return CatBoostClassifier(loss_function= self.loss_function,
+                                  eval_metric= self.eval_metric,
+                                  verbose= self.verbose,
+                                  iterations= self.iterations,
+                                  depth= self.depth,
+                                  learning_rate= self.learning_rate,
+                                  l2_leaf_reg= self.l2_leaf_reg)
 
-    #NOTA: PRIMA DI IMPLEMENTARE E' NECESSARIO CREARE UNA CLASSE DATA
-    #CONSIDERANDO LA TOPOLOGIA DEI DATASET SALAVATI.
-    def load_test_set():
-        #Here declaring an object
-        magical_retrieving_object = magical_retrieving_class()
-        #Using some voodoo to invoke data BULA BULA
-        pandas_data = magical_retrieving_object.retrieve(test, batch) #batch tells which rows are to fetch
-        #Perform the split of the data
-        self.X_test = pandas_data.drop("label")
-        self.Y_test = pandas_data["label"]
-    '''
-#---------------------------------------------------------------------------------------------------------
+
+
+    #This method loads the dataset from file
+    #-----------------------------------------------
+    #dataset:   defines if will be load the train or
+    #           test set, should be equal to either:
+    #
+    #           self.train_dataset
+    #           self.test_dataset
+    #-----------------------------------------------
+    # TODO: has to be extended if we want to use it
+    # too for LightGBM and CatBoost
+    #-----------------------------------------------
+    def load_data(self, dataset):
+        #X, Y = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
+        #X, Y, self.cat_feat = Data.get_dataset_xgb(...)
+        X = None
+        Y = None
+        return X, Y
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#WHAT DOES THE CAT SAY?[semicit.]
 #Miao
 #Meaw
 #Nyan
+#Muwaa'
+#Meo
+#Meong
+#Meu
+#Miaou
+#Miau
+#Miauw
+#Miaow
+#Miyav
+#Miav
+#Mjau
+#Miyau
+#Mao
+#Meogre
+#Ngiiyaw
