@@ -130,6 +130,7 @@ class XGBoost(RecommenderGBM):
         if (X_tst is None) or (Y_tst is None):
             X_tst, Y_tst = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
+        Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
         if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:

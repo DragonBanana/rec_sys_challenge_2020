@@ -124,3 +124,5 @@ AWS/credentials
 
 Dataset/Dictionary/*
 Dataset/Features/*
+
+davide_blob_test.py

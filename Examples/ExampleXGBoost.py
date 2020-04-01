@@ -1,5 +1,6 @@
 import time
-
+import pandas as pd
+import numpy as np
 from Models.GBM.XGBoost import XGBoost
 from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
-    XGB = XGBoost()
+    XGB = XGBoost(num_rounds=10, learning_rate=0.01)
 
     # XGB Training
     training_start_time = time.time()
@@ -51,7 +52,7 @@ if __name__ == '__main__':
 
     # XGB Evaluation
     evaluation_start_time = time.time()
-    prauc, rce = XGB.evaluate(X_test, Y_test)
+    prauc, rce = XGB.evaluate(X_test, np.array(Y_test['tweet_feature_engagement_is_retweet'].astype(float)))
     print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
     tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
@@ -61,6 +62,5 @@ if __name__ == '__main__':
     prediction_start_time = time.time()
     predictions = XGB.get_prediction(X_test)
     print(f"Prediction time: {time.time() - prediction_start_time} seconds")
-
 
     create_submission_file(tweets, users, predictions, "test_submission.csv")

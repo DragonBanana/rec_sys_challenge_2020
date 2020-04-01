@@ -36,7 +36,7 @@ def main():
     optimizer.subscribe('optimization:step', logger)
 
     #Optimization of the model
-    optimizer.maximize(init_points=10, n_iter=10)
+    optimizer.maximize(init_points=init_pts, n_iter=n_itr)
 
 
 if __name__ == "__main__":
