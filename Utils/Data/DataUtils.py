@@ -1,5 +1,6 @@
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
+from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
@@ -9,6 +10,7 @@ from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Features.RawFeatures import *
 
 import multiprocessing as mp
+
 DATASET_IDS = [
     "train",
     "test",
@@ -19,6 +21,7 @@ DATASET_IDS = [
     "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1",
     "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
 ]
+
 
 def populate_features():
     result = {}
@@ -43,12 +46,18 @@ def populate_features():
         result[("raw_feature_engager_following_count", dataset_id)] = RawFeatureEngagerFollowingCount(dataset_id)
         result[("raw_feature_engager_is_verified", dataset_id)] = RawFeatureEngagerIsVerified(dataset_id)
         result[("raw_feature_engager_creation_timestamp", dataset_id)] = RawFeatureEngagerCreationTimestamp(dataset_id)
-        result[("raw_feature_engagement_creator_follows_engager", dataset_id)] = RawFeatureEngagementCreatorFollowsEngager(dataset_id)
+        result[
+            ("raw_feature_engagement_creator_follows_engager", dataset_id)] = RawFeatureEngagementCreatorFollowsEngager(
+            dataset_id)
         if dataset_id != "test":
-            result[("raw_feature_engagement_reply_timestamp", dataset_id)] = RawFeatureEngagementReplyTimestamp(dataset_id)
-            result[("raw_feature_engagement_retweet_timestamp", dataset_id)] = RawFeatureEngagementRetweetTimestamp(dataset_id)
-            result[("raw_feature_engagement_comment_timestamp", dataset_id)] = RawFeatureEngagementCommentTimestamp(dataset_id)
-            result[("raw_feature_engagement_like_timestamp", dataset_id)] = RawFeatureEngagementLikeTimestamp(dataset_id)
+            result[("raw_feature_engagement_reply_timestamp", dataset_id)] = RawFeatureEngagementReplyTimestamp(
+                dataset_id)
+            result[("raw_feature_engagement_retweet_timestamp", dataset_id)] = RawFeatureEngagementRetweetTimestamp(
+                dataset_id)
+            result[("raw_feature_engagement_comment_timestamp", dataset_id)] = RawFeatureEngagementCommentTimestamp(
+                dataset_id)
+            result[("raw_feature_engagement_like_timestamp", dataset_id)] = RawFeatureEngagementLikeTimestamp(
+                dataset_id)
         # MAPPED
         result[("mapped_feature_tweet_hashtags", dataset_id)] = MappedFeatureTweetHashtags(dataset_id)
         result[("mapped_feature_tweet_id", dataset_id)] = MappedFeatureTweetId(dataset_id)
@@ -78,12 +87,22 @@ def populate_features():
             result[("tweet_feature_engagement_is_positive", dataset_id)] = TweetFeatureEngagementIsPositive(dataset_id)
         # CREATOR FEATURE
         # KNOWN COUNT OF ENGAGEMENT
-            result[("engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(dataset_id)
-            result[("engager_feature_known_number_of_reply_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfReplyEngagement(dataset_id)
-            result[("engager_feature_known_number_of_retweet_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfRetweetEngagement(dataset_id)
-            result[("engager_feature_known_number_of_comment_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfCommentEngagement(dataset_id)
+        result[(
+            "engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(
+            dataset_id)
+        result[(
+            "engager_feature_known_number_of_reply_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfReplyEngagement(
+            dataset_id)
+        result[("engager_feature_known_number_of_retweet_engagemnt",
+                dataset_id)] = EngagerFeatureKnowNumberOfRetweetEngagement(dataset_id)
+        result[("engager_feature_known_number_of_comment_engagemnt",
+                dataset_id)] = EngagerFeatureKnowNumberOfCommentEngagement(dataset_id)
+        # KNOW TWEET LANGUAGE
+        result[("engager_feature_know_tweet_language", dataset_id)] = EngagerFeatureKnowTweetLanguage(dataset_id)
+
 
     return result
+
 
 FEATURES = populate_features()
 
@@ -121,6 +140,7 @@ DICT_ARRAYS = {
 
 }
 
+
 def create_all(nthread: int = 4):
     with mp.Pool(nthread) as p:
         p.map(create_feature, FEATURES.values())
@@ -143,6 +163,7 @@ def create_dictionary(dictionary: Dictionary):
     else:
         print(f"already created: {dictionary.dictionary_name}")
 
+
 def consistency_check(dataset_id: str):
     features = np.array(FEATURES.items())
     lenghts = np.array([len(v.load_or_create()) for k, v in FEATURES.items() if k[1] == dataset_id])
@@ -152,6 +173,7 @@ def consistency_check(dataset_id: str):
         not_consistent_features_mask = lenghts != lenghts[0]
         for feature in features[lenghts][not_consistent_features_mask]:
             print(feature)
+
 
 def consistency_check_all():
     for dataset_id in DATASET_IDS:

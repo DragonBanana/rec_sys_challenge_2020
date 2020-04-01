@@ -100,7 +100,7 @@ class MappedFeatureEngagerId(MappedFeaturePickle):
         super().__init__("mapped_feature_engager_id", dataset_id)
 
     def create_feature(self):
-        feature = RawFeatureCreatorId(self.dataset_id)
+        feature = RawFeatureEngagerId(self.dataset_id)
         dataframe = feature.load_or_create()
         dictionary = MappingUserIdDictionary().load_or_create()
         mapped_dataframe = map_column_single_value(dataframe[feature.feature_name], dictionary)

@@ -39,7 +39,8 @@ def get_dataset_xgb_default_train():
         "tweet_feature_is_reply",
         "tweet_feature_is_retweet",
         "tweet_feature_is_quote",
-        "tweet_feature_is_top_level"
+        "tweet_feature_is_top_level",
+        "engager_feature_know_tweet_language"
     ]
     # Define the Y label
     Y_label = [
@@ -65,7 +66,8 @@ def get_dataset_xgb_default_test():
         "tweet_feature_is_reply",
         "tweet_feature_is_retweet",
         "tweet_feature_is_quote",
-        "tweet_feature_is_top_level"
+        "tweet_feature_is_top_level",
+        "engager_feature_know_tweet_language"
     ]
     # Define the Y label
     Y_label = [
