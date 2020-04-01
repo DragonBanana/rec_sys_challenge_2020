@@ -17,7 +17,7 @@ class ModelInterface(object):
         model.fit()
 
         prauc, rce = model.evaluate()
-        return prauc
+        return rce
 
 
     def getParams(self):
