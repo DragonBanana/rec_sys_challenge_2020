@@ -6,10 +6,10 @@ class DictDispenser(object):
         #PARAMETERS' RANGE DICTIONARY
         param_range_dict = {'colsample_bytree': (0,1),
                             'num_rounds': (5,1000),
-                            'learning_rate': (0.5,0.0000001),
+                            'learning_rate': (0.00001, 1),
                             'max_depth': (5,100),
-                            'reg_alpha': (0.0000001, 0.1),
-                            'reg_lambda': (0.0000001,0.1),
+                            'reg_alpha': (0.00001, 0.1),
+                            'reg_lambda': (0.00001,0.1),
                             'min_child_weight' : (1, 10),
                             'scale_pos_weight' : (1, 1.5),
                             'subsample': (0.1, 1)}
