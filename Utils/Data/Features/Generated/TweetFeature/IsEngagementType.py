@@ -13,7 +13,7 @@ class TweetFeatureEngagementIsLike(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/engagement_type/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        # Load the media column
+        # Load the engagement column
         feature = RawFeatureEngagementLikeTimestamp(self.dataset_id)
         feature_df = feature.load_or_create()
         # Count the number of photos
@@ -33,7 +33,7 @@ class TweetFeatureEngagementIsRetweet(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/engagement_type/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        # Load the media column
+        # Load the engagement column
         feature = RawFeatureEngagementRetweetTimestamp(self.dataset_id)
         feature_df = feature.load_or_create()
         # Count the number of photos
@@ -53,7 +53,7 @@ class TweetFeatureEngagementIsComment(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/engagement_type/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        # Load the media column
+        # Load the engagement column
         feature = RawFeatureEngagementCommentTimestamp(self.dataset_id)
         feature_df = feature.load_or_create()
         # Count the number of photos
@@ -73,7 +73,7 @@ class TweetFeatureEngagementIsReply(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/engagement_type/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        # Load the media column
+        # Load the engagement column
         feature = RawFeatureEngagementLikeTimestamp(self.dataset_id)
         feature_df = feature.load_or_create()
         # Count the number of photos
@@ -93,7 +93,7 @@ class TweetFeatureEngagementIsPositive(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/engagement_type/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        # Load the media column
+        # Load the engagement column
         is_reply_feature = TweetFeatureEngagementIsReply(self.dataset_id).load_or_create()
         is_comment_feature = TweetFeatureEngagementIsComment(self.dataset_id).load_or_create()
         is_like_feature = TweetFeatureEngagementIsLike(self.dataset_id).load_or_create()
@@ -109,3 +109,19 @@ class TweetFeatureEngagementIsPositive(GeneratedFeaturePickle):
         )
         is_positive_df = pd.DataFrame(df.any(axis=1))
         self.save_feature(is_positive_df)
+
+class TweetFeatureEngagementIsNegative(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_engagement_is_negative", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/engagement_type/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/engagement_type/{self.feature_name}.csv.gz")
+
+    def create_feature(self):
+        # Load the engagement column
+        is_positive_df = TweetFeatureEngagementIsPositive(self.dataset_id).load_or_create()
+        is_negative_df = ~is_positive_df
+
+        self.save_feature(is_negative_df)

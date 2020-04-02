@@ -64,9 +64,12 @@ def analyze_cold_user(dataset_id: str):
     mask = train_mask & test_mask
 
     cold_users = np.array(x[mask].index.array)
+    print(f"------------------------")
+    print(dataset_id)
     print(f"Unique test users are: {len(test_users_id_df)}")
     print(f"Unique test cold users are: {len(cold_users)}")
     print(f"Engagements in test set are: {total_number_of_engagements}")
     print(f"Engagements of cold users in test set are: {count['count'][mask].sum()}")
     print(f"Man number of engagement of cold users in test set are: {count['count'][mask].max()}")
-    print(f"Probability that an engagement is engaged by a cold user: {total_number_of_engagements/len(cold_users)}")
+    print(f"Probability that an engagement is engaged by a cold user: {len(cold_users)/total_number_of_engagements}")
+    print(f"------------------------")

@@ -3,6 +3,7 @@ from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
+from Utils.Data.Features.Generated.TweetFeature.IsLanguage import *
 from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
 from Utils.Data.Features.Generated.TweetFeature.NumberOfMedia import *
 from Utils.Data.Features.MappedFeatures import *
@@ -78,6 +79,8 @@ def populate_features():
         result[("tweet_feature_is_retweet", dataset_id)] = TweetFeatureIsRetweet(dataset_id)
         result[("tweet_feature_is_quote", dataset_id)] = TweetFeatureIsQuote(dataset_id)
         result[("tweet_feature_is_top_level", dataset_id)] = TweetFeatureIsTopLevel(dataset_id)
+        # IS IN LANGUAGE
+        result[("tweet_is_language_x", dataset_id)] = TweetFeatureIsLanguage(dataset_id, top_popular_language(dataset_id, top_n=10))
         # IS ENGAGEMENT TYPE
         if dataset_id != "test":
             result[("tweet_feature_engagement_is_like", dataset_id)] = TweetFeatureEngagementIsLike(dataset_id)
@@ -85,18 +88,15 @@ def populate_features():
             result[("tweet_feature_engagement_is_comment", dataset_id)] = TweetFeatureEngagementIsComment(dataset_id)
             result[("tweet_feature_engagement_is_reply", dataset_id)] = TweetFeatureEngagementIsReply(dataset_id)
             result[("tweet_feature_engagement_is_positive", dataset_id)] = TweetFeatureEngagementIsPositive(dataset_id)
+            result[("tweet_feature_engagement_is_negative", dataset_id)] = TweetFeatureEngagementIsNegative(dataset_id)
         # CREATOR FEATURE
         # KNOWN COUNT OF ENGAGEMENT
-        result[(
-            "engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(
-            dataset_id)
-        result[(
-            "engager_feature_known_number_of_reply_engagemnt", dataset_id)] = EngagerFeatureKnowNumberOfReplyEngagement(
-            dataset_id)
-        result[("engager_feature_known_number_of_retweet_engagemnt",
-                dataset_id)] = EngagerFeatureKnowNumberOfRetweetEngagement(dataset_id)
-        result[("engager_feature_known_number_of_comment_engagemnt",
-                dataset_id)] = EngagerFeatureKnowNumberOfCommentEngagement(dataset_id)
+        result[("engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(dataset_id)
+        result[("engager_feature_known_number_of_reply_engagement", dataset_id)] = EngagerFeatureKnowNumberOfReplyEngagement(dataset_id)
+        result[("engager_feature_known_number_of_retweet_engagement", dataset_id)] = EngagerFeatureKnowNumberOfRetweetEngagement(dataset_id)
+        result[("engager_feature_known_number_of_comment_engagement", dataset_id)] = EngagerFeatureKnowNumberOfCommentEngagement(dataset_id)
+        result[("engager_feature_known_number_of_positive_engagement", dataset_id)] = EngagerFeatureKnowNumberOfPositiveEngagement(dataset_id)
+        result[("engager_feature_known_number_of_negative_engagement", dataset_id)] = EngagerFeatureKnowNumberOfNegativeEngagement(dataset_id)
         # KNOW TWEET LANGUAGE
         result[("engager_feature_know_tweet_language", dataset_id)] = EngagerFeatureKnowTweetLanguage(dataset_id)
 

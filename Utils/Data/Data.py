@@ -36,15 +36,22 @@ def get_dataset_xgb_default_train():
         "tweet_feature_number_of_photo",
         "tweet_feature_number_of_video",
         "tweet_feature_number_of_gif",
+        "tweet_feature_number_of_media",
         "tweet_feature_is_reply",
         "tweet_feature_is_retweet",
         "tweet_feature_is_quote",
         "tweet_feature_is_top_level",
-        "engager_feature_know_tweet_language"
+        "engager_feature_know_tweet_language",
+        "engager_feature_known_number_of_like_engagement",
+        "engager_feature_known_number_of_reply_engagement",
+        "engager_feature_known_number_of_retweet_engagement",
+        "engager_feature_known_number_of_positive_engagement",
+        "engager_feature_known_number_of_negative_engagement",
+        "tweet_is_language_x"
     ]
     # Define the Y label
     Y_label = [
-        "tweet_feature_engagement_is_like"
+        "tweet_feature_engagement_is_comment"
     ]
     return get_dataset_xgb(dataset_id=train_dataset, X_label=X_label, Y_label=Y_label)
 
@@ -63,15 +70,22 @@ def get_dataset_xgb_default_test():
         "tweet_feature_number_of_photo",
         "tweet_feature_number_of_video",
         "tweet_feature_number_of_gif",
+        "tweet_feature_number_of_media",
         "tweet_feature_is_reply",
         "tweet_feature_is_retweet",
         "tweet_feature_is_quote",
         "tweet_feature_is_top_level",
-        "engager_feature_know_tweet_language"
+        "engager_feature_know_tweet_language",
+        "engager_feature_known_number_of_like_engagement",
+        "engager_feature_known_number_of_reply_engagement",
+        "engager_feature_known_number_of_retweet_engagement",
+        "engager_feature_known_number_of_positive_engagement",
+        "engager_feature_known_number_of_negative_engagement",
+        "tweet_is_language_x"
     ]
     # Define the Y label
     Y_label = [
-        "tweet_feature_engagement_is_like"
+        "tweet_feature_engagement_is_comment"
     ]
     return get_dataset_xgb(dataset_id=train_dataset, X_label=X_label, Y_label=Y_label)
 
