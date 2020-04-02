@@ -34,6 +34,7 @@ class XGBoost(RecommenderGBM):
                  eval_metric= ("rmse","auc"),
                  #In tuning dict
                  num_rounds = 10,
+                 max_delta_step = 0,
                  colsample_bytree= 0.5,
                  learning_rate= 0.4,
                  max_depth= 35, #Max depth per tree
@@ -57,6 +58,7 @@ class XGBoost(RecommenderGBM):
         self.colsample_bytree=colsample_bytree
         self.learning_rate=learning_rate
         self.max_depth=max_depth
+        self.max_delta_step = max_delta_step
         self.reg_alpha=reg_alpha
         self.reg_lambda=reg_lambda
         self.num_parallel_tree=num_parallel_tree
@@ -236,6 +238,7 @@ class XGBoost(RecommenderGBM):
                       'learning_rate':self.learning_rate,
                       'max_depth':math.ceil(self.max_depth),
                       'reg_alpha':self.reg_alpha,
+                      'max_delta_step':self.max_delta_step,
                       'reg_lambda':self.reg_lambda,
                       'num_parallel_tree':self.num_parallel_tree,
                       'min_child_weight':self.min_child_weight,
