@@ -37,6 +37,7 @@ def get_dataset_xgb_default_train():
         "tweet_feature_number_of_video",
         "tweet_feature_number_of_gif",
         "tweet_feature_number_of_media",
+        "tweet_feature_number_of_hashtags",
         "tweet_feature_is_reply",
         "tweet_feature_is_retweet",
         "tweet_feature_is_quote",
@@ -71,6 +72,7 @@ def get_dataset_xgb_default_test():
         "tweet_feature_number_of_video",
         "tweet_feature_number_of_gif",
         "tweet_feature_number_of_media",
+        "tweet_feature_number_of_hashtags",
         "tweet_feature_is_reply",
         "tweet_feature_is_retweet",
         "tweet_feature_is_quote",
@@ -96,7 +98,7 @@ def get_dataset(features: list, dataset_id: str):
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
-            dataframe[column] = dataframe[column].astype(np.int64, copy=False)
+            dataframe[column] = dataframe[column].fillna(0).astype(np.int64, copy=False)
     return dataframe
 
 

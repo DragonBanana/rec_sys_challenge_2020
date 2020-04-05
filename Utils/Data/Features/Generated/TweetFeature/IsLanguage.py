@@ -5,20 +5,23 @@ from Utils.Data.Features.MappedFeatures import MappedFeatureTweetLanguage
 
 
 def top_popular_language(dataset_id: str, top_n: int = 5):
-    if is_test_or_val_set(dataset_id):
-        dataset_id = get_train_set_id_from_test_or_val_set(dataset_id)
+    # if is_test_or_val_set(dataset_id):
+    #     dataset_id = get_train_set_id_from_test_or_val_set(dataset_id)
+    #
+    # dataframe = TweetFeatureIsLanguage(dataset_id).load_or_create()
+    #
+    # popularity_list = [(dataframe[column].sum(), dataframe[column]) for column in dataframe.columns]
+    #
+    # popularity_list = sorted(popularity_list, key=lambda x: x[0], reverse=True)
+    #
+    # selected_column = [tuple[1] for tuple in popularity_list][: top_n]
+    #
+    # selected_column_id = [col.name.split("_")[2] for col in selected_column]
+    #
+    # return selected_column_id
 
-    dataframe = TweetFeatureIsLanguage(dataset_id).load_or_create()
+    return [0, 1, 2, 10]
 
-    popularity_list = [(dataframe[column].sum(), dataframe[column]) for column in dataframe.columns]
-
-    popularity_list = sorted(popularity_list, key=lambda x: x[0], reverse=True)
-
-    selected_column = [tuple[1] for tuple in popularity_list][: top_n]
-
-    selected_column_id = [col.name.split("_")[2] for col in selected_column]
-
-    return selected_column_id
 
 class TweetFeatureIsLanguage(GeneratedFeatureOnlyPickle):
 

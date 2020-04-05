@@ -74,7 +74,7 @@ class TweetFeatureEngagementIsReply(GeneratedFeaturePickle):
 
     def create_feature(self):
         # Load the engagement column
-        feature = RawFeatureEngagementLikeTimestamp(self.dataset_id)
+        feature = RawFeatureEngagementReplyTimestamp(self.dataset_id)
         feature_df = feature.load_or_create()
         # Count the number of photos
         tweet_engagement_type_df = pd.DataFrame(feature_df[feature.feature_name].map(

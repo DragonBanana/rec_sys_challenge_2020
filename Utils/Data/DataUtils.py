@@ -5,6 +5,7 @@ from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.Generated.TweetFeature.IsLanguage import *
 from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
+from Utils.Data.Features.Generated.TweetFeature.NumberOfHashtags import TweetFeatureNumberOfHashtags
 from Utils.Data.Features.Generated.TweetFeature.NumberOfMedia import *
 from Utils.Data.Features.MappedFeatures import *
 from Utils.Data.Dictionary.MappingDictionary import *
@@ -74,6 +75,9 @@ def populate_features():
         result[("tweet_feature_number_of_photo", dataset_id)] = TweetFeatureNumberOfPhoto(dataset_id)
         result[("tweet_feature_number_of_video", dataset_id)] = TweetFeatureNumberOfVideo(dataset_id)
         result[("tweet_feature_number_of_gif", dataset_id)] = TweetFeatureNumberOfGif(dataset_id)
+        result[("tweet_feature_number_of_media", dataset_id)] = TweetFeatureNumberOfMedia(dataset_id)
+        # NUMBER OF HASHTAGS
+        result[("tweet_feature_number_of_hashtags", dataset_id)] = TweetFeatureNumberOfHashtags(dataset_id)
         # IS TWEET TYPE
         result[("tweet_feature_is_reply", dataset_id)] = TweetFeatureIsReply(dataset_id)
         result[("tweet_feature_is_retweet", dataset_id)] = TweetFeatureIsRetweet(dataset_id)
