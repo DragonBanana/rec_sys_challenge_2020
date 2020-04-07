@@ -32,6 +32,21 @@ def dictSkoptXGB():
     return param_range_dict
 
 
+#Names of the hyperparameters that will be optimized
+def dictSkoptNamesXGB():
+    param_name_dict = ["n_iterations",
+                       "colsample_bytree",
+                       "learning_rate",
+                       "max_depth",
+                       "alpha_reg",
+                       "lambda_reg",
+                       "min_child_weight",
+                       "scale_pos_weight",
+                       "subsample"]
+    return param_name_dict
+
+
+
 def dictBayOptXGB():
     #BAYES-OPT LIBRARY
     #Parameters' range dictionary

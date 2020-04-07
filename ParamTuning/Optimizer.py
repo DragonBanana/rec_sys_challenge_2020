@@ -17,16 +17,27 @@ from ParamTuning.ModelInterface import ModelInterface
 # With this it is possible to run an optimization in 
 # just a couple of commands.
 #----------------------------------------------------
+# logSaver() method provides human readable logs, in
+# order to save the results to use in a consecutive
+# optimization run, use saveRes() method
+#----------------------------------------------------
 class Optimizer(object):
     def __init__(self, model_name,
                        kind,
-                       auto_save=True):
+                       auto_save=True, # Saves the results at the end of optimization
+                       make_save=True, # Saves the results iteration per iteration
+                       make_log=False, # Make a human readable log iteration per iteration
+                       path=None):     # Define path in which to save stuff
         #Inputs
         self.model_name = model_name
         self.kind = kind
-        self.auto_save=auto_save    #saves the model without explictly calling the method
+        self.auto_save=auto_save  #saves the results without explictly calling the method
+        self.make_log=make_log
+        self.path=path #Providing a path into which write the logs
         #ModelInterface
         self.MI = None
+        #Iteration counter
+        self.iter_count = 0
                        
 
 
@@ -83,6 +94,15 @@ class Optimizer(object):
         if self.MI is None:
             self.defineMI()
 
+        #Checking if callback has to be called to make logs
+        if self.make_log is False:
+            #Defining the callback function
+            callback_function = self.callback_func
+        else:
+            callback_function = self.saveLog
+            if self.path is None:
+                self.path = str("./"+dt.datetime.now().strftime("%m_%d_%H_%M_%S"))
+
         self.result = gp_minimize(self.MI.getScoreFunc(),
                                   self.MI.getParams(),
                                   base_estimator=None,
@@ -94,7 +114,7 @@ class Optimizer(object):
                                   y0=self.y0,
                                   random_state=self.random_state,
                                   verbose=self.verbose,
-                                  callback=None,
+                                  callback=callback_function,
                                   n_points=self.n_point,
                                   n_restarts_optimizer=self.n_restarts_optimizer,
                                   xi=self.xi,
@@ -104,29 +124,55 @@ class Optimizer(object):
         
         #Saving the obtained results
         if self.auto_save is True:
-            self.saveModel()
+            self.saveRes(self.result)
         
         return self.result
 
 
-    #Saving the model with built-in method
-    def saveModel(self, path = None):
-        #Defining name based on timestamp
-        if path is None:
-            path = str("./"+dt.datetime.now().strftime("%m_%d_%H_%M_%S"))
-            print("Saving {0} model in working folder.".format(path))
+    def callback_func(self, res):
+        if self.make_res is True:
+            self.saveRes(res)
+        if self.make_log is True:
+            self.saveLog(res)
 
-        #This data structure allows to save in a single file
-        model = np.column_stack((self.result.x_iters, self.result.func_vals))
-        
+
+    #Saving the results of the optimization with built-in method
+    def saveRes(self, res):
+        path = self.path + ".save"
         #The only way to save this shit
         skopt.dump(self.result, path)
         print("Model {0} successfully saved.".format(path))
-        
-        return path
 
 
-    #Loading model with built-in method (errors even with pickle)
+    #Fuction to save human readable logs
+    def saveLog(self, res):
+        #Parameters of the evaluation
+        x = res.x_iters
+        #Result of the evaluation
+        y = res.func_vals
+        #Taking the path provided
+        path = self.path + ".log"
+        #Get hyperparameter names
+        p_names = self.MI.getParamNames()
+        #Maybe check len(p_names) == len(x) here
+
+        #Opening a file and writing into it the logs
+        with open(path, 'a') as log:
+            to_write = "ITERATION NUMBER " + str(self.iter_count) + "\n"
+            log.write(to_write)
+            for i in range(len(p_names)):
+                to_write=str(str(p_names[i])+": "+str(x[self.iter_count][i])+"\n")
+                log.write(to_write)
+            
+            #Written this way to be easily found
+            to_write="--outcome--: "+str(y[self.iter_count])+"\n\n"
+            log.write(to_write)
+
+        #Increasing the iteration count
+        self.iter_count = self.iter_count + 1
+
+
+        #Loading model with built-in method (errors even with pickle)
     def loadModel(self, path = None):
         if (path is None):
             print("File path missing.")
@@ -157,3 +203,18 @@ class Optimizer(object):
             self.defineMI()
         
         self.MI.loadTestData(X_test, Y_test)
+
+
+    #Autofetch methods
+    #Train
+    def autoLoadTrain(self, ids, x_label, y_label):
+        #Initializing model interface if it's None
+        if self.MI is None:
+            self.defineMI()
+        
+        self.MI.loadTestData(ids, x_label, y_label)
+
+
+    #Validation/Test
+    def autoLoadTest(self):
+        None

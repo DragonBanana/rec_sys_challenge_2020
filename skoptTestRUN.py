@@ -15,11 +15,11 @@ from ParamTuning.Optimizer import Optimizer
 
 def main():
     #Name of the model eg. xgboost_classifier
-    model_name = "xgboost_classifier"   
+    model_name="xgboost_classifier"
     #Kind of prediction eg. "like"
     kind = "LIKE"
     
-    OP = Optimizer(model_name, kind)
+    OP = Optimizer(model_name, kind, make_log=True, make_save=True)
     OP.setParameters(n_calls=3, n_random_starts=3)
     #OP.loadTrainData(X_train, Y_train)
     #OP.loadTestData(X_test, Y_test)
