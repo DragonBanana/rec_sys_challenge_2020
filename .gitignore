@@ -121,8 +121,12 @@ AWS/credentials
 
 *.swo
 *.swp
+*.swn
 
 Dataset/Dictionary/*
 Dataset/Features/*
 
 davide_blob_test.py
+
+.vscode
+.vscode/*
