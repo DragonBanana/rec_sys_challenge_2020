@@ -43,16 +43,27 @@ if __name__ == '__main__':
     X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
-    XGB = XGBoost(num_rounds=10, learning_rate=0.01)
+    XGB = XGBoost(num_rounds=10, learning_rate=0.01, batch=True)
 
-    # XGB Training
-    training_start_time = time.time()
-    XGB.fit(X_train, Y_train)
-    print(f"Training time: {time.time() - training_start_time} seconds")
+    X_train_split = np.array_split(X_train, 100)
+    Y_train_split = np.array_split(Y_train, 100)
+
+    train_split = zip(X_train_split, Y_train_split)
+
+    for (X,Y) in train_split:
+        # XGB Training
+        training_start_time = time.time()
+        XGB.fit(X, Y)
+        print(f"Training time: {time.time() - training_start_time} seconds")
+
+    # # XGB Training
+    # training_start_time = time.time()
+    # XGB.fit(X_train, Y_train)
+    # print(f"Training time: {time.time() - training_start_time} seconds")
 
     # XGB Evaluation
     evaluation_start_time = time.time()
-    prauc, rce = XGB.evaluate(X_test, np.array(Y_test['tweet_feature_engagement_is_retweet'].astype(float)))
+    prauc, rce = XGB.evaluate(X_test, Y_test)
     print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
     tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array

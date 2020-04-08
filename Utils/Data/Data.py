@@ -94,11 +94,12 @@ def get_dataset_xgb_default_test():
 
 def get_dataset(features: list, dataset_id: str):
     dataframe = pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
-
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
             dataframe[column] = dataframe[column].fillna(0).astype(np.int64, copy=False)
+        elif str(dataframe[column].dtype).lower() == "boolean":
+            dataframe[column] = dataframe[column].fillna(False).astype(np.bool, copy=False)
     return dataframe
 
 

@@ -10,8 +10,12 @@ from Utils.Data.Features.Generated.TweetFeature.NumberOfMedia import *
 from Utils.Data.Features.MappedFeatures import *
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Features.RawFeatures import *
+from Utils.Data.Sparse.CSR.HashtagMatrix import *
+from Utils.Data.Sparse.CSR.DomainMatrix import *
+from Utils.Data.Sparse.CSR.LinkMatrix import *
 
 import multiprocessing as mp
+
 
 DATASET_IDS = [
     "train",
@@ -84,7 +88,7 @@ def populate_features():
         result[("tweet_feature_is_quote", dataset_id)] = TweetFeatureIsQuote(dataset_id)
         result[("tweet_feature_is_top_level", dataset_id)] = TweetFeatureIsTopLevel(dataset_id)
         # IS IN LANGUAGE
-        result[("tweet_is_language_x", dataset_id)] = TweetFeatureIsLanguage(dataset_id, top_popular_language(dataset_id, top_n=10))
+        # result[("tweet_is_language_x", dataset_id)] = TweetFeatureIsLanguage(dataset_id, top_popular_language(dataset_id, top_n=10))
         # IS ENGAGEMENT TYPE
         if dataset_id != "test":
             result[("tweet_feature_engagement_is_like", dataset_id)] = TweetFeatureEngagementIsLike(dataset_id)
@@ -131,7 +135,7 @@ DICT_ARRAYS = {
     # TWEET BASIC FEATURES
     "hashtags_tweet_dict_array": HashtagsTweetBasicFeatureDictArray(),
     "media_tweet_dict_array": MediaTweetBasicFeatureDictArray(),
-    "links_tweet_dict_array": MediaTweetBasicFeatureDictArray(),
+    "links_tweet_dict_array": LinksTweetBasicFeatureDictArray(),
     "domains_tweet_dict_array": DomainsTweetBasicFeatureDictArray(),
     "type_tweet_dict_array": TypeTweetBasicFeatureDictArray(),
     "timestamp_tweet_dict_array": TimestampTweetBasicFeatureDictArray(),
@@ -144,12 +148,19 @@ DICT_ARRAYS = {
 
 }
 
+SPARSE_MATRIXES = {
+    # ICM
+    "tweet_hashtags_csr_matrix": HashtagMatrix(),
+    "tweet_links_csr_matrix": LinkMatrix(),
+    "tweet_domains_csr_matrix": DomainMatrix(),
+}
 
 def create_all(nthread: int = 4):
     with mp.Pool(nthread) as p:
         p.map(create_feature, FEATURES.values())
         p.map(create_dictionary, DICTIONARIES.values())
         p.map(create_dictionary, DICT_ARRAYS.values())
+        p.map(create_matrix, SPARSE_MATRIXES.values())
 
 
 def create_feature(feature: Feature):
@@ -166,6 +177,13 @@ def create_dictionary(dictionary: Dictionary):
         dictionary.create_dictionary()
     else:
         print(f"already created: {dictionary.dictionary_name}")
+
+def create_matrix(matrix: CSR_SparseMatrix):
+    if not matrix.has_matrix():
+        print(f"creating: {matrix.matrix_name}")
+        matrix.create_matrix()
+    else:
+        print(f"already created: {matrix.matrix_name}")
 
 
 def consistency_check(dataset_id: str):

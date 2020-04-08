@@ -20,15 +20,15 @@ def xgb():
 
 def dictSkoptXGB():
     #SKOPT LIBRARY    
-    param_range_dict = [Integer(15,200),                    #n_iterations
-                        Real(0,1),                          #colsample_bytree   
-                        Real(0.0001, 0.1, 'log-uniform'),   #Learning rate
-                        Integer(15,200),                    #Max depth
-                        Real(0.0001, 0.1, 'log-uniform'),   #alpha_reg
-                        Real(0.0001, 0.1, 'log-uniform'),   #lambda_reg
-                        Real(0, 1),                         #min child weight
-                        Real(1, 1.5),                       #scale_pos_weight
-                        Real(0, 1)]                         #subsample       
+    param_range_dict = [Integer(5, 200),                    #n_iterations
+                        Real(0.01, 1),                          #colsample_bytree
+                        Real(0.0001, 1, 'log-uniform'),   #Learning rate
+                        Integer(5, 100),                    #Max depth
+                        Real(0.0001, 1, 'log-uniform'),   #alpha_reg
+                        Real(0.0001, 1, 'log-uniform'),   #lambda_reg
+                        Real(0, 10),                         #min child weight
+                        Real(0, 10),                       #scale_pos_weight
+                        Real(0.01, 1)]                         #subsample
     return param_range_dict
 
 
