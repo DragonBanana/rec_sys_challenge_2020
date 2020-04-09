@@ -31,17 +31,19 @@ class XGBoost(RecommenderGBM):
                  #Not in tuning dict
                  objective="binary:logistic", #outputs the binary classification probability
                  num_parallel_tree= 4, #Number of parallel trees
-                 eval_metric= ("rmse","auc"),
+                 eval_metric= "auc",    #WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
                  #In tuning dict
                  num_rounds = 10,
-                 max_delta_step = 0,
                  colsample_bytree= 0.5,
                  learning_rate= 0.4,
                  max_depth= 35, #Max depth per tree
                  reg_alpha= 0.01, #L1 regularization
                  reg_lambda= 0.01, #L2 regularization
                  min_child_weight= 1,#Minimum sum of instance weight (hessian) needed in a child.
-                 scale_pos_weight= 1.2,                        
+                 #scale_pos_weight= 1.2,
+                 gamma=0,
+                 max_delta_step=0,
+                 base_score=0.5,
                  subsample= 0.8):
 
         super(XGBoost, self).__init__(
@@ -55,6 +57,7 @@ class XGBoost(RecommenderGBM):
         #Parameters
         self.num_rounds=num_rounds
         self.objective=objective
+        self.eval_metric=eval_metric
         self.colsample_bytree=colsample_bytree
         self.learning_rate=learning_rate
         self.max_depth=max_depth
@@ -63,8 +66,11 @@ class XGBoost(RecommenderGBM):
         self.reg_lambda=reg_lambda
         self.num_parallel_tree=num_parallel_tree
         self.min_child_weight=min_child_weight
-        self.scale_pos_weight=scale_pos_weight
+        #self.scale_pos_weight=scale_pos_weight
         self.subsample=subsample
+        self.gamma=gamma
+        self.max_delta_step=max_delta_step
+        self.base_score=base_score
 
         #CLASS VARIABLES
         #Model
@@ -132,7 +138,7 @@ class XGBoost(RecommenderGBM):
         if (X_tst is None) or (Y_tst is None):
             X_tst, Y_tst = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
-        Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
+        #Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
         if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
@@ -156,10 +162,12 @@ class XGBoost(RecommenderGBM):
             #Evaluating
             prauc = cm.compute_prauc()
             rce = cm.compute_rce()
+            '''
             print("PRAUC "+self.kind+": {0}".format(prauc))
             print("RCE "+self.kind+": {0}".format(rce))
             print("MAX: {0}".format(max(Y_pred)))
-            print("MIN: {0}\n".format(min(Y_pred)))
+            print("MIN: {0}".format(min(Y_pred)))
+            '''
             return prauc, rce
 
 
@@ -234,6 +242,7 @@ class XGBoost(RecommenderGBM):
     #Returns parameters in dicrionary form
     def get_param_dict(self):
         param_dict = {'objective':self.objective,
+                      'eval_metric':self.eval_metric,
                       'colsample_bytree':self.colsample_bytree,
                       'learning_rate':self.learning_rate,
                       'max_depth':math.ceil(self.max_depth),
@@ -242,7 +251,10 @@ class XGBoost(RecommenderGBM):
                       'reg_lambda':self.reg_lambda,
                       'num_parallel_tree':self.num_parallel_tree,
                       'min_child_weight':self.min_child_weight,
-                      'scale_pos_weight':self.scale_pos_weight,
-                      'subsample':self.subsample}
+                      #'scale_pos_weight':self.scale_pos_weight,
+                      'subsample':self.subsample,
+                      'gamma':self.gamma,
+                      'max_delta_step':self.max_delta_step,
+                      'base_score':self.base_score}
         
         return param_dict

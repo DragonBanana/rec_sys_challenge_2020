@@ -1,8 +1,8 @@
 import sys
 import os.path
 from Models.GBM.XGBoost import XGBoost
-from Utils.Base.ParamRangeDict import dictSkoptXGB
-from Utils.Base.ParamRangeDict import dictSkoptNamesXGB
+from Utils.Base.ParamRangeDict import xgbRange
+from Utils.Base.ParamRangeDict import xgbName
 from Utils.Data.Data import get_dataset_xgb
 import pandas as pd
 
@@ -23,24 +23,27 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXGB(self, param):
-        print(param)
+        #print(param)
         #Initializing the model it it wasn't already
         model = XGBoost(kind=self.kind,
                         batch = True,
                         #Not in tuning dict
                         objective="binary:logistic",
                         num_parallel_tree= 4,
-                        eval_metric= ("rmse","auc"),
+                        eval_metric= "auc",
                         #In tuning dict
                         num_rounds = param[0],
-                        colsample_bytree= param[1],
-                        learning_rate= param[2],
-                        max_depth= param[3],
-                        reg_alpha= param[4],
-                        reg_lambda= param[5],
-                        min_child_weight= param[6],
-                        scale_pos_weight= param[7],                        
-                        subsample= param[8])       
+                        max_depth = param[1],
+                        min_child_weight = param[2],
+                        colsample_bytree= param[3],
+                        learning_rate= param[4],
+                        reg_alpha= param[5],
+                        reg_lambda= param[6],
+                        max_delta_step= param[7],
+                        gamma= param[8],
+                        #scale_pos_weight= param[7],                        
+                        subsample= param[9],
+                        base_score= param[10])       
         
         
         #Training on custom set
@@ -69,24 +72,27 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXgbBatch(self, param):
-        print(param)
+        #print(param)
         #Initializing the model it it wasn't already
         model = XGBoost(kind=self.kind,
                         batch = True,
                         #Not in tuning dict
                         objective="binary:logistic",
                         num_parallel_tree= 4,
-                        eval_metric= ("rmse","auc"),
+                        eval_metric= "auc",
                         #In tuning dict
                         num_rounds = param[0],
-                        colsample_bytree= param[1],
-                        learning_rate= param[2],
-                        max_depth= param[3],
-                        reg_alpha= param[4],
-                        reg_lambda= param[5],
-                        min_child_weight= param[6],
-                        scale_pos_weight= param[7],                        
-                        subsample= param[8])
+                        max_depth = param[1],
+                        min_child_weight = param[2],
+                        colsample_bytree= param[3],
+                        learning_rate= param[4],
+                        reg_alpha= param[5],
+                        reg_lambda= param[6],
+                        max_delta_step= param[7],
+                        gamma= param[8],
+                        #scale_pos_weight= param[7],                        
+                        subsample= param[9],
+                        base_score= param[10])
         
         for dataset in self.data_id:
             #Iteratively fetching the dataset
@@ -127,7 +133,7 @@ class ModelInterface(object):
     def getParams(self):
         #Returning an array containing the hyperparameters
         if self.model_name in "xgboost_classifier":
-            param_dict = dictSkoptXGB()
+            param_dict = xgbRange()
 
         if self.model_name in "lightgbm_classifier":
             param_dict =  []
@@ -142,7 +148,7 @@ class ModelInterface(object):
     def getParamNames(self):
         #Returning the names of the hyperparameters
         if self.model_name in "xgboost_classifier":
-            names_dict = dictSkoptNamesXGB()
+            names_dict = xgbName()
 
         if self.model_name in "lightgbm_classifier":
             names_dict =  []

@@ -32,12 +32,15 @@ class Optimizer(object):
         self.model_name = model_name
         self.kind = kind
         self.auto_save=auto_save  #saves the results without explictly calling the method
+        self.make_save=make_save
         self.make_log=make_log
         self.path=path #Providing a path into which write the logs
         #ModelInterface
         self.MI = None
         #Iteration counter
         self.iter_count = 0
+        #Declaring result variable
+        self.result = None
                        
 
 
@@ -93,16 +96,16 @@ class Optimizer(object):
         #Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
+        
+        #Setting filename
+        if self.path is None:
+            self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S"))
 
         #Checking if callback has to be called to make logs
-        if self.make_log is False:
+        if (self.make_log is True) or (self.make_save is True):
             #Defining the callback function
             callback_function = self.callback_func
-        else:
-            callback_function = self.saveLog
-            if self.path is None:
-                self.path = str("./"+dt.datetime.now().strftime("%m_%d_%H_%M_%S"))
-
+            
         self.result = gp_minimize(self.MI.getScoreFunc(),
                                   self.MI.getParams(),
                                   base_estimator=None,
@@ -130,7 +133,7 @@ class Optimizer(object):
 
 
     def callback_func(self, res):
-        if self.make_res is True:
+        if self.make_save is True:
             self.saveRes(res)
         if self.make_log is True:
             self.saveLog(res)
@@ -141,7 +144,7 @@ class Optimizer(object):
         path = self.path + ".save"
         #The only way to save this shit
         skopt.dump(self.result, path)
-        print("Model {0} successfully saved.".format(path))
+        #print("Results {0} successfully saved.".format(path))
 
 
     #Fuction to save human readable logs
