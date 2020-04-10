@@ -19,11 +19,14 @@ def main():
     #Kind of prediction eg. "like"
     kind = "LIKE"
     
-    OP = Optimizer(model_name, kind, make_log=True, make_save=True)
-    OP.setParameters(n_calls=3, n_random_starts=3)
+    OP = Optimizer(model_name, kind, make_log=True, make_save=False, auto_save=False)
+    OP.setParameters(n_calls=50, n_random_starts=20)
     #OP.loadTrainData(X_train, Y_train)
     #OP.loadTestData(X_test, Y_test)
+    OP.optimize()
 
+
+    '''
     # Defining the dataset used
     train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
     test_dataset = "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
@@ -60,7 +63,7 @@ def main():
     OP.loadTestData(X_test, Y_test)
     res=OP.optimize()
 
-    '''
+    
     #Add this for complete routine check
     print(res.func_vals.shape)
     path = OP.saveModel()

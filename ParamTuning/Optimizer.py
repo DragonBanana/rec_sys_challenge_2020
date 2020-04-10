@@ -105,6 +105,8 @@ class Optimizer(object):
         if (self.make_log is True) or (self.make_save is True):
             #Defining the callback function
             callback_function = self.callback_func
+        else:
+            callback_function = None
             
         self.result = gp_minimize(self.MI.getScoreFunc(),
                                   self.MI.getParams(),

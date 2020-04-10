@@ -32,19 +32,20 @@ class XGBoost(RecommenderGBM):
                  objective="binary:logistic", #outputs the binary classification probability
                  num_parallel_tree= 4, #Number of parallel trees
                  eval_metric= "auc",    #WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
+                 early_stopping_rounds= None,
                  #In tuning dict
                  num_rounds = 10,
-                 colsample_bytree= 0.5,
-                 learning_rate= 0.4,
-                 max_depth= 35, #Max depth per tree
-                 reg_alpha= 0.01, #L1 regularization
-                 reg_lambda= 0.01, #L2 regularization
+                 colsample_bytree= 1,
+                 learning_rate= 0.3,
+                 max_depth= 6, #Max depth per tree
+                 reg_alpha= 0, #L1 regularization
+                 reg_lambda= 1, #L2 regularization
                  min_child_weight= 1,#Minimum sum of instance weight (hessian) needed in a child.
-                 #scale_pos_weight= 1.2,
-                 gamma=0,
-                 max_delta_step=0,
-                 base_score=0.5,
-                 subsample= 0.8):
+                 scale_pos_weight= 1,
+                 gamma= 0,
+                 #max_delta_step= 0,
+                 base_score= 0.5,
+                 subsample= 1):
 
         super(XGBoost, self).__init__(
             name="xgboost_classifier", #name of the recommender
@@ -57,19 +58,19 @@ class XGBoost(RecommenderGBM):
         #Parameters
         self.num_rounds=num_rounds
         self.objective=objective
+        self.early_stopping_rounds=early_stopping_rounds
         self.eval_metric=eval_metric
         self.colsample_bytree=colsample_bytree
         self.learning_rate=learning_rate
         self.max_depth=max_depth
-        self.max_delta_step = max_delta_step
         self.reg_alpha=reg_alpha
         self.reg_lambda=reg_lambda
         self.num_parallel_tree=num_parallel_tree
         self.min_child_weight=min_child_weight
-        #self.scale_pos_weight=scale_pos_weight
+        self.scale_pos_weight=scale_pos_weight
         self.subsample=subsample
         self.gamma=gamma
-        self.max_delta_step=max_delta_step
+        #self.max_delta_step=max_delta_step
         self.base_score=base_score
 
         #CLASS VARIABLES
@@ -92,12 +93,20 @@ class XGBoost(RecommenderGBM):
     # sround_model and batch_model are differentiated
     # in order to avoid overwriting. (Maybe not necessary)
     #-----------------------------------------------------
-    def fit(self, X=None, Y=None):
+    def fit(self, X=None, Y=None, X_valid=None, Y_valid=None):
         
         #Tries to load X and Y if not directly passed        
         if (X is None) or (Y is None):
             X, Y = Data.get_dataset_xgb_default_train()
             print("Train set loaded from file.")
+        
+        #In case validation set is not provided set early stopping rounds to default
+        if (X_valid is None) or (Y_valid is None):
+            self.early_stopping_rounds = None
+            valid = []
+        else:
+            valid = xgb.DMatrix(X_valid,
+                                label=Y_valid)
 
         #Learning in a single round
         if self.batch is False:
@@ -107,6 +116,8 @@ class XGBoost(RecommenderGBM):
             
             #Defining and fitting the models
             self.sround_model = xgb.train(self.get_param_dict(),
+                                          early_stopping_rounds=self.early_stopping_rounds,
+                                          evals=valid,
                                           dtrain=train,
                                           num_boost_round=math.ceil(self.num_rounds))
             
@@ -118,7 +129,9 @@ class XGBoost(RecommenderGBM):
             
             #Defining and training the model
             self.batch_model = xgb.train(self.get_param_dict(),
-                                         dtrain=train,      
+                                         early_stopping_rounds=self.early_stopping_rounds,
+                                         evals=valid,
+                                         dtrain=train,   
                                          xgb_model=self.batch_model)
 
 
@@ -247,14 +260,13 @@ class XGBoost(RecommenderGBM):
                       'learning_rate':self.learning_rate,
                       'max_depth':math.ceil(self.max_depth),
                       'reg_alpha':self.reg_alpha,
-                      'max_delta_step':self.max_delta_step,
                       'reg_lambda':self.reg_lambda,
                       'num_parallel_tree':self.num_parallel_tree,
                       'min_child_weight':self.min_child_weight,
-                      #'scale_pos_weight':self.scale_pos_weight,
+                      'scale_pos_weight':self.scale_pos_weight,
                       'subsample':self.subsample,
                       'gamma':self.gamma,
-                      'max_delta_step':self.max_delta_step,
+                      #'max_delta_step':self.max_delta_step,
                       'base_score':self.base_score}
         
         return param_dict

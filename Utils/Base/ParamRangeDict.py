@@ -2,20 +2,44 @@ from skopt.space import Real
 from skopt.space import Integer
 from skopt.space import Categorical
 
+#----------------------------------------------------------------
+#                       ABOUT XGB PARAMETERS
+#----------------------------------------------------------------
+# num_rounds:       # of rounds for boosting
+# max_depth:        Maximum depth of a tree. Increasing this
+#                    will increase the model complexity.
+# min_col_weight:   Minimum sum of instance weight needed in
+#                    child.
+# colsample_bytree: Subsample ratio of columns when constructing
+#                    each tree. Occurs once per tree constructed.
+# learning_rate:    Step size shrinkage used in update to prevent
+#                    overfitting.
+# alpha_reg:        L1 regularization term.
+# lambda_reg:       L2 regularization term.
+# scale_pos_weight: Control the balance of positive and negative 
+#                    weights, useful for unbalanced classes.
+# max_delta_step: Maximum delta step we allow each leaf output
+#                  to be.
+# gamma:          Minimum loss reduction required to make a 
+#                  further partition on a leaf node of the tree.
+# subsample:      Subsample ratio of the traning instances.
+# base_score:     The initial prediction score of all instances,
+#                  global bias
+#---------------------------------------------------------------
+
 def xgbRange():
-    #SKOPT LIBRARY    
-    param_range_dict = [Integer(2, 400),                    #num_rounds
-                        Integer(5, 400),                    #max_depth
+    param_range_dict = [Integer(5, 600),                    #num_rounds
+                        Integer(5, 600),                    #max_depth
                         Integer(1, 100),                    #min_child_weight
                         Real(0.3, 1),                       #colsample_bytree
                         Real(0.0001, 1, 'log-uniform'),     #learning rate
                         Real(0.0001, 1, 'log-uniform'),     #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),     #lambda_reg
-                        #Real(0, 10),                        #scale_pos_weight
-                        Real(1, 40),                        #max_delta_step--------
-                        Real(1, 100),                       #gamma-----------------
+                        Real(0, 10),                        #scale_pos_weight
+                        #Real(1, 40),                        #max_delta_step
+                        Real(1, 100),                       #gamma
                         Real(0.3, 1),                       #subsample
-                        Real(0,0.7)]                        #base_score------------                      
+                        Real(0,0.7)]                        #base_score                    
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
     #use max_delta_step instead
@@ -30,8 +54,8 @@ def xgbName():
                        "learning_rate",
                        "alpha_reg",
                        "lambda_reg",
-                       #"scale_pos_weight",
-                       "max_delta_step",
+                       "scale_pos_weight",
+                       #"max_delta_step",
                        "gamma",
                        "subsample",
                        "base_score"]

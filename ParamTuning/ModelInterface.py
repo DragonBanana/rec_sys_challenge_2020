@@ -39,9 +39,9 @@ class ModelInterface(object):
                         learning_rate= param[4],
                         reg_alpha= param[5],
                         reg_lambda= param[6],
-                        max_delta_step= param[7],
-                        gamma= param[8],
-                        #scale_pos_weight= param[7],                        
+                        #max_delta_step= param[7],
+                        scale_pos_weight= param[7],
+                        gamma= param[8],                        
                         subsample= param[9],
                         base_score= param[10])       
         
