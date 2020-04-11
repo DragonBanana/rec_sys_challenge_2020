@@ -25,4 +25,3 @@ class ComputeMetrics(object):
         data_ctr = self.calculate_ctr(self.gt)
         strawman_cross_entropy = log_loss(self.gt, [data_ctr for _ in range(len(self.gt))])
         return (1.0 - cross_entropy/strawman_cross_entropy)*100.0
-
