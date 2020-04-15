@@ -30,7 +30,7 @@ class XGBoost(RecommenderGBM):
                  batch = False,
                  #Not in tuning dict
                  objective="binary:logistic", #outputs the binary classification probability
-                 num_parallel_tree= 4, #Number of parallel trees
+                 num_parallel_tree= 20, #Number of parallel trees
                  eval_metric= "auc",    #WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
                  early_stopping_rounds= None,
                  #In tuning dict
@@ -151,7 +151,7 @@ class XGBoost(RecommenderGBM):
         if (X_tst is None) or (Y_tst is None):
             X_tst, Y_tst = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
-        #Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
+        Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
         if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
@@ -175,12 +175,10 @@ class XGBoost(RecommenderGBM):
             #Evaluating
             prauc = cm.compute_prauc()
             rce = cm.compute_rce()
-            '''
             print("PRAUC "+self.kind+": {0}".format(prauc))
             print("RCE "+self.kind+": {0}".format(rce))
             print("MAX: {0}".format(max(Y_pred)))
             print("MIN: {0}".format(min(Y_pred)))
-            '''
             return prauc, rce
 
 

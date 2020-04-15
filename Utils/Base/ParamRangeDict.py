@@ -30,7 +30,7 @@ from skopt.space import Categorical
 def xgbRange():
     param_range_dict = [Integer(5, 600),                    #num_rounds
                         Integer(5, 600),                    #max_depth
-                        Integer(1, 100),                    #min_child_weight
+                        Integer(1, 10),                    #min_child_weight
                         Real(0.3, 1),                       #colsample_bytree
                         Real(0.0001, 1, 'log-uniform'),     #learning rate
                         Real(0.0001, 1, 'log-uniform'),     #alpha_reg
@@ -39,7 +39,7 @@ def xgbRange():
                         #Real(1, 40),                        #max_delta_step
                         Real(1, 100),                       #gamma
                         Real(0.3, 1),                       #subsample
-                        Real(0,0.7)]                        #base_score                    
+                        Real(0.1,0.7)]                        #base_score
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
     #use max_delta_step instead

@@ -12,3 +12,4 @@ tqdm==4.43.0
 boto3==1.12.14
 xgboost==1.0.2
 bayesian-optimization==1.1.0
+graphviz==0.13.2
