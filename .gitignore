@@ -123,6 +123,7 @@ AWS/credentials
 *.swp
 *.swn
 
+Dataset/*
 Dataset/Dictionary/*
 Dataset/Features/*
 Dataset/Sparse/*
