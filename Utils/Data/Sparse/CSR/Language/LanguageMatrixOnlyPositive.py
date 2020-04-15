@@ -1,4 +1,5 @@
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import DomainsTweetBasicFeatureDictArray
+from Utils.Data.Dictionary.UserBasicFeaturesDictArray import LanguageUserBasicFeatureDictArray
 from Utils.Data.Sparse.CSR_SparseMatrix import CSR_SparseMatrix
 import pandas as pd
 import RootPath
@@ -8,20 +9,20 @@ import time
 import multiprocessing as mp
 
 
-class DomainMatrix(CSR_SparseMatrix):
+class LanguageMatrixOnlyPositive(CSR_SparseMatrix):
     """
     Abstract class representing a feature in raw format that works with csv file.
     It is needed in order to cope with NAN/NA values.
     """
 
     def __init__(self):
-        super().__init__("tweet_domains_csr_matrix")
+        super().__init__("tweet_language_csr_matrix")
 
     def create_matrix(self):
         nthread = 8
         nsplit = nthread * 100
 
-        hashtag_dict = DomainsTweetBasicFeatureDictArray().load_or_create()
+        hashtag_dict = LanguageUserBasicFeatureDictArray().load_or_create()
 
         chunks = np.array_split(hashtag_dict, nsplit)
 

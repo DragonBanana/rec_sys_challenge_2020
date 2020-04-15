@@ -1,6 +1,7 @@
 import pandas as pd
 import RootPath
 import gzip
+import pathlib as pl
 
 STARTING_TIME = 1580947200
 SECONDS_IN_A_DAY = 86400
@@ -35,6 +36,9 @@ def split_train_val(
     train_filename = RootPath.get_dataset_path().joinpath(f"{train_filename}.csv.gz")
     test_filename = RootPath.get_dataset_path().joinpath(f"{test_filename}.csv.gz")
     input_filename = RootPath.get_dataset_path().joinpath("train.csv.gz")
+
+    assert not pl.Path(train_filename).exists(), "file already exists"
+    assert not pl.Path(test_filename).exists(), "file already exists"
 
     train_file = gzip.open(train_filename, 'wb')
     test_file = gzip.open(test_filename, 'wb')
@@ -74,6 +78,9 @@ def split_train_val_multiple(
 
     train_filename_list = [RootPath.get_dataset_path().joinpath(f"{train_filename}.csv.gz") for train_filename in train_filename_list]
     test_filename_list = [RootPath.get_dataset_path().joinpath(f"{test_filename}.csv.gz") for test_filename in test_filename_list]
+
+    assert all([not pl.Path(train_filename).exists() for train_filename in train_filename_list]), "files already exist"
+    assert all([not pl.Path(test_filename).exists() for test_filename in test_filename_list]), "files already exist"
 
     train_file_list = [gzip.open(train_filename, 'wb') for train_filename in train_filename_list]
     test_file_list = [gzip.open(test_filename, 'wb') for test_filename in test_filename_list]

@@ -4,6 +4,7 @@ import numpy as np
 import RootPath
 from abc import abstractmethod
 
+from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import TweetFeatureEngagementIsPositive
 from Utils.Data.Features.MappedFeatures import *
 from Utils.Data.Dictionary.MappingDictionary import *
 
@@ -127,7 +128,6 @@ class FollowingCountUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
         engager_test_df = engager_test_target_feature.load_or_create()
         creator_train_df = creator_train_target_feature.load_or_create()
         creator_test_df = creator_test_target_feature.load_or_create()
-        print(engager_train_df)
         df[column] = engager_train_df[engager_train_target_feature.feature_name].append(
             engager_test_df[engager_test_target_feature.feature_name]).append(
             creator_train_df[creator_train_target_feature.feature_name]).append(
@@ -239,5 +239,84 @@ class CreationTimestampUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy)
 
         # Cast it to a numpy array
         arr = np.array(df.sort_values(by='id')[column].array)
+
+        self.save_dictionary(arr)
+
+class LanguageUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
+
+    def __init__(self):
+        super().__init__("language_user_dict_array")
+
+    def create_dictionary(self):
+        result = pd.DataFrame()
+        train_dataset_id = "train"
+        test_dataset_id = "test"
+
+        # Load the index column
+        train_engager_id_feature = MappedFeatureEngagerId(train_dataset_id)
+        test_engager_id_feature = MappedFeatureEngagerId(test_dataset_id)
+        train_creator_id_feature = MappedFeatureCreatorId(train_dataset_id)
+        test_creator_id_feature = MappedFeatureCreatorId(test_dataset_id)
+        train_language_id_feature = MappedFeatureTweetLanguage(train_dataset_id)
+        test_language_id_feature = MappedFeatureTweetLanguage(test_dataset_id)
+        train_is_positive_feature = TweetFeatureEngagementIsPositive(train_dataset_id)
+        train_tweet_id_feature = MappedFeatureTweetId(train_dataset_id)
+        test_tweet_id_feature = MappedFeatureTweetId(test_dataset_id)
+
+        # Find the mask of uniques one
+        engager_train_df = train_engager_id_feature.load_or_create()
+        engager_test_df = test_engager_id_feature.load_or_create()
+        creator_train_df = train_creator_id_feature.load_or_create()
+        creator_test_df = test_creator_id_feature.load_or_create()
+        is_positive_train_df = train_is_positive_feature.load_or_create()
+        language_train_df = train_language_id_feature.load_or_create()
+        language_test_df = test_language_id_feature.load_or_create()
+        tweet_id_train_df = train_tweet_id_feature.load_or_create()
+        tweet_id_test_df = test_tweet_id_feature.load_or_create()
+
+        # Set index
+        result['user'] = range(max(
+            engager_train_df[train_engager_id_feature.feature_name].max(),
+            engager_test_df[test_engager_id_feature.feature_name].max(),
+            creator_train_df[train_creator_id_feature.feature_name].max(),
+            creator_test_df[test_creator_id_feature.feature_name].max()
+        ) + 1)
+        result.set_index('user', inplace=True)
+
+        # Create the creator dataframe
+        creator_df = pd.concat(
+            [
+                creator_test_df.append(creator_train_df),
+                language_test_df.append(language_train_df),
+                tweet_id_test_df.append(tweet_id_train_df)
+            ], axis=1
+        ).drop_duplicates(train_tweet_id_feature.feature_name).drop(columns=train_tweet_id_feature.feature_name)
+
+        creator_df.columns = ["user", "language"]
+
+        # Create the engager dataframe
+        engager_df = pd.concat(
+            [
+                engager_train_df[is_positive_train_df[train_is_positive_feature.feature_name]],
+                language_train_df[is_positive_train_df[train_is_positive_feature.feature_name]]
+            ], axis=1
+        )
+
+        engager_df.columns = ["user", "language"]
+
+        dataframe = pd.concat(
+            [
+                creator_df,
+                engager_df
+            ]
+        )
+
+        # Group by and aggregate in numpy array
+        result['language'] = dataframe.groupby("user").agg(list)['language'].apply(
+            lambda x: np.array(x, dtype=np.uint8))
+        result['language'].replace({np.nan: None}, inplace=True)
+
+        # To numpy array
+        arr = np.array(result['language'].array)
 
         self.save_dictionary(arr)

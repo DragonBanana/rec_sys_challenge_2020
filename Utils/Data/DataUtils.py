@@ -12,6 +12,7 @@ from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Features.RawFeatures import *
 from Utils.Data.Sparse.CSR.HashtagMatrix import *
 from Utils.Data.Sparse.CSR.DomainMatrix import *
+from Utils.Data.Sparse.CSR.Language.LanguageMatrixOnlyPositive import LanguageMatrixOnlyPositive
 from Utils.Data.Sparse.CSR.LinkMatrix import *
 
 import multiprocessing as mp
@@ -20,12 +21,18 @@ import multiprocessing as mp
 DATASET_IDS = [
     "train",
     "test",
-    "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75",
-    "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_75",
-    "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_10",
-    "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_10",
-    "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1",
-    "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
+    "train_days_1",
+    "train_days_12",
+    "train_days_123",
+    "train_days_1234",
+    "train_days_12345",
+    "train_days_123456",
+    "val_days_2",
+    "val_days_3",
+    "val_days_4",
+    "val_days_5",
+    "val_days_6",
+    "val_days_7",
 ]
 
 
@@ -99,14 +106,16 @@ def populate_features():
             result[("tweet_feature_engagement_is_negative", dataset_id)] = TweetFeatureEngagementIsNegative(dataset_id)
         # CREATOR FEATURE
         # KNOWN COUNT OF ENGAGEMENT
-        result[("engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(dataset_id)
-        result[("engager_feature_known_number_of_reply_engagement", dataset_id)] = EngagerFeatureKnowNumberOfReplyEngagement(dataset_id)
-        result[("engager_feature_known_number_of_retweet_engagement", dataset_id)] = EngagerFeatureKnowNumberOfRetweetEngagement(dataset_id)
-        result[("engager_feature_known_number_of_comment_engagement", dataset_id)] = EngagerFeatureKnowNumberOfCommentEngagement(dataset_id)
-        result[("engager_feature_known_number_of_positive_engagement", dataset_id)] = EngagerFeatureKnowNumberOfPositiveEngagement(dataset_id)
-        result[("engager_feature_known_number_of_negative_engagement", dataset_id)] = EngagerFeatureKnowNumberOfNegativeEngagement(dataset_id)
+        # BAD IMPLEMENTATION - DOES NOT RESPECT TIME
+        # result[("engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(dataset_id)
+        # result[("engager_feature_known_number_of_reply_engagement", dataset_id)] = EngagerFeatureKnowNumberOfReplyEngagement(dataset_id)
+        # result[("engager_feature_known_number_of_retweet_engagement", dataset_id)] = EngagerFeatureKnowNumberOfRetweetEngagement(dataset_id)
+        # result[("engager_feature_known_number_of_comment_engagement", dataset_id)] = EngagerFeatureKnowNumberOfCommentEngagement(dataset_id)
+        # result[("engager_feature_known_number_of_positive_engagement", dataset_id)] = EngagerFeatureKnowNumberOfPositiveEngagement(dataset_id)
+        # result[("engager_feature_known_number_of_negative_engagement", dataset_id)] = EngagerFeatureKnowNumberOfNegativeEngagement(dataset_id)
         # KNOW TWEET LANGUAGE
-        result[("engager_feature_know_tweet_language", dataset_id)] = EngagerFeatureKnowTweetLanguage(dataset_id)
+        # BAD IMPLEMENTATION - DOES NOT RESPECT TIME
+        # result[("engager_feature_know_tweet_language", dataset_id)] = EngagerFeatureKnowTweetLanguage(dataset_id)
 
 
     return result
@@ -145,6 +154,7 @@ DICT_ARRAYS = {
     "following_count_user_dict_array": FollowingCountUserBasicFeatureDictArray(),
     "is_verified_user_dict_array": IsVerifiedUserBasicFeatureDictArray(),
     "creation_timestamp_user_dict_array": CreationTimestampUserBasicFeatureDictArray(),
+    "language_user_dict_array": LanguageUserBasicFeatureDictArray(),
 
 }
 
@@ -153,15 +163,24 @@ SPARSE_MATRIXES = {
     "tweet_hashtags_csr_matrix": HashtagMatrix(),
     "tweet_links_csr_matrix": LinkMatrix(),
     "tweet_domains_csr_matrix": DomainMatrix(),
+    "tweet_language_csr_matrix": LanguageMatrixOnlyPositive()
 }
 
-def create_all(nthread: int = 4):
-    with mp.Pool(nthread) as p:
-        p.map(create_feature, FEATURES.values())
-        p.map(create_dictionary, DICTIONARIES.values())
-        p.map(create_dictionary, DICT_ARRAYS.values())
-        p.map(create_matrix, SPARSE_MATRIXES.values())
+def create_all():
+    # For more parallelism
+    features_grouped = [[v for k, v in FEATURES.items() if k[1] == dataset_id] for dataset_id in DATASET_IDS]
+    for features in features_grouped:
+        for feature in features:
+            print(feature.dataset_id)
+    with mp.Pool(4) as pool:
+        pool.map(create_features, features_grouped)
+    # list(map(create_feature, FEATURES.values()))
+    list(map(create_dictionary, DICTIONARIES.values()))
+    list(map(create_dictionary, DICT_ARRAYS.values()))
+    list(map(create_matrix, SPARSE_MATRIXES.values()))
 
+def create_features(feature_list: list):
+    list(map(create_feature, feature_list))
 
 def create_feature(feature: Feature):
     if not feature.has_feature():

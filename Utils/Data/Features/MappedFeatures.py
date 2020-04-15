@@ -48,8 +48,8 @@ class MappedFeaturePickle(Feature):
         self.pck_path.parent.mkdir(parents=True, exist_ok=True)
         dataframe.to_pickle(self.pck_path, compression='gzip')
         # For backup reason
-        self.csv_path.parent.mkdir(parents=True, exist_ok=True)
-        dataframe.to_csv(self.csv_path, compression='gzip', index=True)
+        # self.csv_path.parent.mkdir(parents=True, exist_ok=True)
+        # dataframe.to_csv(self.csv_path, compression='gzip', index=True)
 
 
 class MappedFeatureTweetLanguage(MappedFeaturePickle):

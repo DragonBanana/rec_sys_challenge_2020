@@ -53,12 +53,7 @@ def _compute_on_sub_array(tuple):
     tweet_list = np.array([], dtype=np.uint32)
     hashtag_list = np.array([], dtype=np.uint32)
 
-    start_time = time.time()
-
     for tweet_id, hashtags in enumerate(subarray):
-
-        if tweet_id % 500000 == 0:
-            print(f"Processed elements {tweet_id}, time elapsed: {time.time() - start_time}")
 
         if hashtags is not None:
             hashtag_list = np.append(

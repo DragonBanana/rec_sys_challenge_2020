@@ -1,4 +1,4 @@
-from Utils.Data.DataUtils import FEATURES, DICTIONARIES, DICT_ARRAYS
+from Utils.Data.DataUtils import FEATURES, DICTIONARIES, DICT_ARRAYS, SPARSE_MATRIXES
 import pandas as pd
 import numpy as np
 
@@ -116,3 +116,7 @@ def get_dictionary(dictionary_name: str):
 def get_dictionary_array(dictionary_name: str):
     if dictionary_name in DICT_ARRAYS.keys():
         return DICT_ARRAYS[dictionary_name].load_or_create()
+
+def get_csr_matrix(matrix_name: str):
+    if matrix_name in SPARSE_MATRIXES.keys():
+        return SPARSE_MATRIXES[matrix_name].load_or_create()
