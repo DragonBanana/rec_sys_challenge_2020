@@ -28,31 +28,25 @@ if __name__ == '__main__':
         "tweet_feature_engagement_is_like"
     ]
 
-    # Load train data
-    loading_data_start_time = time.time()
-    X_train, Y_train = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
-
-    # Load test data
-    X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
-    print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
+    batch_n_split = 10
 
     XGB = XGBoost(num_rounds=10, learning_rate=0.01, batch=True, scale_pos_weight=149)
 
-    X_train_split = np.array_split(X_train, 100)
-    Y_train_split = np.array_split(Y_train, 100)
+    for split_n in range(batch_n_split):
+        # Load train data
+        loading_data_start_time = time.time()
+        X_train, Y_train = Data.get_dataset_xgb_batch(batch_n_split, split_n, train_dataset, X_label, Y_label)
+        print(f"Loading training data time: {time.time() - loading_data_start_time} seconds")
 
-    train_split = zip(X_train_split[:15], Y_train_split[:15])
-
-    for (X,Y) in train_split:
         # XGB Training
         training_start_time = time.time()
-        XGB.fit(X, Y)
+        XGB.fit(X_train, Y_train)
         print(f"Training time: {time.time() - training_start_time} seconds")
 
-    # # XGB Training
-    # training_start_time = time.time()
-    # XGB.fit(X_train, Y_train)
-    # print(f"Training time: {time.time() - training_start_time} seconds")
+    # Load test data
+    loading_data_start_time = time.time()
+    X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
+    print(f"Loading test data time: {time.time() - loading_data_start_time} seconds")
 
     # XGB Evaluation
     evaluation_start_time = time.time()
