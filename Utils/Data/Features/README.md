@@ -1,3 +1,21 @@
+# Example
+### Get feature
+```python
+from Utils.Data.Data import get_feature
+feature_df = get_feature(feature_name="mapped_feature_tweet_id", dataset_id="train")
+```
+
+### Get multiple feature
+```python
+from Utils.Data.Data import get_dataset
+features = [
+    "tweet_feature_number_of_photo",
+    "tweet_feature_number_of_media",
+    "tweet_feature_number_of_mentions"
+]
+feature_df = get_dataset(features=features, dataset_id="train")
+```
+
 # Features
 
 For each dataset we have the following features:
@@ -97,6 +115,11 @@ For each dataset we have the following features:
    - **tweet_feature_number_of_media**: int:
  <br>Number of media (photo, video and gif) in the tweet.
  
+ #### Number of hashtags
+ 
+   - **tweet_feature_number_of_hashtags**: int:
+ <br>Number of hashtags in the tweet.
+ 
  #### Is tweet type
 
   - **tweet_feature_is_reply**: bool:
@@ -107,6 +130,22 @@ For each dataset we have the following features:
  <br>True if the tweet is a quote.
    - **tweet_feature_is_top_level**: bool:
  <br>True if the tweet is a top_level.
+ 
+ #### Extracted from text token
+ 
+   - **tweet_feature_mentions**: list of ints (or None):
+ <br>Mentions extracted from the tweet. 
+ 
+   - **tweet_feature_number_of_mentions**: int:
+ <br>Number of mentions in the tweet.
+ 
+ #### Creation timestamp
+ 
+   - **tweet_feature_creation_timestamp_hour**: int:
+ <br>The hour when the tweet has been created. (0-23 UTC hour)
+ 
+   - **tweet_feature_creation_timestamp_week_day**: int:
+ <br>The week day when the tweet has been created (0-6 UTC date)
  
  #### Is in language X
  It is possible to choose the languages to load, by default all languages are included (~60 languages). One column for each language.

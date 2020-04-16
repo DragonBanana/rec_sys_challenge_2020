@@ -42,9 +42,6 @@ def get_dataset_xgb_batch(total_n_split: int, split_n: int, dataset_id: str = "t
            get_dataset_batch(Y_label, dataset_id, total_n_split, split_n)
 
 
-
-
-
 def get_dataset_xgb_default_train():
     train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_10"
     # Define the X label

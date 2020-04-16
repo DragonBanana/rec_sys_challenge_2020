@@ -2,6 +2,8 @@ from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
+from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
+from Utils.Data.Features.Generated.TweetFeature.FromTextToken import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.Generated.TweetFeature.IsLanguage import *
 from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
@@ -96,6 +98,12 @@ def populate_features():
         result[("tweet_feature_is_top_level", dataset_id)] = TweetFeatureIsTopLevel(dataset_id)
         # IS IN LANGUAGE
         # result[("tweet_is_language_x", dataset_id)] = TweetFeatureIsLanguage(dataset_id, top_popular_language(dataset_id, top_n=10))
+        # CREATION TIMESTAMP
+        result[("tweet_feature_creation_timestamp_hour", dataset_id)] = TweetFeatureCreationTimestampHour(dataset_id)
+        result[("tweet_feature_creation_timestamp_week_day", dataset_id)] = TweetFeatureCreationTimestampWeekDay(dataset_id)
+        # FROM TEXT TOKEN FEATURES
+        result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
+        result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
         # IS ENGAGEMENT TYPE
         if dataset_id != "test":
             result[("tweet_feature_engagement_is_like", dataset_id)] = TweetFeatureEngagementIsLike(dataset_id)
