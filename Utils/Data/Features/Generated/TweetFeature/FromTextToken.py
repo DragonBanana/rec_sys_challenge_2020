@@ -16,19 +16,18 @@ class TweetFeatureMappedMentions(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        # Load the extracted mentions
-        mentions_test_df = pd.read_csv(f"{RootPath.get_dataset_path()}/Dictionary/from_text_token/test_mentions.csv.gz",
-                                       compression="gzip", sep="\x01", index_col=0)
-        mentions_train_df = pd.read_csv(f"{RootPath.get_dataset_path()}/Dictionary/from_text_token/train_mentions.csv.gz",
-                                        compression="gzip", sep="\x01", index_col=0)
 
         # Load tweet ids
         tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
         tweet_id_df = tweet_id_feature.load_or_create()
 
         # Merge train and test mentions
-        mentions_df = pd.concat([mentions_test_df, mentions_train_df])
-        mentions_array = mentions_df['mentions_mapped'].astype(str).map(
+        mentions_array = pd.concat([
+            pd.read_csv(f"{RootPath.get_dataset_path()}/Dictionary/from_text_token/test_mentions.csv.gz",
+                        compression="gzip", sep="\x01", index_col=0),
+            pd.read_csv(f"{RootPath.get_dataset_path()}/Dictionary/from_text_token/train_mentions.csv.gz",
+                        compression="gzip", sep="\x01", index_col=0)
+        ])['mentions_mapped'].astype(str).map(
             lambda x: np.array(x.split('\t'), dtype=np.str) if x != 'nan' else None
         ).array
 

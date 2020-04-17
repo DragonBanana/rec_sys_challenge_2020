@@ -19,24 +19,22 @@ from Utils.Data.Sparse.CSR.LinkMatrix import *
 
 import multiprocessing as mp
 
-
 DATASET_IDS = [
     "train",
     "test",
     "train_days_1",
-    "train_days_12",
-    "train_days_123",
-    "train_days_1234",
-    "train_days_12345",
-    "train_days_123456",
     "val_days_2",
+    "train_days_12",
     "val_days_3",
+    "train_days_123",
     "val_days_4",
+    "train_days_1234",
     "val_days_5",
+    "train_days_12345",
     "val_days_6",
-    "val_days_7",
+    "train_days_123456",
+    "val_days_7"
 ]
-
 
 def populate_features():
     result = {}
@@ -100,7 +98,8 @@ def populate_features():
         # result[("tweet_is_language_x", dataset_id)] = TweetFeatureIsLanguage(dataset_id, top_popular_language(dataset_id, top_n=10))
         # CREATION TIMESTAMP
         result[("tweet_feature_creation_timestamp_hour", dataset_id)] = TweetFeatureCreationTimestampHour(dataset_id)
-        result[("tweet_feature_creation_timestamp_week_day", dataset_id)] = TweetFeatureCreationTimestampWeekDay(dataset_id)
+        result[("tweet_feature_creation_timestamp_week_day", dataset_id)] = TweetFeatureCreationTimestampWeekDay(
+            dataset_id)
         # FROM TEXT TOKEN FEATURES
         result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
         result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
@@ -124,7 +123,6 @@ def populate_features():
         # KNOW TWEET LANGUAGE
         # BAD IMPLEMENTATION - DOES NOT RESPECT TIME
         # result[("engager_feature_know_tweet_language", dataset_id)] = EngagerFeatureKnowTweetLanguage(dataset_id)
-
 
     return result
 
@@ -174,6 +172,7 @@ SPARSE_MATRIXES = {
     "tweet_language_csr_matrix": LanguageMatrixOnlyPositive()
 }
 
+
 def create_all():
     # For more parallelism
     features_grouped = [[v for k, v in FEATURES.items() if k[1] == dataset_id] for dataset_id in DATASET_IDS]
@@ -187,8 +186,10 @@ def create_all():
     list(map(create_dictionary, DICT_ARRAYS.values()))
     list(map(create_matrix, SPARSE_MATRIXES.values()))
 
+
 def create_features(feature_list: list):
     list(map(create_feature, feature_list))
+
 
 def create_feature(feature: Feature):
     if not feature.has_feature():
@@ -204,6 +205,7 @@ def create_dictionary(dictionary: Dictionary):
         dictionary.create_dictionary()
     else:
         print(f"already created: {dictionary.dictionary_name}")
+
 
 def create_matrix(matrix: CSR_SparseMatrix):
     if not matrix.has_matrix():
