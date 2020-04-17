@@ -32,16 +32,16 @@ TRAIN_TEST_SET_PAIRS = {
     "train_days_123456": "val_days_7"
 }
 
-TEST_TRAIN_SET_PARIS = {v: k for k, v in TRAIN_TEST_SET_PAIRS.iteritems()}
+TEST_TRAIN_SET_PARIS = {v: k for k, v in TRAIN_TEST_SET_PAIRS.items()}
 
 def is_test_or_val_set(dataset_id: str):
     return dataset_id in TEST_SET_IDS or dataset_id in VAL_SET_IDS
 
 def get_train_set_id_from_test_or_val_set(dataset_id: str):
     assert is_test_or_val_set(dataset_id)
-    return TRAIN_TEST_SET_PAIRS[dataset_id]
+    return TEST_TRAIN_SET_PARIS[dataset_id]
 
 def get_test_or_val_set_id_from_train(dataset_id: str):
     assert not is_test_or_val_set(dataset_id)
-    return TEST_TRAIN_SET_PARIS[dataset_id]
+    return TRAIN_TEST_SET_PAIRS[dataset_id]
 
