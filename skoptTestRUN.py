@@ -14,16 +14,63 @@ from Utils.Data import Data
 
 
 def main():
+    #------------------------------------------
+    #           BATCH EXAMPLE
+    #------------------------------------------
+    # Define the X label
+    X_label = [
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count",
+        "raw_feature_engager_follower_count",
+        "raw_feature_engager_following_count",
+        "tweet_feature_number_of_photo",
+        "tweet_feature_number_of_video",
+        "tweet_feature_number_of_gif",
+        "tweet_feature_is_reply",
+        "tweet_feature_is_retweet",
+        "tweet_feature_is_quote",
+        "tweet_feature_is_top_level"
+    ]
+    # Define the Y label
+    Y_label = [
+        "tweet_feature_engagement_is_like"
+    ]
+
     #Name of the model eg. xgboost_classifier
     model_name="xgboost_classifier"
     #Kind of prediction eg. "like"
     kind = "LIKE"
     
-    OP = Optimizer(model_name, kind, make_log=True, make_save=False, auto_save=False)
-    OP.setParameters(n_calls=50, n_random_starts=20)
-    #OP.loadTrainData(X_train, Y_train)
-    #OP.loadTestData(X_test, Y_test)
+    #Declaring optimizer
+    OP = Optimizer(model_name, 
+                   kind,
+                   mode=2,
+                   make_log=True, 
+                   make_save=False, 
+                   auto_save=False)
+    
+    OP.setParameters(n_calls=5, n_random_starts=5)
+    OP.batchTrain(tot_train_split=5, train_id="train")
+    OP.batchVal(tot_val_split=5, val_id="test")
+    OP.setLabels(X_label, Y_label)
     OP.optimize()
+    #------------------------------------------
+
+    #------------------------------------------
+    #     NESTED CROSS VALIDATION EXAMPLE
+    #------------------------------------------
+    #Declaring optimizer
+    OP = Optimizer(model_name, 
+                   kind,
+                   mode=3,
+                   make_log=True, 
+                   make_save=False, 
+                   auto_save=False)
+    
+    OP.setParameters(n_calls=5, n_random_starts=5)
+    OP.setLabels(X_label, Y_label)
+    OP.optimize()
+    #------------------------------------------
 
 
     '''

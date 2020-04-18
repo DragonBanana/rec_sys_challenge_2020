@@ -13,7 +13,7 @@ from Utils.Base.RecommenderGBM import RecommenderGBM
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
-
+from Utils.Eval.ConfMatrix import confMatrix
 
 class XGBoost(RecommenderGBM):
     #---------------------------------------------------------------------------------------------------
@@ -162,9 +162,9 @@ class XGBoost(RecommenderGBM):
             else:
                 model = self.batch_model
             
-            #Preparing DMatrix
+            # Preparing DMatrix
             #d_test = xgb.DMatrix(X_tst)
-            #Making predictions
+            # Making predictions
             #Y_pred = model.predict(d_test)
             Y_pred = self.get_prediction(X_tst)
 
@@ -172,14 +172,17 @@ class XGBoost(RecommenderGBM):
             # metrics.
             cm = CoMe(Y_pred, Y_tst)
 
-            #Evaluating
+            # Evaluating
             prauc = cm.compute_prauc()
             rce = cm.compute_rce()
-            print("PRAUC "+self.kind+": {0}".format(prauc))
-            print("RCE "+self.kind+": {0}".format(rce))
-            print("MAX: {0}".format(max(Y_pred)))
-            print("MIN: {0}".format(min(Y_pred)))
-            return prauc, rce
+            # Confusion matrix
+            conf = confMatrix(Y_tst, Y_pred)
+            # Prediction stats
+            max_pred = max(Y_pred)
+            min_pred = min(Y_pred)
+            avg = np.mean(Y_pred)
+            
+            return prauc, rce, conf, max_pred, min_pred, avg
 
 
     # This method returns only the predictions
