@@ -8,6 +8,8 @@ from Utils.Data.Data import get_dataset_xgb_batch
 from Utils.Data.DataUtils import TRAIN_IDS,  VAL_IDS
 import pandas as pd
 import datetime as dt
+import time
+from tqdm import tqdm
 
 
 class ModelInterface(object):
@@ -115,15 +117,15 @@ class ModelInterface(object):
                         gamma= param[8],                        
                         subsample= param[9],
                         base_score= param[10])
-        
 
         #Batch train
-        for split in range(self.tot_train_split):
+        for split in tqdm(range(self.tot_train_split)):
             X, Y = get_dataset_xgb_batch(self.tot_train_split, 
                                          split, 
                                          self.train_id, 
                                          self.x_label, 
-                                         self.y_label)   
+                                         self.y_label)
+            start_time_training_data = time.time()
             #Multistage model fitting
             model.fit(X, Y)
 
@@ -138,7 +140,7 @@ class ModelInterface(object):
         min_pred = 1 #Min set to the maximum
         avg = 0
         #Batch evaluation
-        for split in range(self.tot_val_split):
+        for split in tqdm(range(self.tot_val_split)):
             #Iteratively fetching the dataset
             X, Y = get_dataset_xgb_batch(self.tot_val_split, 
                                          split, 
