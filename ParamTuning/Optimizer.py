@@ -17,24 +17,33 @@ from ParamTuning.ModelInterface import ModelInterface
 # With this it is possible to run an optimization in 
 # just a couple of commands.
 #----------------------------------------------------
-# logSaver() method provides human readable logs, in
-# order to save the results to use in a consecutive
-# optimization run, use saveRes() method
+# make_save:    saves reusable results
+# make_log:     saves human readable results
+#----------------------------------------------------
+# old batch (boolean) is now mode, an integer with:
+# 0 --> monolithic optimization
+# 1 --> batch optimization
+# 2 --> nested cross validation
 #----------------------------------------------------
 class Optimizer(object):
     def __init__(self, model_name,
                        kind,
+                       mode=0,
                        auto_save=True, # Saves the results at the end of optimization
                        make_save=True, # Saves the results iteration per iteration
-                       make_log=False, # Make a human readable log iteration per iteration
-                       path=None):     # Define path in which to save stuff
+                       make_log=True, # Make a human readable log iteration per iteration
+                       path=None,     # Define path in which to save results of optimization
+                       path_log = None): # Path in which to save logs
+        
         #Inputs
         self.model_name = model_name
         self.kind = kind
+        self.mode = mode
         self.auto_save=auto_save  #saves the results without explictly calling the method
         self.make_save=make_save
         self.make_log=make_log
-        self.path=path #Providing a path into which write the logs
+        self.path=path
+        self.path_log = path_log
         #ModelInterface
         self.MI = None
         #Iteration counter
@@ -87,7 +96,8 @@ class Optimizer(object):
 
         #Model interface
         self.MI = ModelInterface(model_name=self.model_name,
-                                 kind=self.kind)
+                                 kind=self.kind,
+                                 mode=self.mode)
 
 
     #Defining the optimization method
@@ -102,11 +112,18 @@ class Optimizer(object):
             self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S"))
 
         #Checking if callback has to be called to make logs
-        if (self.make_log is True) or (self.make_save is True):
+        if (self.make_save is True):
             #Defining the callback function
             callback_function = self.callback_func
         else:
             callback_function = None
+        
+        # Making (or not) human readable logs
+        self.MI.setSaveLog(self.make_log)
+
+        #Path in which to save logs
+        if self.path_log is not None:
+            self.MI.setLogPath(self.path_log)
             
         self.result = gp_minimize(self.MI.getScoreFunc(),
                                   self.MI.getParams(),
@@ -127,6 +144,9 @@ class Optimizer(object):
                                   noise=self.noise,
                                   n_jobs=self.n_jobs)
         
+        #Resetting the count for the logs
+        self.MI.resetSaveLog()
+        
         #Saving the obtained results
         if self.auto_save is True:
             self.saveRes(self.result)
@@ -137,8 +157,10 @@ class Optimizer(object):
     def callback_func(self, res):
         if self.make_save is True:
             self.saveRes(res)
+        '''
         if self.make_log is True:
             self.saveLog(res)
+        '''
 
 
     #Saving the results of the optimization with built-in method
@@ -148,8 +170,9 @@ class Optimizer(object):
         skopt.dump(self.result, path)
         #print("Results {0} successfully saved.".format(path))
 
-
-    #Fuction to save human readable logs
+    '''
+    #MOVED INTO MODEL INTERFACE CLASS
+    #Method to save human readable logs
     def saveLog(self, res):
         #Parameters of the evaluation
         x = res.x_iters
@@ -175,6 +198,7 @@ class Optimizer(object):
 
         #Increasing the iteration count
         self.iter_count = self.iter_count + 1
+    '''
 
 
         #Loading model with built-in method (errors even with pickle)
@@ -202,24 +226,44 @@ class Optimizer(object):
 
     
     #Load a custom dataset to test for the optimization
-    def loadTestData(self, X_test=None, Y_test=None):
+    def loadValData(self, X_val=None, Y_val=None):
         #Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
         
-        self.MI.loadTestData(X_test, Y_test)
+        self.MI.loadValData(X_val, Y_val)
 
-
-    #Autofetch methods
+    #---------------------------------------------------------------
+    #                Batch train parameters
+    #---------------------------------------------------------------
+    '''
+    #SPLITTED IN 3
     #Train
-    def autoLoadTrain(self, ids, x_label, y_label):
+    def batchLoadSets(self, tot_train_split, tot_val_split, train_id, val_id, x_label, y_label):
         #Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
         
-        self.MI.loadTestData(ids, x_label, y_label)
+        self.MI.batchLoadSets(tot_train_split, tot_val_split, train_id, val_id, x_label, y_label)
+    '''
+    def batchTrain(self, tot_train_split, train_id):
+        #Initializing model interface if it's None
+        if self.MI is None:
+            self.defineMI()
 
+        self.MI.batchTrain(tot_train_split, train_id)
 
-    #Validation/Test
-    def autoLoadTest(self):
-        None
+    def batchVal(self, tot_val_split, val_id):
+        #Initializing model interface if it's None
+        if self.MI is None:
+            self.defineMI()
+        
+        self.MI.batchVal(tot_val_split, val_id)
+
+    def setLabels(self, x_label, y_label):
+        #Initializing model interface if it's None
+        if self.MI is None:
+            self.defineMI()
+        
+        self.MI.setLabels(x_label, y_label)
+    #---------------------------------------------------------------

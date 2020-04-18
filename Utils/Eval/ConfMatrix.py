@@ -14,7 +14,7 @@ import numpy as np
 #---------------------------------------------------
 
 #Returns the confusion matrix
-def conf_matrix(gt, 
+def confMatrix(gt, 
                 pred, 
                 labels=None, 
                 sample_weight=None, 

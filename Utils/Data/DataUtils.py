@@ -38,6 +38,25 @@ DATASET_IDS = [
     "val_days_7"
 ]
 
+#Declaring IDs for nested cross validation purposes
+TRAIN_IDS = [
+    "train_days_1",
+    "train_days_12",
+    "train_days_123",
+    "train_days_1234",
+    "train_days_12345",
+    "train_days_123456",
+]
+
+VAL_IDS = [
+    "val_days_2",
+    "val_days_3",
+    "val_days_4",
+    "val_days_5",
+    "val_days_6",
+    "val_days_7"
+]
+
 def populate_features():
     result = {}
     for dataset_id in DATASET_IDS:
