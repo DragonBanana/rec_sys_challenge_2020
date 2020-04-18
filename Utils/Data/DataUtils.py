@@ -2,6 +2,8 @@ from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
 from Utils.Data.Features.Generated.TweetFeature.FromTextToken import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
@@ -21,18 +23,18 @@ import multiprocessing as mp
 
 DATASET_IDS = [
     "train",
-    "test",
     "train_days_1",
-    "val_days_2",
     "train_days_12",
-    "val_days_3",
     "train_days_123",
-    "val_days_4",
     "train_days_1234",
-    "val_days_5",
     "train_days_12345",
-    "val_days_6",
     "train_days_123456",
+    "test",
+    "val_days_2",
+    "val_days_3",
+    "val_days_4",
+    "val_days_5",
+    "val_days_6",
     "val_days_7"
 ]
 
@@ -103,6 +105,22 @@ def populate_features():
         # FROM TEXT TOKEN FEATURES
         result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
         result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS
+        result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
+        result[("engager_feature_number_of_previous_reply_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagement(dataset_id)
+        result[("engager_feature_number_of_previous_retweet_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagement(dataset_id)
+        result[("engager_feature_number_of_previous_comment_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagement(dataset_id)
+        result[("engager_feature_number_of_previous_positive_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagement(dataset_id)
+        result[("engager_feature_number_of_previous_negative_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagement(dataset_id)
+        result[("engager_feature_number_of_previous_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousEngagement(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS RATIO
+        result[("engager_feature_number_of_previous_like_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementRatio(dataset_id)
+        result[("engager_feature_number_of_previous_reply_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementRatio(dataset_id)
+        result[("engager_feature_number_of_previous_retweet_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagementRatio(dataset_id)
+        result[("engager_feature_number_of_previous_comment_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementRatio(dataset_id)
+        result[("engager_feature_number_of_previous_positive_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementRatio(dataset_id)
+        result[("engager_feature_number_of_previous_negative_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementRatio(dataset_id)
+
         # IS ENGAGEMENT TYPE
         if dataset_id != "test":
             result[("tweet_feature_engagement_is_like", dataset_id)] = TweetFeatureEngagementIsLike(dataset_id)
@@ -176,9 +194,6 @@ SPARSE_MATRIXES = {
 def create_all():
     # For more parallelism
     features_grouped = [[v for k, v in FEATURES.items() if k[1] == dataset_id] for dataset_id in DATASET_IDS]
-    for features in features_grouped:
-        for feature in features:
-            print(feature.dataset_id)
     with mp.Pool(4) as pool:
         pool.map(create_features, features_grouped)
     # list(map(create_feature, FEATURES.values()))
