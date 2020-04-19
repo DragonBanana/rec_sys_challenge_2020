@@ -84,6 +84,10 @@ class NXGBoost(RecommenderGBM):
         # Extension of saved file
         self.ext = ".model"
         self.previous_model_path = "previous_model" + self.ext
+        
+        # if there is an unintended previous model
+        if os.path.exists(self.previous_model_path):
+            os.remove(self.previous_model_path)
 
     # -----------------------------------------------------
     #                    fit(...)
