@@ -264,8 +264,7 @@ class XGBoost(RecommenderGBM):
                       'gamma': self.gamma,
                       # 'max_delta_step':self.max_delta_step,
                       'base_score': self.base_score,
-                      'tree_method': 'gpu_hist',
-                      'single_precision_histogram': True
+                      'tree_method': 'hist'
                       }
 
         return param_dict
