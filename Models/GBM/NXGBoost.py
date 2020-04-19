@@ -32,7 +32,7 @@ class NXGBoost(RecommenderGBM):
                  batch=False,
                  # Not in tuning dict
                  objective="binary:logistic",  # outputs the binary classification probability
-                 num_parallel_tree=20,  # Number of parallel trees
+                 num_parallel_tree=4,  # Number of parallel trees
                  eval_metric="auc",  # WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
                  early_stopping_rounds=None,
                  # In tuning dict

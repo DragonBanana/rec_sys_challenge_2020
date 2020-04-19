@@ -34,7 +34,9 @@ if __name__ == '__main__':
 
     batch_n_split = 10
 
-    XGB = XGBoost(num_rounds=10, max_depth=30, learning_rate=0.01, batch=True, scale_pos_weight=149)
+    batch_paths = [f"batch_{i}" for i in range(batch_n_split)]
+
+    XGB = XGBoost(num_rounds=10, learning_rate=0.01, batch=True, scale_pos_weight=149)
 
     for split_n in range(batch_n_split):
         # Load train data
@@ -42,10 +44,14 @@ if __name__ == '__main__':
         X_train, Y_train = Data.get_dataset_xgb_batch(batch_n_split, split_n, train_dataset, X_label, Y_label)
         print(f"Loading training data time: {time.time() - loading_data_start_time} seconds")
 
-        # XGB Training
-        training_start_time = time.time()
-        XGB.fit(X_train, Y_train)
-        print(f"Training time: {time.time() - training_start_time} seconds")
+        loading_data_start_time = time.time()
+        skd.dump_svmlight_file(X_train, Y_train[Y_label[0]].array, batch_paths[split_n])
+        print(f"Saving SVM training data time: {time.time() - loading_data_start_time} seconds")
+
+    for split_n in range(batch_n_split):
+        loading_data_start_time = time.time()
+        XGB.fit_external_memory(external_memory = batch_paths[split_n])
+        print(f"Training data time: {time.time() - loading_data_start_time} seconds")
 
     # Load test data
     loading_data_start_time = time.time()

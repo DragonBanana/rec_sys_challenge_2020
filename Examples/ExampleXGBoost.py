@@ -18,10 +18,13 @@ if __name__ == '__main__':
         "tweet_feature_number_of_photo",
         "tweet_feature_number_of_video",
         "tweet_feature_number_of_gif",
-        "tweet_feature_is_reply",
         "tweet_feature_is_retweet",
         "tweet_feature_is_quote",
-        "tweet_feature_is_top_level"
+        "tweet_feature_is_top_level",
+        "tweet_feature_number_of_hashtags",
+        "tweet_feature_creation_timestamp_hour",
+        "tweet_feature_creation_timestamp_week_day",
+        "tweet_feature_number_of_mentions"
     ]
     # Define the Y label
     Y_label = [
@@ -38,21 +41,10 @@ if __name__ == '__main__':
 
     XGB = XGBoost(num_rounds=10, learning_rate=0.01, batch=True, scale_pos_weight=149)
 
-    X_train_split = np.array_split(X_train, 100)
-    Y_train_split = np.array_split(Y_train, 100)
-
-    train_split = zip(X_train_split[:15], Y_train_split[:15])
-
-    for (X,Y) in train_split:
-        # XGB Training
-        training_start_time = time.time()
-        XGB.fit(X, Y)
-        print(f"Training time: {time.time() - training_start_time} seconds")
-
-    # # XGB Training
-    # training_start_time = time.time()
-    # XGB.fit(X_train, Y_train)
-    # print(f"Training time: {time.time() - training_start_time} seconds")
+    # XGB Training
+    training_start_time = time.time()
+    XGB.fit(X_train, Y_train)
+    print(f"Training time: {time.time() - training_start_time} seconds")
 
     # XGB Evaluation
     evaluation_start_time = time.time()

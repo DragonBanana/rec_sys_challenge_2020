@@ -10,6 +10,7 @@ import pandas as pd
 import datetime as dt
 import time
 from tqdm import tqdm
+import xgboost as xgb
 
 
 class ModelInterface(object):
@@ -285,6 +286,101 @@ class ModelInterface(object):
         #Returning the dumbly combined scores
         return self.metriComb(tot_prauc, tot_rce)
 
+# ------------------------------------------------------
+#        XGB BATCH WITH EXTERNAL MEMORY
+# ------------------------------------------------------
+#       Use the self.batchLoadSetsWithExtMemory method
+#         In order to load the datasets
+# ------------------------------------------------------
+# Batch may be of different sizes, but considering how
+# they're distributed giving them the same weight in
+# averaging process shouldn't raise problems.
+# ------------------------------------------------------
+# Score function for the XGBoost model
+    def blackBoxXgbBatchExtMem(self, param):
+
+        # print(param)
+        # Initializing the model it it wasn't already
+        model = XGBoost(kind=self.kind,
+                        batch=True,
+                        # Not in tuning dict
+                        objective="binary:logistic",
+                        num_parallel_tree=4,
+                        eval_metric="auc",
+                        # In tuning dict
+                        num_rounds=param[0],
+                        max_depth=param[1],
+                        min_child_weight=param[2],
+                        colsample_bytree=param[3],
+                        learning_rate=param[4],
+                        reg_alpha=param[5],
+                        reg_lambda=param[6],
+                        # max_delta_step= param[7],
+                        scale_pos_weight=param[7],
+                        gamma=param[8],
+                        subsample=param[9],
+                        base_score=param[10])
+
+        # Batch train
+        for path in tqdm(self.ext_memory_train_paths):
+            # Multistage model fitting
+            model.fit(path)
+
+        # TODO: last evaluation set may be smaller so it needs
+        # to be weighted according to its dimension.
+
+        # Initializing variables
+        tot_prauc = 0
+        tot_rce = 0
+        tot_confmat = [[0, 0], [0, 0]]
+        max_pred = 0  # Max set to the minimum
+        min_pred = 1  # Min set to the maximum
+        avg = 0
+        self.tot_val_split = len(self.ext_memory_val_paths)
+        # Batch evaluation
+        for path in tqdm(self.ext_memory_val_paths):
+            # Iteratively fetching the dataset
+            test = xgb.DMatrix(path, silent=True)
+            X = test
+            Y = test.get_label()
+            # Multistage evaluation
+            prauc, rce, confmat, max_tmp, min_tmp, avg_tmp = model.evaluate(X, Y)
+
+            # Summing all the evaluations
+            tot_prauc = tot_prauc + prauc
+            tot_rce = tot_rce + rce
+
+            # Computing some statistics for the log
+            if self.make_log is True:
+                # Getting maximum over iteration
+                if max_tmp > max_pred:
+                    max_pred = max_tmp
+                # Getting minimum over iteration
+                if min_tmp < min_pred:
+                    min_pred = min_tmp
+                # Getting average over itaration
+                avg += avg_tmp
+                # Computing confusion matrix
+                tot_confmat = tot_confmat + confmat
+
+            # Averaging the evaluations over # of validation splits
+        tot_prauc = tot_prauc / self.tot_val_split
+        tot_rce = tot_rce / self.tot_val_split
+        avg = avg / self.tot_val_split
+
+        # Make human readable logs here
+        if self.make_log is True:
+            self.saveLog(param,
+                         tot_prauc,
+                         tot_rce,
+                         tot_confmat,
+                         max_pred,
+                         min_pred,
+                         avg)
+
+        # Returning the dumbly combined scores
+        return self.metriComb(tot_prauc, tot_rce)
+
 
 #-----------------------------------------
 #       TODO:Future implementation
@@ -383,7 +479,7 @@ class ModelInterface(object):
 
             if self.model_name in "catboost_classifier":
                 score_func = self.blackBoxCatBatch
-        else:
+        elif self.mode == 2:
             if self.model_name in "xgboost_classifier":
                 score_func = self.blackBoxXgbNCV
 
@@ -391,7 +487,10 @@ class ModelInterface(object):
                 score_func = self.blackBoxLgbNCV
 
             if self.model_name in "catboost_classifier":
-                score_func = self.blackBoxCatNCV         
+                score_func = self.blackBoxCatNCV
+        else:
+            if self.model_name in "xgboost_classifier":
+                score_func = self.blackBoxXgbBatchExtMem
 
         return score_func
 #---------------------------------------------------------------
@@ -451,6 +550,10 @@ class ModelInterface(object):
     def setLabels(self, x_label, y_label):
         self.x_label = x_label
         self.y_label = y_label
+    def setExtMemTrainPaths(self, ext_memory_paths):
+        self.ext_memory_train_paths = ext_memory_paths
+    def setExtMemValPaths(self, ext_memory_paths):
+        self.ext_memory_val_paths = ext_memory_paths
 #--------------------------------------------------
 
 

@@ -101,44 +101,83 @@ class XGBoost(RecommenderGBM):
     # -----------------------------------------------------
     def fit(self, X=None, Y=None, X_valid=None, Y_valid=None):
 
-        # Tries to load X and Y if not directly passed
-        if (X is None) or (Y is None):
-            X, Y = Data.get_dataset_xgb_default_train()
-            print("Train set loaded from file.")
+        if type(X) is str:
+            self.fit_external_memory(X)
 
-        # In case validation set is not provided set early stopping rounds to default
-        if (X_valid is None) or (Y_valid is None):
-            self.early_stopping_rounds = None
-            valid = []
         else:
-            valid = xgb.DMatrix(X_valid,
-                                label=Y_valid)
+            # Tries to load X and Y if not directly passed
+            if (X is None) or (Y is None):
+                X, Y = Data.get_dataset_xgb_default_train()
+                print("Train set loaded from file.")
 
+            # In case validation set is not provided set early stopping rounds to default
+            if (X_valid is None) or (Y_valid is None):
+                self.early_stopping_rounds = None
+                valid = []
+            else:
+                valid = xgb.DMatrix(X_valid,
+                                    label=Y_valid)
+
+            # Learning in a single round
+            if self.batch is False:
+                # Transforming matrices in DMatrix type
+                train = xgb.DMatrix(X,
+                                    label=Y)
+
+                # Defining and fitting the models
+                self.sround_model = xgb.train(self.get_param_dict(),
+                                              early_stopping_rounds=self.early_stopping_rounds,
+                                              evals=valid,
+                                              dtrain=train,
+                                              num_boost_round=math.ceil(self.num_rounds))
+
+            # Learning by consecutive batches
+            else:
+                # Transforming matrices in DMatrix type
+                train = xgb.DMatrix(X,
+                                    label=Y)
+
+                # if we want to start from a model already saved
+                if os.path.exists(self.previous_model_path):
+                    # Defining and training the model
+                    model = xgb.train(self.get_param_dict(),
+                                                 early_stopping_rounds=self.early_stopping_rounds,
+                                                 evals=valid,
+                                                 dtrain=train,
+                                                 xgb_model=self.previous_model_path)
+                    os.remove(self.previous_model_path)
+                    model.save_model(self.previous_model_path)
+                    del model
+
+                # if we have no model saved
+                else:
+                    model = xgb.train(self.get_param_dict(),
+                                                 early_stopping_rounds=self.early_stopping_rounds,
+                                                 evals=valid,
+                                                 dtrain=train)
+                    model.save_model(self.previous_model_path)
+                    del model
+
+    def fit_external_memory(self, external_memory):
         # Learning in a single round
         if self.batch is False:
             # Transforming matrices in DMatrix type
-            train = xgb.DMatrix(X,
-                                label=Y)
+            train = xgb.DMatrix(external_memory, silent=True)
 
             # Defining and fitting the models
             self.sround_model = xgb.train(self.get_param_dict(),
-                                          early_stopping_rounds=self.early_stopping_rounds,
-                                          evals=valid,
                                           dtrain=train,
                                           num_boost_round=math.ceil(self.num_rounds))
 
         # Learning by consecutive batches
         else:
             # Transforming matrices in DMatrix type
-            train = xgb.DMatrix(X,
-                                label=Y)
+            train = xgb.DMatrix(external_memory)
 
             # if we want to start from a model already saved
             if os.path.exists(self.previous_model_path):
                 # Defining and training the model
                 model = xgb.train(self.get_param_dict(),
-                                             early_stopping_rounds=self.early_stopping_rounds,
-                                             evals=valid,
                                              dtrain=train,
                                              xgb_model=self.previous_model_path)
                 os.remove(self.previous_model_path)
@@ -148,8 +187,6 @@ class XGBoost(RecommenderGBM):
             # if we have no model saved
             else:
                 model = xgb.train(self.get_param_dict(),
-                                             early_stopping_rounds=self.early_stopping_rounds,
-                                             evals=valid,
                                              dtrain=train)
                 model.save_model(self.previous_model_path)
                 del model
@@ -170,7 +207,9 @@ class XGBoost(RecommenderGBM):
         if (X_tst is None) or (Y_tst is None):
             X_tst, Y_tst = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
-        Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
+
+        if type(Y_tst) is pd.DataFrame:
+            Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
 
         if (self.sround_model is None) and (not os.path.exists(self.previous_model_path)):
             print("No model trained yet.")
@@ -221,7 +260,10 @@ class XGBoost(RecommenderGBM):
 
 
             # Preparing DMatrix
-            d_test = xgb.DMatrix(X_tst)
+            if type(X_tst) is not xgb.core.DMatrix:
+                d_test = xgb.DMatrix(X_tst)
+            else:
+                d_test = X_tst
 
             model = self.get_model()
 
@@ -253,13 +295,11 @@ class XGBoost(RecommenderGBM):
             # Reinitializing model
             self.sround_model = xgb.Booster()
             self.sround_model.load_model(path)
-            print("Model correctly loaded.")
 
         else:
             # By loading in this way it is possible to keep on learning
             self.batch_model = xgb.Booster()
             self.batch_model.load_model(path)
-            print("Batch model correctly loaded.")
 
     # Returns/prints the importance of the features
     # -------------------------------------------------
