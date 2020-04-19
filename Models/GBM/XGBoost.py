@@ -31,6 +31,9 @@ class XGBoost(RecommenderGBM):
                  kind="NO_KIND_GIVEN",
                  batch=False,
                  # Not in tuning dict
+                 verbosity=1,
+                 process_type="default",
+                 tree_method="auto",
                  objective="binary:logistic",  # outputs the binary classification probability
                  num_parallel_tree=4,  # Number of parallel trees
                  eval_metric="auc",  # WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
@@ -58,10 +61,16 @@ class XGBoost(RecommenderGBM):
         self.kind = kind
         self.batch = batch  # False: single round| True: batch learning
         # Parameters
-        self.num_rounds = num_rounds
+        # Not in dict
+        self.verbosity = verbosity
+        self.process_type = process_type
+        self.tree_method = tree_method
         self.objective = objective
-        self.early_stopping_rounds = early_stopping_rounds
+        self.num_parallel_tree = num_parallel_tree
         self.eval_metric = eval_metric
+        self.early_stopping_rounds = early_stopping_rounds
+        # In dict
+        self.num_rounds = num_rounds
         self.colsample_bytree = colsample_bytree
         self.learning_rate = learning_rate
         self.max_depth = max_depth
@@ -74,6 +83,7 @@ class XGBoost(RecommenderGBM):
         self.gamma = gamma
         # self.max_delta_step=max_delta_step
         self.base_score = base_score
+        self.subsample = subsample
 
         # CLASS VARIABLES
         # Model
@@ -126,10 +136,9 @@ class XGBoost(RecommenderGBM):
 
                 # Defining and fitting the models
                 self.sround_model = xgb.train(self.get_param_dict(),
-                                              early_stopping_rounds=self.early_stopping_rounds,
+                                              num_boost_round=math.ceil(self.num_rounds),early_stopping_rounds=self.early_stopping_rounds,
                                               evals=valid,
-                                              dtrain=train,
-                                              num_boost_round=math.ceil(self.num_rounds))
+                                              dtrain=train)
 
             # Learning by consecutive batches
             else:
@@ -295,7 +304,6 @@ class XGBoost(RecommenderGBM):
             # Reinitializing model
             self.sround_model = xgb.Booster()
             self.sround_model.load_model(path)
-
         else:
             # By loading in this way it is possible to keep on learning
             self.batch_model = xgb.Booster()
@@ -320,7 +328,10 @@ class XGBoost(RecommenderGBM):
 
     # Returns parameters in dicrionary form
     def get_param_dict(self):
-        param_dict = {'objective': self.objective,
+        param_dict = {'verbosity': self.verbosity,
+                      'process_type': self.process_type,
+                      'tree_method': self.tree_method,
+                      'objective': self.objective,
                       'eval_metric': self.eval_metric,
                       'colsample_bytree': self.colsample_bytree,
                       'learning_rate': self.learning_rate,
@@ -333,8 +344,7 @@ class XGBoost(RecommenderGBM):
                       'subsample': self.subsample,
                       'gamma': self.gamma,
                       # 'max_delta_step':self.max_delta_step,
-                      'base_score': self.base_score,
-                      'tree_method': 'gpu_hist'
-                      }
+                      'base_score': self.base_score
+                     }
 
         return param_dict

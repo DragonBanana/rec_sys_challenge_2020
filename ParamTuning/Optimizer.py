@@ -267,3 +267,26 @@ class Optimizer(object):
         
         self.MI.setLabels(x_label, y_label)
     #---------------------------------------------------------------
+
+
+    #---------------------------------------------------------------
+    #         Setting non tuned parameters
+    #---------------------------------------------------------------
+    def setParams(self, verbosity=1, 
+                        process_type="default", 
+                        tree_method="auto", 
+                        objective="binary:logistic", 
+                        num_parallel_tree=4, 
+                        eval_metric="auc", 
+                        early_stopping_rounds=None):
+        if self.MI is None:
+            self.defineMI()
+        
+        self.MI.setParams(verbosity=verbosity,
+                          process_type=process_type,
+                          tree_method=tree_method,
+                          objective=objective,
+                          num_parallel_tree=num_parallel_tree,
+                          eval_metric=eval_metric,
+                          early_stopping_rounds=early_stopping_rounds)
+    #----------------------------------------------------------------
