@@ -6,6 +6,7 @@ from sklearn.metrics import precision_recall_curve, auc, log_loss
 import time
 import pickle
 import os.path
+import os
 import datetime as dt
 import sys
 import math
@@ -31,7 +32,7 @@ class XGBoost(RecommenderGBM):
                  batch=False,
                  # Not in tuning dict
                  objective="binary:logistic",  # outputs the binary classification probability
-                 num_parallel_tree=20,  # Number of parallel trees
+                 num_parallel_tree=4,  # Number of parallel trees
                  eval_metric="auc",  # WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
                  early_stopping_rounds=None,
                  # In tuning dict
@@ -82,6 +83,11 @@ class XGBoost(RecommenderGBM):
         self.Y_pred = None
         # Extension of saved file
         self.ext = ".model"
+        self.previous_model_path = "previous_model" + self.ext
+
+        # if there is an unintended previous model
+        if os.path.exists(self.previous_model_path):
+            os.remove(self.previous_model_path)
 
     # -----------------------------------------------------
     #                    fit(...)
@@ -127,12 +133,26 @@ class XGBoost(RecommenderGBM):
             train = xgb.DMatrix(X,
                                 label=Y)
 
-            # Defining and training the model
-            self.batch_model = xgb.train(self.get_param_dict(),
-                                         early_stopping_rounds=self.early_stopping_rounds,
-                                         evals=valid,
-                                         dtrain=train,
-                                         xgb_model=self.batch_model)
+            # if we want to start from a model already saved
+            if os.path.exists(self.previous_model_path):
+                # Defining and training the model
+                model = xgb.train(self.get_param_dict(),
+                                             early_stopping_rounds=self.early_stopping_rounds,
+                                             evals=valid,
+                                             dtrain=train,
+                                             xgb_model=self.previous_model_path)
+                os.remove(self.previous_model_path)
+                model.save_model(self.previous_model_path)
+                del model
+
+            # if we have no model saved
+            else:
+                model = xgb.train(self.get_param_dict(),
+                                             early_stopping_rounds=self.early_stopping_rounds,
+                                             evals=valid,
+                                             dtrain=train)
+                model.save_model(self.previous_model_path)
+                del model
 
     # Returns the predictions and evaluates them
     # ---------------------------------------------------------------------------
@@ -151,15 +171,13 @@ class XGBoost(RecommenderGBM):
             X_tst, Y_tst = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
         Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
-        if (self.sround_model is None) and (self.batch_model is None):
+
+        if (self.sround_model is None) and (not os.path.exists(self.previous_model_path)):
             print("No model trained yet.")
         else:
             # Selecting the coherent model for the evaluation
             # According to the initial declaration (batch/single round)
-            if self.batch is False:
-                model = self.sround_model
-            else:
-                model = self.batch_model
+            model = self.get_model()
 
             # Preparing DMatrix
             # d_test = xgb.DMatrix(X_tst)
@@ -200,19 +218,31 @@ class XGBoost(RecommenderGBM):
         if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
-            # Selecting the coherent model for the evaluation
-            # According to the initial declaration (batch/single round)
-            if self.batch is False:
-                model = self.sround_model
-            else:
-                model = self.batch_model
+
 
             # Preparing DMatrix
             d_test = xgb.DMatrix(X_tst)
 
+            model = self.get_model()
+
             # Making predictions
             Y_pred = model.predict(d_test)
             return Y_pred
+
+
+
+    def get_model(self):
+        # Selecting the coherent model for the evaluation
+        # According to the initial declaration (batch/single round)
+
+        if self.batch is False:
+            return self.sround_model
+        else:
+            # we have an already saved model due to incremental training
+            self.load_model(self.previous_model_path)
+            return self.batch_model
+
+
 
     # This method loads a model
     # -------------------------
@@ -223,13 +253,13 @@ class XGBoost(RecommenderGBM):
             # Reinitializing model
             self.sround_model = xgb.Booster()
             self.sround_model.load_model(path)
-            print("Model correctly loaded.\n")
+            print("Model correctly loaded.")
 
         else:
             # By loading in this way it is possible to keep on learning
             self.batch_model = xgb.Booster()
             self.batch_model.load_model(path)
-            print("Batch model correctly loaded.\n")
+            print("Batch model correctly loaded.")
 
     # Returns/prints the importance of the features
     # -------------------------------------------------
@@ -264,7 +294,7 @@ class XGBoost(RecommenderGBM):
                       'gamma': self.gamma,
                       # 'max_delta_step':self.max_delta_step,
                       'base_score': self.base_score,
-                      'tree_method': 'hist'
+                      'tree_method': 'gpu_hist'
                       }
 
         return param_dict
