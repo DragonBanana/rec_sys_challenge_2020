@@ -35,11 +35,12 @@ def xgbRange():
                         Real(0.0001, 1, 'log-uniform'),     #learning rate
                         Real(0.0001, 1, 'log-uniform'),     #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),     #lambda_reg
-                        Real(0, 10),                        #scale_pos_weight
+                        # SCALE POS WEIGHT FOR LIKE
+                        Real(0.5, 1.5),                        #scale_pos_weight
                         #Real(1, 40),                        #max_delta_step
-                        Real(1, 100),                       #gamma
+                        Real(0.1, 10),                       #gamma
                         Real(0.3, 1),                       #subsample
-                        Real(0.1,0.7)]                        #base_score
+                        Real(0.3,0.7)]                        #base_score
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
     #use max_delta_step instead
