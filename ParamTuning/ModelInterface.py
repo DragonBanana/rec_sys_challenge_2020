@@ -29,6 +29,14 @@ class ModelInterface(object):
         self.path = None
         # True make logs, false don't
         self.make_log = True
+        # Parameters to set
+        self.verbosity="1"
+        self.process_type="default"
+        self.tree_method="auto"
+        self.objective="binary:logistic"
+        self.num_parallel_tree="4"
+        self.eval_metric="auc"
+        self.early_stopping_rounds=None
         
         
 #------------------------------------------------------
@@ -39,11 +47,15 @@ class ModelInterface(object):
         #print(param)
         #Initializing the model it it wasn't already
         model = XGBoost(kind=self.kind,
-                        batch = True,
+                        batch = False,
                         #Not in tuning dict
-                        objective="binary:logistic",
-                        num_parallel_tree= 4,
-                        eval_metric= "auc",
+                        verbosity=self.verbosity,
+                        process_type=self.process_type,
+                        tree_method=self.tree_method,
+                        objective=self.objective,
+                        num_parallel_tree=self.num_parallel_tree,
+                        eval_metric=self.eval_metric,
+                        early_stopping_rounds=self.early_stopping_rounds,
                         #In tuning dict
                         num_rounds = param[0],
                         max_depth = param[1],
@@ -101,9 +113,13 @@ class ModelInterface(object):
         model = XGBoost(kind=self.kind,
                         batch = True,
                         #Not in tuning dict
-                        objective="binary:logistic",
-                        num_parallel_tree= 4,
-                        eval_metric= "auc",
+                        verbosity=self.verbosity,
+                        process_type=self.process_type,
+                        tree_method=self.tree_method,
+                        objective=self.objective,
+                        num_parallel_tree=self.num_parallel_tree,
+                        eval_metric=self.eval_metric,
+                        early_stopping_rounds=self.early_stopping_rounds,
                         #In tuning dict
                         num_rounds = param[0],
                         max_depth = param[1],
@@ -202,9 +218,13 @@ class ModelInterface(object):
         model = XGBoost(kind=self.kind,
                         batch = True,
                         #Not in tuning dict
-                        objective="binary:logistic",
-                        num_parallel_tree= 4,
-                        eval_metric= "auc",
+                        verbosity=self.verbosity,
+                        process_type=self.process_type,
+                        tree_method=self.tree_method,
+                        objective=self.objective,
+                        num_parallel_tree=self.num_parallel_tree,
+                        eval_metric=self.eval_metric,
+                        early_stopping_rounds=self.early_stopping_rounds,
                         #In tuning dict
                         num_rounds = param[0],
                         max_depth = param[1],
@@ -519,4 +539,24 @@ class ModelInterface(object):
 #--------------------------------------------------
     def setLogPath(self, path):
         self.path = path
+#--------------------------------------------------
+
+
+#--------------------------------------------------
+#         Setting non tuned parameters
+#--------------------------------------------------
+    def setParams(self, verbosity, 
+                        process_type, 
+                        tree_method, 
+                        objective, 
+                        num_parallel_tree, 
+                        eval_metric, 
+                        early_stopping_rounds):
+        self.verbosity=verbosity
+        self.process_type=process_type
+        self.tree_method=tree_method
+        self.objective=objective
+        self.num_parallel_tree=num_parallel_tree
+        self.eval_metric=eval_metric
+        self.early_stopping_rounds=early_stopping_rounds
 #--------------------------------------------------
