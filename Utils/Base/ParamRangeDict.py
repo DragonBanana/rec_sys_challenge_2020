@@ -29,7 +29,7 @@ from skopt.space import Categorical
 
 def xgbRange():
     param_range_dict = [Integer(5, 200),                    #num_rounds
-                        Integer(5, 200),                    #max_depth
+                        Integer(4, 64),                    #max_depth
                         Integer(1, 10),                    #min_child_weight
                         Real(0.3, 1),                       #colsample_bytree
                         Real(0.0001, 1, 'log-uniform'),     #learning rate
