@@ -33,7 +33,7 @@ class XGBoost(RecommenderGBM):
                  # Not in tuning dict
                  verbosity=1,
                  process_type="default",
-                 tree_method="auto",
+                 tree_method="gpu_hist",
                  objective="binary:logistic",  # outputs the binary classification probability
                  num_parallel_tree=4,  # Number of parallel trees
                  eval_metric="auc",  # WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE

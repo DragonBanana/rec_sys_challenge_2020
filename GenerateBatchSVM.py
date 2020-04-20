@@ -13,12 +13,26 @@ from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 import sklearn.datasets as skd
 from tqdm import tqdm
+import pathlib as pl
 
 
 def main():
 
-    # like, retweet, comment, reply
-    label = "like"
+    labels = [
+        "like",
+        "reply",
+        "retweet",
+        "comment"
+    ]
+
+    train_batch_n_split = 20
+    val_batch_n_split = 5
+
+    train_dataset_id = "train_days_123456"
+    val_dataset_id = "val_days_7"
+
+    gen_train = True
+    gen_val = True
 
     #------------------------------------------
     #           BATCH EXAMPLE
@@ -54,36 +68,29 @@ def main():
         "engager_feature_number_of_previous_negative_engagement_ratio"
     ]
 
-    #Name of the model eg. xgboost_classifier
-    model_name="xgboost_classifier"
-    #Kind of prediction eg. "like"
-    kind = label
+    def gen(label):
+        # Define the Y label
+        Y_label = [
+            f"tweet_feature_engagement_is_{label}"
+        ]
 
-    folder = f"{label}"
+        folder = f"{label}"
+        pl.Path(folder).mkdir(parents=True, exist_ok=True)
 
-    train_batch_n_split = 20
-    val_batch_n_split = 5
+        if gen_train:
+            for i in tqdm(range(train_batch_n_split)):
+                X_train, Y_train = Data.get_dataset_xgb_batch(train_batch_n_split, i, train_dataset_id, X_label, Y_label)
+                skd.dump_svmlight_file(X_train, Y_train[Y_label[0]].array, f"{folder}/train_batch_{i}.svm")
 
-    #Declaring optimizer
-    OP = Optimizer(model_name,
-                   kind,
-                   mode=3,
-                   make_log=True,
-                   make_save=False,
-                   auto_save=False)
+        if gen_val:
+            for i in tqdm(range(val_batch_n_split)):
+                X_test, Y_test = Data.get_dataset_xgb_batch(val_batch_n_split, i, val_dataset_id, X_label, Y_label)
+                skd.dump_svmlight_file(X_test, Y_test[Y_label[0]].array, f"{folder}/val_batch_{i}.svm")
 
-    OP.setParameters(n_calls=300, n_random_starts=30)
-    OP.defineMI()
-    OP.MI.setExtMemTrainPaths([
-        f"{folder}/train_batch_{i}.svm#{folder}/{label}.cache" for i in range(train_batch_n_split)
-    ])
-    OP.MI.setExtMemValPaths([
-        f"{folder}/val_batch_{i}.svm" for i in range(val_batch_n_split)
-    ])
-    OP.optimize()
-    #------------------------------------------
+    [gen(label) for label in labels]
 
 
 
 if __name__ == "__main__":
     main()
+

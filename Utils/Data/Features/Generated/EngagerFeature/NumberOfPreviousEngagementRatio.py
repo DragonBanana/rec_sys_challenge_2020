@@ -21,6 +21,7 @@ class EngagerFeatureNumberOfPreviousLikeEngagementRatio(GeneratedFeaturePickle):
         )
 
         result.fillna(-1, inplace=True)
+        result.replace([np.inf, -np.inf], -1, inplace=True)
 
         self.save_feature(result)
 
@@ -44,6 +45,7 @@ class EngagerFeatureNumberOfPreviousReplyEngagementRatio(GeneratedFeaturePickle)
         )
 
         result.fillna(-1, inplace=True)
+        result.replace([np.inf, -np.inf], -1, inplace=True)
 
         self.save_feature(result)
 
@@ -67,6 +69,7 @@ class EngagerFeatureNumberOfPreviousRetweetEngagementRatio(GeneratedFeaturePickl
         )
 
         result.fillna(-1, inplace=True)
+        result.replace([np.inf, -np.inf], -1, inplace=True)
 
         self.save_feature(result)
 
@@ -90,6 +93,7 @@ class EngagerFeatureNumberOfPreviousCommentEngagementRatio(GeneratedFeaturePickl
         )
 
         result.fillna(-1, inplace=True)
+        result.replace([np.inf, -np.inf], -1, inplace=True)
 
         self.save_feature(result)
 
@@ -113,6 +117,7 @@ class EngagerFeatureNumberOfPreviousPositiveEngagementRatio(GeneratedFeaturePick
         )
 
         result.fillna(-1, inplace=True)
+        result.replace([np.inf, -np.inf], -1, inplace=True)
 
         self.save_feature(result)
 
@@ -136,5 +141,6 @@ class EngagerFeatureNumberOfPreviousNegativeEngagementRatio(GeneratedFeaturePick
         )
 
         result.fillna(-1, inplace=True)
+        result.replace([np.inf, -np.inf], -1, inplace=True)
 
         self.save_feature(result)
