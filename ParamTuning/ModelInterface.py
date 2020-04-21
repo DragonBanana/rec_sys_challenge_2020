@@ -25,7 +25,7 @@ class ModelInterface(object):
         self.Y_val = None
         # LOGS PARAMS
         # Counter of iterations
-        self.iter_count = 0
+        self.iter_count = 1
         # Filename for logs
         self.path = None
         # True make logs, false don't
@@ -35,7 +35,7 @@ class ModelInterface(object):
         self.process_type="default"
         self.tree_method="auto"
         self.objective="binary:logistic"
-        self.num_parallel_tree="4"
+        self.num_parallel_tree=4
         self.eval_metric="auc"
         self.early_stopping_rounds=None
         
@@ -45,7 +45,8 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXGB(self, param):
-        #print(param)
+        if self.make_log is True:
+            self.saveParam(param)
         #Initializing the model it it wasn't already
         model = XGBoost(kind=self.kind,
                         batch = False,
@@ -85,8 +86,7 @@ class ModelInterface(object):
 
         #Make human readable logs here
         if self.make_log is True:
-            self.saveLog(param, 
-                         prauc, 
+            self.saveRes(prauc, 
                          rce, 
                          confmat, 
                          max_pred, 
@@ -109,7 +109,9 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXgbBatch(self, param):
-        #print(param)
+        #Saving parameters
+        if self.make_log is True:
+            self.saveParam(param)
         #Initializing the model it it wasn't already
         model = XGBoost(kind=self.kind,
                         batch = True,
@@ -191,8 +193,7 @@ class ModelInterface(object):
 
         #Make human readable logs here
         if self.make_log is True:
-            self.saveLog(param, 
-                         tot_prauc, 
+            self.saveRes(tot_prauc, 
                          tot_rce, 
                          tot_confmat, 
                          max_pred, 
@@ -215,6 +216,9 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXgbNCV(self, param):
+        #Saving parameters
+        if self.make_log is True:
+            self.saveParam(param)
         #Initializing the model it it wasn't already
         model = XGBoost(kind=self.kind,
                         batch = True,
@@ -295,8 +299,7 @@ class ModelInterface(object):
 
         #Make human readable logs here
         if self.make_log is True:
-            self.saveLog(param, 
-                         tot_prauc, 
+            self.saveRes(tot_prauc, 
                          tot_rce, 
                          tot_confmat, 
                          max_pred, 
@@ -318,8 +321,9 @@ class ModelInterface(object):
 # ------------------------------------------------------
 # Score function for the XGBoost model
     def blackBoxXgbBatchExtMem(self, param):
-
-        # print(param)
+        #Saving parameters of the optimization
+        if self.make_log is True:
+            self.saveParam(param)
         # Initializing the model it it wasn't already
         model = XGBoost(kind=self.kind,
                         batch=True,
@@ -390,8 +394,7 @@ class ModelInterface(object):
 
         # Make human readable logs here
         if self.make_log is True:
-            self.saveLog(param,
-                         tot_prauc,
+            self.saveRes(tot_prauc,
                          tot_rce,
                          tot_confmat,
                          max_pred,
@@ -580,6 +583,8 @@ class ModelInterface(object):
 #--------------------------------------------------
 #            Save human readable logs
 #--------------------------------------------------
+    '''
+    #SPLIT IN TWO IN ORDER TO WRITE PARAMETERS BEFORE THE EVALUATION
     def saveLog(self, param, prauc, rce, confmat, max_arr, min_arr, avg):
         if self.path is None:
             #Taking the path provided
@@ -614,6 +619,51 @@ class ModelInterface(object):
 
         #Increasing the iteration count
         self.iter_count = self.iter_count + 1
+        '''
+    #Saves the parameters (called before the training phase)
+    def saveParam(self, param):
+        if self.path is None:
+            #Taking the path provided
+            self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S")) + ".log"
+        #Get hyperparameter names
+        p_names = self.getParamNames()
+        #Opening a file and writing into it the logs
+        with open(self.path, 'a') as log:
+            to_write = "ITERATION NUMBER " + str(self.iter_count) + "\n"
+            log.write(to_write)
+            for i in range(len(p_names)):
+                to_write=str(str(p_names[i])+"= "+str(param[i])+"\n")
+                log.write(to_write)
+
+
+    #Saves the results (called after the evaluation phase)
+    def saveRes(self, prauc, rce, confmat, max_arr, min_arr, avg):
+        if self.path is None:
+            #Taking the path provided
+            self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S")) + ".log"
+        #Opening a file and writing into it the logs
+        with open(self.path, 'a') as log:          
+            #Writing the log
+            tn, fp, fn, tp = confmat.ravel()
+            obj = self.metriComb(prauc, rce)
+            to_write = "-------\n"
+            to_write += "PRAUC = "+str(prauc)+"\n"
+            to_write += "RCE   = "+str(rce)+"\n"
+            to_write += "-------\n"
+            to_write += "TN    = "+str(tn)+"\n"
+            to_write += "FP    = "+str(fp)+"\n"
+            to_write += "FN    = "+str(fn)+"\n"
+            to_write += "TP    = "+str(tp)+"\n"
+            to_write += "-------\n"
+            to_write += "MAX   ="+str(max_arr)+"\n"
+            to_write += "MIN   ="+str(min_arr)+"\n"
+            to_write += "AVG   ="+str(avg)+"\n"
+            to_write += "-------\n"
+            to_write += "OBJECTIVE: "+str(obj)+"\n\n\n"
+            log.write(to_write)
+
+        #Increasing the iteration count
+        self.iter_count = self.iter_count + 1
 #--------------------------------------------------
 
 
@@ -624,7 +674,7 @@ class ModelInterface(object):
 # one.
 #--------------------------------------------------
     def resetSaveLog(self):
-        self.iter_count = 0
+        self.iter_count = 1
         self.path = None
 #--------------------------------------------------
 

@@ -55,7 +55,7 @@ def main():
     OP.setLabels(X_label, Y_label)
     OP.optimize()
     #------------------------------------------
-
+    '''
     #------------------------------------------
     #     NESTED CROSS VALIDATION EXAMPLE
     #------------------------------------------
@@ -71,6 +71,7 @@ def main():
     OP.setLabels(X_label, Y_label)
     OP.optimize()
     #------------------------------------------
+    '''
 
 
     '''
