@@ -324,8 +324,13 @@ class ModelInterface(object):
 # ------------------------------------------------------
 # Score function for the XGBoost model
     def blackBoxXgbBatchExtMem(self, param):
-        with mp.Pool(1) as pool:
-            return pool.map(functools.partial(run_xgb_external_memory, model_interface=self), [param])[0]
+        queue = mp.Queue()
+        sub_process = mp.Process(target=run_xgb_external_memory, args=(param, self, queue))
+        sub_process.start()
+        sub_process.join()
+        return queue.get()
+        # with mp.Pool(1) as pool:
+        #     return pool.map(functools.partial(run_xgb_external_memory, model_interface=self), [param])[0]
 
 #-----------------------------------------
 #       TODO:Future implementation
@@ -642,7 +647,7 @@ class ModelInterface(object):
 
 
 
-def run_xgb_external_memory(param, model_interface):
+def run_xgb_external_memory(param, model_interface, queue):
     #Saving parameters of the optimization
     if model_interface.make_log is True:
         model_interface.saveParam(param)
@@ -724,4 +729,5 @@ def run_xgb_external_memory(param, model_interface):
                      avg)
 
     # Returning the dumbly combined scores
+    queue.put(model_interface.metriComb(tot_prauc, tot_rce))
     return model_interface.metriComb(tot_prauc, tot_rce)
