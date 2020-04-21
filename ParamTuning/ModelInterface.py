@@ -1,3 +1,4 @@
+import functools
 import sys
 import os.path
 from Models.GBM.XGBoost import XGBoost
@@ -12,6 +13,7 @@ import time
 from tqdm import tqdm
 import xgboost as xgb
 import numpy as np
+import multiprocessing as mp
 
 
 class ModelInterface(object):
@@ -322,89 +324,8 @@ class ModelInterface(object):
 # ------------------------------------------------------
 # Score function for the XGBoost model
     def blackBoxXgbBatchExtMem(self, param):
-        #Saving parameters of the optimization
-        if self.make_log is True:
-            self.saveParam(param)
-        # Initializing the model it it wasn't already
-        model = XGBoost(kind=self.kind,
-                        batch=True,
-                        # Not in tuning dict
-                        objective="binary:logistic",
-                        num_parallel_tree=4,
-                        eval_metric="auc",
-                        # In tuning dict
-                        num_rounds=param[0],
-                        max_depth=param[1],
-                        min_child_weight=param[2],
-                        colsample_bytree=param[3],
-                        learning_rate=param[4],
-                        reg_alpha=param[5],
-                        reg_lambda=param[6],
-                        # max_delta_step= param[7],
-                        scale_pos_weight=param[7],
-                        gamma=param[8],
-                        subsample=param[9],
-                        base_score=param[10])
-
-        # Batch train
-        for path in tqdm(self.ext_memory_train_paths):
-            # Multistage model fitting
-            model.fit(path)
-
-        # TODO: last evaluation set may be smaller so it needs
-        # to be weighted according to its dimension.
-
-        # Initializing variables
-        tot_prauc = 0
-        tot_rce = 0
-        tot_confmat = [[0, 0], [0, 0]]
-        max_pred = 0  # Max set to the minimum
-        min_pred = 1  # Min set to the maximum
-        avg = 0
-        self.tot_val_split = len(self.ext_memory_val_paths)
-        # Batch evaluation
-        for path in tqdm(self.ext_memory_val_paths):
-            # Iteratively fetching the dataset
-            test = xgb.DMatrix(path, silent=True)
-            X = test
-            Y = test.get_label()
-            # Multistage evaluation
-            prauc, rce, confmat, max_tmp, min_tmp, avg_tmp = model.evaluate(X, Y)
-
-            # Summing all the evaluations
-            tot_prauc = tot_prauc + prauc
-            tot_rce = tot_rce + rce
-
-            # Computing some statistics for the log
-            if self.make_log is True:
-                # Getting maximum over iteration
-                if max_tmp > max_pred:
-                    max_pred = max_tmp
-                # Getting minimum over iteration
-                if min_tmp < min_pred:
-                    min_pred = min_tmp
-                # Getting average over itaration
-                avg += avg_tmp
-                # Computing confusion matrix
-                tot_confmat = tot_confmat + confmat
-
-            # Averaging the evaluations over # of validation splits
-        tot_prauc = tot_prauc / self.tot_val_split
-        tot_rce = tot_rce / self.tot_val_split
-        avg = avg / self.tot_val_split
-
-        # Make human readable logs here
-        if self.make_log is True:
-            self.saveRes(tot_prauc,
-                         tot_rce,
-                         tot_confmat,
-                         max_pred,
-                         min_pred,
-                         avg)
-
-        # Returning the dumbly combined scores
-        return self.metriComb(tot_prauc, tot_rce)
-
+        with mp.Pool(1) as pool:
+            return pool.map(functools.partial(run_xgb_external_memory, model_interface=self), [param])[0]
 
 #-----------------------------------------
 #       TODO:Future implementation
@@ -718,3 +639,89 @@ class ModelInterface(object):
         self.eval_metric=eval_metric
         self.early_stopping_rounds=early_stopping_rounds
 #--------------------------------------------------
+
+
+
+def run_xgb_external_memory(param, model_interface):
+    #Saving parameters of the optimization
+    if model_interface.make_log is True:
+        model_interface.saveParam(param)
+    # Initializing the model it it wasn't already
+    model = XGBoost(kind=model_interface.kind,
+                    batch=True,
+                    # Not in tuning dict
+                    objective="binary:logistic",
+                    num_parallel_tree=4,
+                    eval_metric="auc",
+                    # In tuning dict
+                    num_rounds=param[0],
+                    max_depth=param[1],
+                    min_child_weight=param[2],
+                    colsample_bytree=param[3],
+                    learning_rate=param[4],
+                    reg_alpha=param[5],
+                    reg_lambda=param[6],
+                    # max_delta_step= param[7],
+                    scale_pos_weight=param[7],
+                    gamma=param[8],
+                    subsample=param[9],
+                    base_score=param[10])
+
+    # Batch train
+    for path in tqdm(model_interface.ext_memory_train_paths):
+        # Multistage model fitting
+        model.fit(path)
+
+    # TODO: last evaluation set may be smaller so it needs
+    # to be weighted according to its dimension.
+
+    # Initializing variables
+    tot_prauc = 0
+    tot_rce = 0
+    tot_confmat = [[0, 0], [0, 0]]
+    max_pred = 0  # Max set to the minimum
+    min_pred = 1  # Min set to the maximum
+    avg = 0
+    model_interface.tot_val_split = len(model_interface.ext_memory_val_paths)
+    # Batch evaluation
+    for path in tqdm(model_interface.ext_memory_val_paths):
+        # Iteratively fetching the dataset
+        test = xgb.DMatrix(path, silent=True)
+        X = test
+        Y = test.get_label()
+        # Multistage evaluation
+        prauc, rce, confmat, max_tmp, min_tmp, avg_tmp = model.evaluate(X, Y)
+
+        # Summing all the evaluations
+        tot_prauc = tot_prauc + prauc
+        tot_rce = tot_rce + rce
+
+        # Computing some statistics for the log
+        if model_interface.make_log is True:
+            # Getting maximum over iteration
+            if max_tmp > max_pred:
+                max_pred = max_tmp
+            # Getting minimum over iteration
+            if min_tmp < min_pred:
+                min_pred = min_tmp
+            # Getting average over itaration
+            avg += avg_tmp
+            # Computing confusion matrix
+            tot_confmat = tot_confmat + confmat
+
+        # Averaging the evaluations over # of validation splits
+    tot_prauc = tot_prauc / model_interface.tot_val_split
+    tot_rce = tot_rce / model_interface.tot_val_split
+    avg = avg / model_interface.tot_val_split
+
+    # Make human readable logs here
+    if model_interface.make_log is True:
+        model_interface.saveRes(tot_prauc,
+                     tot_rce,
+                     tot_confmat,
+                     max_pred,
+                     min_pred,
+                     avg)
+
+    # Returning the dumbly combined scores
+    return model_interface.metriComb(tot_prauc, tot_rce)
