@@ -33,7 +33,7 @@ class XGBoost(RecommenderGBM):
                  # Not in tuning dict
                  verbosity=1,
                  process_type="default",
-                 tree_method="gpu_hist",
+                 tree_method="hist",
                  objective="binary:logistic",  # outputs the binary classification probability
                  num_parallel_tree=4,  # Number of parallel trees
                  eval_metric="auc",  # WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
@@ -93,11 +93,7 @@ class XGBoost(RecommenderGBM):
         self.Y_pred = None
         # Extension of saved file
         self.ext = ".model"
-        self.previous_model_path = "previous_model" + self.ext
 
-        # if there is an unintended previous model
-        if os.path.exists(self.previous_model_path):
-            os.remove(self.previous_model_path)
 
     # -----------------------------------------------------
     #                    fit(...)
@@ -145,27 +141,22 @@ class XGBoost(RecommenderGBM):
                 # Transforming matrices in DMatrix type
                 train = xgb.DMatrix(X,
                                     label=Y)
-
+                if self.batch_model is not None:
                 # if we want to start from a model already saved
-                if os.path.exists(self.previous_model_path):
+
                     # Defining and training the model
-                    model = xgb.train(self.get_param_dict(),
+                    self.batch_model = xgb.train(self.get_param_dict(),
                                                  early_stopping_rounds=self.early_stopping_rounds,
                                                  evals=valid,
                                                  dtrain=train,
-                                                 xgb_model=self.previous_model_path)
-                    os.remove(self.previous_model_path)
-                    model.save_model(self.previous_model_path)
-                    del model
+                                                 xgb_model=self.batch_model)
 
                 # if we have no model saved
                 else:
-                    model = xgb.train(self.get_param_dict(),
+                    self.batch_model = xgb.train(self.get_param_dict(),
                                                  early_stopping_rounds=self.early_stopping_rounds,
                                                  evals=valid,
                                                  dtrain=train)
-                    model.save_model(self.previous_model_path)
-                    del model
 
     def fit_external_memory(self, external_memory):
         # Learning in a single round
@@ -175,30 +166,34 @@ class XGBoost(RecommenderGBM):
 
             # Defining and fitting the models
             self.sround_model = xgb.train(self.get_param_dict(),
-                                          dtrain=train,
-                                          num_boost_round=math.ceil(self.num_rounds))
+                                          num_boost_round=math.ceil(self.num_rounds),
+                                          dtrain=train)
 
         # Learning by consecutive batches
         else:
             # Transforming matrices in DMatrix type
-            train = xgb.DMatrix(external_memory)
+            train = xgb.DMatrix(external_memory, silent=True)
+            if self.batch_model is not None:
+                # if we want to start from a model already saved
 
-            # if we want to start from a model already saved
-            if os.path.exists(self.previous_model_path):
                 # Defining and training the model
-                model = xgb.train(self.get_param_dict(),
+                self.batch_model = xgb.train(self.get_param_dict(),
                                              dtrain=train,
-                                             xgb_model=self.previous_model_path)
-                os.remove(self.previous_model_path)
-                model.save_model(self.previous_model_path)
-                del model
+                                             xgb_model=self.batch_model)
 
             # if we have no model saved
             else:
-                model = xgb.train(self.get_param_dict(),
+                self.batch_model = xgb.train(self.get_param_dict(),
                                              dtrain=train)
-                model.save_model(self.previous_model_path)
-                del model
+        # Learning in a single round
+        if self.batch is False:
+            # Transforming matrices in DMatrix type
+            train = xgb.DMatrix(external_memory, silent=True)
+
+            # Defining and fitting the models
+            self.sround_model = xgb.train(self.get_param_dict(),
+                                          dtrain=train,
+                                          num_boost_round=math.ceil(self.num_rounds))
 
     # Returns the predictions and evaluates them
     # ---------------------------------------------------------------------------
@@ -220,7 +215,7 @@ class XGBoost(RecommenderGBM):
         if type(Y_tst) is pd.DataFrame:
             Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
 
-        if (self.sround_model is None) and (not os.path.exists(self.previous_model_path)):
+        if (self.sround_model is None) and (self.batch_model is None):
             print("No model trained yet.")
         else:
             # Selecting the coherent model for the evaluation
@@ -290,7 +285,6 @@ class XGBoost(RecommenderGBM):
             return self.sround_model
         else:
             # we have an already saved model due to incremental training
-            self.load_model(self.previous_model_path)
             return self.batch_model
 
 
@@ -302,12 +296,16 @@ class XGBoost(RecommenderGBM):
     def load_model(self, path):
         if (self.batch is False):
             # Reinitializing model
-            self.sround_model = xgb.Booster()
-            self.sround_model.load_model(path)
+            with open(path, 'rb') as file:
+                self.sround_model = pickle.load(file)
+            # self.sround_model = xgb.Booster()
+            # self.sround_model.load_model(path)
         else:
             # By loading in this way it is possible to keep on learning
-            self.batch_model = xgb.Booster()
-            self.batch_model.load_model(path)
+            with open(path, 'rb') as file:
+                self.batch_model = pickle.load(file)
+            # self.batch_model = xgb.Booster()
+            # self.batch_model.load_model(path)
 
     # Returns/prints the importance of the features
     # -------------------------------------------------

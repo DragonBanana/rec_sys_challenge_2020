@@ -11,6 +11,7 @@ import datetime as dt
 import time
 from tqdm import tqdm
 import xgboost as xgb
+import numpy as np
 
 
 class ModelInterface(object):
@@ -522,7 +523,11 @@ class ModelInterface(object):
     # Returns a combination of the two metrics
     def metriComb(self, prauc, rce):
         # Superdumb combination
-        return -rce
+        metric = -rce
+        if np.isfinite(metric):
+            return metric
+        else:
+            return 1000
 #-------------------------------------------------
 
 

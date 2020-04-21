@@ -7,8 +7,8 @@ from sklearn.metrics import precision_recall_curve, auc, log_loss
 
 class ComputeMetrics(object):
     def __init__(self, pred, gt):
-        self.pred=pred
-        self.gt=gt
+        self.pred=pred.astype(np.float64)
+        self.gt=gt.astype(np.float64)
         
     def compute_prauc(self):
         prec, recall, thresh = precision_recall_curve(self.gt, self.pred)

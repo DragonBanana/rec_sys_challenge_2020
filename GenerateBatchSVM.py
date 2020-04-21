@@ -1,42 +1,69 @@
 import numpy as np
-import skopt
-from skopt import gp_minimize
-from sklearn.datasets import load_digits
-from sklearn.svm import SVC
-from sklearn.model_selection import train_test_split
-import sys
-import pandas as pd
-import time
-import datetime as dt
-from ParamTuning.ModelInterface import ModelInterface
-from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 import sklearn.datasets as skd
-from tqdm import tqdm
 import pathlib as pl
+import multiprocessing as mp
+import functools
+import pandas as pd
+
+def load_and_dump(
+        i,
+        batch_n_split,
+        dataset_id,
+        X_label,
+        folder,
+        sample=1
+):
+    if dataset_id != "test":
+        X, _ = Data.get_dataset_xgb_batch(
+            batch_n_split,
+            i,
+            dataset_id,
+            X_label,
+            sample=sample)
+        for label in labels:
+            Y, _ = Data.get_dataset_xgb_batch(
+                batch_n_split,
+                i,
+                dataset_id,
+                [f"tweet_feature_engagement_is_{label}"],
+                sample=sample
+            )
+            assert len(X) == len(Y)
+            skd.dump_svmlight_file(
+                X=X,
+                y=Y[f"tweet_feature_engagement_is_{label}"].array,
+                f=f"{folder}/{dataset_id}_{label}_batch_{i}.svm"
+            )
+    else:
+        X_train, _ = Data.get_dataset_xgb_batch(batch_n_split, i, dataset_id, X_label)
+        skd.dump_svmlight_file(X_train, np.zeros(len(X_train)), f"{folder}/{dataset_id}_batch_{i}.svm")
 
 
-def main():
-
+if __name__ == "__main__":
     labels = [
-        "like",
+        # "like",
         "reply",
         "retweet",
         "comment"
     ]
 
-    train_batch_n_split = 20
-    val_batch_n_split = 5
+    train_batch_n_split = 5
+    val_batch_n_split = 1
 
     train_dataset_id = "train_days_123456"
     val_dataset_id = "val_days_7"
 
+    main_dir = "svm_files"
+
     gen_train = True
     gen_val = True
 
-    #------------------------------------------
+    sample = 0.25
+
+    # ------------------------------------------
     #           BATCH EXAMPLE
-    #------------------------------------------
+    # ------------------------------------------
     # Define the X label
     X_label = [
         "raw_feature_creator_follower_count",
@@ -68,29 +95,32 @@ def main():
         "engager_feature_number_of_previous_negative_engagement_ratio"
     ]
 
-    def gen(label):
-        # Define the Y label
-        Y_label = [
-            f"tweet_feature_engagement_is_{label}"
-        ]
+    Y_label = [
+        f"tweet_feature_engagement_is_{label}" for label in labels
+    ]
 
-        folder = f"{label}"
-        pl.Path(folder).mkdir(parents=True, exist_ok=True)
+    folder = f"{main_dir}"
 
-        if gen_train:
-            for i in tqdm(range(train_batch_n_split)):
-                X_train, Y_train = Data.get_dataset_xgb_batch(train_batch_n_split, i, train_dataset_id, X_label, Y_label)
-                skd.dump_svmlight_file(X_train, Y_train[Y_label[0]].array, f"{folder}/train_batch_{i}.svm")
+    pl.Path(folder).mkdir(parents=True, exist_ok=True)
 
-        if gen_val:
-            for i in tqdm(range(val_batch_n_split)):
-                X_test, Y_test = Data.get_dataset_xgb_batch(val_batch_n_split, i, val_dataset_id, X_label, Y_label)
-                skd.dump_svmlight_file(X_test, Y_test[Y_label[0]].array, f"{folder}/val_batch_{i}.svm")
+    if gen_train:
+        with mp.Pool(6) as pool:
+            pool.map(functools.partial(load_and_dump,
+                                       batch_n_split=train_batch_n_split,
+                                       dataset_id=train_dataset_id,
+                                       X_label=X_label,
+                                       folder=folder,
+                                       sample=sample
+                                       ), range(train_batch_n_split))
 
-    [gen(label) for label in labels]
+    if gen_val:
+        with mp.Pool(6) as pool:
+            pool.map(functools.partial(load_and_dump,
+                                       batch_n_split=val_batch_n_split,
+                                       dataset_id=val_dataset_id,
+                                       X_label=X_label,
+                                       folder=folder,
+                                       sample=1
+                                       ), range(val_batch_n_split))
 
-
-
-if __name__ == "__main__":
-    main()
 
