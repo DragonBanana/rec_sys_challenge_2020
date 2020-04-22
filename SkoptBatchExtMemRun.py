@@ -13,7 +13,7 @@ from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 import sklearn.datasets as skd
 from tqdm import tqdm
-
+import pathlib as pl
 
 def main():
 
@@ -39,8 +39,12 @@ def main():
                    mode=3,
                    make_log=True,
                    make_save=True,
-                   auto_save=True)
+                   auto_save=True,
+                   path=label,
+                   path_log=label)
 
+    if pl.Path(f"{label}.save").is_file():
+        OP.loadModel(f"{label}.save")
     OP.setParameters(n_calls=100, n_random_starts=20)
     OP.defineMI()
     OP.MI.setExtMemTrainPaths([

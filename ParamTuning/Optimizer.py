@@ -167,7 +167,7 @@ class Optimizer(object):
     def saveRes(self, res):
         path = self.path + ".save"
         #The only way to save this shit
-        skopt.dump(self.result, path)
+        skopt.dump(res, path)
         #print("Results {0} successfully saved.".format(path))
 
     '''
@@ -213,6 +213,8 @@ class Optimizer(object):
             #Splitting the model
             self.x0 = model.x_iters
             self.y0 = model.func_vals
+            print(model.x_iters)
+            print(model.func_vals)
             print("File {0} loaded successfully.".format(path))
 
     
