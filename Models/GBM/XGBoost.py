@@ -29,14 +29,13 @@ class XGBoost(RecommenderGBM):
 
     def __init__(self,
                  kind="NO_KIND_GIVEN",
-                 batch=False,
                  # Not in tuning dict
                  verbosity=1,
                  process_type="default",
                  tree_method="hist",
                  objective="binary:logistic",  # outputs the binary classification probability
                  num_parallel_tree=4,  # Number of parallel trees
-                 eval_metric="auc",  # WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
+                 eval_metric="rmsle",  # WORKS ONLY IF A VALIDATION SET IS PASSED IN TRAINING PHASE
                  early_stopping_rounds=None,
                  # In tuning dict
                  num_rounds=10,
@@ -54,12 +53,11 @@ class XGBoost(RecommenderGBM):
 
         super(XGBoost, self).__init__(
             name="xgboost_classifier",  # name of the recommender
-            kind=kind,  # what does it recommends
-            batch=batch)  # if it's a batch type
+            kind=kind)  # what does it recommends
+            
 
         # INPUTS
         self.kind = kind
-        self.batch = batch  # False: single round| True: batch learning
         # Parameters
         # Not in dict
         self.verbosity = verbosity
@@ -87,8 +85,7 @@ class XGBoost(RecommenderGBM):
 
         # CLASS VARIABLES
         # Model
-        self.sround_model = None
-        self.batch_model = None
+        self.model = None
         # Prediction
         self.Y_pred = None
         # Extension of saved file
@@ -98,102 +95,38 @@ class XGBoost(RecommenderGBM):
     # -----------------------------------------------------
     #                    fit(...)
     # -----------------------------------------------------
-    # X:         Learning features of the dataset
-    # Y:         Target feature of the dataset
-    # batch:     Enable learning by batch
+    # dmat_train:  Training set in DMatrix form.
+    # dmat_val:    Validation set in DMatrix form provided
+    #              in order to use Early Stopping.
     # -----------------------------------------------------
     # sround_model and batch_model are differentiated
     # in order to avoid overwriting. (Maybe not necessary)
     # -----------------------------------------------------
-    def fit(self, X=None, Y=None, X_valid=None, Y_valid=None):
+    # TODO: Redoundant code here
+    #------------------------------------------------------
+    def fit(self, dmat_train=None, dmat_val=None):
+        # In case validation set is not provided set early stopping rounds to default
+        if (dmat_val is None):
+            self.early_stopping_rounds = None
+            dmat_val = []
 
-        if type(X) is str:
-            self.fit_external_memory(X)
+        if self.model is not None:
+            # Continue the training og a model already saved
+            self.model = xgb.train(self.get_param_dict(),
+                                   num_boost_round=math.ceil(self.num_rounds),
+                                   early_stopping_rounds=self.early_stopping_rounds,
+                                   evals=dmat_val,
+                                   dtrain=dmat_train,
+                                   xgb_model=self.model)
 
+        # if we have no model saved
         else:
-            # Tries to load X and Y if not directly passed
-            if (X is None) or (Y is None):
-                X, Y = Data.get_dataset_xgb_default_train()
-                print("Train set loaded from file.")
+            self.model = xgb.train(self.get_param_dict(),
+                                   num_boost_round=math.ceil(self.num_rounds),
+                                   early_stopping_rounds=self.early_stopping_rounds,
+                                   evals=dmat_val,
+                                   dtrain=dmat_train)
 
-            # In case validation set is not provided set early stopping rounds to default
-            if (X_valid is None) or (Y_valid is None):
-                self.early_stopping_rounds = None
-                valid = []
-            else:
-                valid = xgb.DMatrix(X_valid,
-                                    label=Y_valid)
-
-            # Learning in a single round
-            if self.batch is False:
-                # Transforming matrices in DMatrix type
-                train = xgb.DMatrix(X,
-                                    label=Y)
-
-                # Defining and fitting the models
-                self.sround_model = xgb.train(self.get_param_dict(),
-                                              num_boost_round=math.ceil(self.num_rounds),early_stopping_rounds=self.early_stopping_rounds,
-                                              evals=valid,
-                                              dtrain=train)
-
-            # Learning by consecutive batches
-            else:
-                # Transforming matrices in DMatrix type
-                train = xgb.DMatrix(X,
-                                    label=Y)
-                if self.batch_model is not None:
-                # if we want to start from a model already saved
-
-                    # Defining and training the model
-                    self.batch_model = xgb.train(self.get_param_dict(),
-                                                 early_stopping_rounds=self.early_stopping_rounds,
-                                                 evals=valid,
-                                                 dtrain=train,
-                                                 xgb_model=self.batch_model)
-
-                # if we have no model saved
-                else:
-                    self.batch_model = xgb.train(self.get_param_dict(),
-                                                 early_stopping_rounds=self.early_stopping_rounds,
-                                                 evals=valid,
-                                                 dtrain=train)
-
-    def fit_external_memory(self, external_memory):
-        # Learning in a single round
-        if self.batch is False:
-            # Transforming matrices in DMatrix type
-            train = xgb.DMatrix(external_memory, silent=True)
-
-            # Defining and fitting the models
-            self.sround_model = xgb.train(self.get_param_dict(),
-                                          num_boost_round=math.ceil(self.num_rounds),
-                                          dtrain=train)
-
-        # Learning by consecutive batches
-        else:
-            # Transforming matrices in DMatrix type
-            train = xgb.DMatrix(external_memory, silent=True)
-            if self.batch_model is not None:
-                # if we want to start from a model already saved
-
-                # Defining and training the model
-                self.batch_model = xgb.train(self.get_param_dict(),
-                                             dtrain=train,
-                                             xgb_model=self.batch_model)
-
-            # if we have no model saved
-            else:
-                self.batch_model = xgb.train(self.get_param_dict(),
-                                             dtrain=train)
-        # Learning in a single round
-        if self.batch is False:
-            # Transforming matrices in DMatrix type
-            train = xgb.DMatrix(external_memory, silent=True)
-
-            # Defining and fitting the models
-            self.sround_model = xgb.train(self.get_param_dict(),
-                                          dtrain=train,
-                                          num_boost_round=math.ceil(self.num_rounds))
 
     # Returns the predictions and evaluates them
     # ---------------------------------------------------------------------------
@@ -204,45 +137,31 @@ class XGBoost(RecommenderGBM):
     # ---------------------------------------------------------------------------
     #           Works for both for batch and single training
     # ---------------------------------------------------------------------------
-    def evaluate(self, X_tst=None, Y_tst=None):
-        Y_pred = None
-
+    def evaluate(self, dmat_test=None):
         # Tries to load X and Y if not directly passed
-        if (X_tst is None) or (Y_tst is None):
-            X_tst, Y_tst = Data.get_dataset_xgb_default_test()
-            print("Test set loaded from file.")
+        if (dmat_test is None):
+            print("No matrix passed, cannot perform evaluation.")
+        
+        if (self.model is None):
+            print("No model trained, cannot to perform evaluation.")
 
-        if type(Y_tst) is pd.DataFrame:
-            Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
-
-        if (self.sround_model is None) and (self.batch_model is None):
-            print("No model trained yet.")
         else:
-            # Selecting the coherent model for the evaluation
-            # According to the initial declaration (batch/single round)
-            model = self.get_model()
+            #Retrieving the predictions
+            Y_pred = self.get_prediction(dmat_test)
 
-            # Preparing DMatrix
-            # d_test = xgb.DMatrix(X_tst)
-            # Making predictions
-            # Y_pred = model.predict(d_test)
-            Y_pred = self.get_prediction(X_tst)
-
-            # Declaring the class containing the
-            # metrics.
-            cm = CoMe(Y_pred, Y_tst)
+            # Declaring the class containing the metrics
+            cm = CoMe(Y_pred, dmat_test.get_label())
 
             # Evaluating
             prauc = cm.compute_prauc()
             rce = cm.compute_rce()
             # Confusion matrix
-            conf = confMatrix(Y_tst, Y_pred)
+            conf = cm.confMatrix()
             # Prediction stats
-            max_pred = max(Y_pred)
-            min_pred = min(Y_pred)
-            avg = np.mean(Y_pred)
+            max_pred, min_pred, avg = cm.computeStatistics()
 
             return prauc, rce, conf, max_pred, min_pred, avg
+
 
     # This method returns only the predictions
     # -------------------------------------------
@@ -252,77 +171,45 @@ class XGBoost(RecommenderGBM):
     # -------------------------------------------
     # As above, but without computing the scores
     # -------------------------------------------
-    def get_prediction(self, X_tst=None):
-        Y_pred = None
+    def get_prediction(self, dmat_test=None):
         # Tries to load X and Y if not directly passed
-        if (X_tst is None):
-            X_tst, _ = Data.get_dataset_xgb_default_test()
-            print("Test set loaded from file.")
-        if (self.sround_model is None) and (self.batch_model is None):
-            print("No model trained yet.")
+        if (dmat_test is None):
+            print("No matrix passed, cannot provide predictions.")
+
+        if (self.model is None):
+            print("No model trained, cannot perform evaluation.")
+
         else:
-
-
-            # Preparing DMatrix
-            if type(X_tst) is not xgb.core.DMatrix:
-                d_test = xgb.DMatrix(X_tst)
-            else:
-                d_test = X_tst
-
-            model = self.get_model()
-
             # Making predictions
-            Y_pred = model.predict(d_test)
+            Y_pred = self.model.predict(dmat_test)
             return Y_pred
 
 
-
-    def get_model(self):
-        # Selecting the coherent model for the evaluation
-        # According to the initial declaration (batch/single round)
-
-        if self.batch is False:
-            return self.sround_model
-        else:
-            # we have an already saved model due to incremental training
-            return self.batch_model
-
-
-
+    #--------------------------
     # This method loads a model
     # -------------------------
     # path: path to the model
     # -------------------------
     def load_model(self, path):
-        if (self.batch is False):
-            # Reinitializing model
-            with open(path, 'rb') as file:
-                self.sround_model = pickle.load(file)
-            # self.sround_model = xgb.Booster()
-            # self.sround_model.load_model(path)
-        else:
-            # By loading in this way it is possible to keep on learning
-            with open(path, 'rb') as file:
-                self.batch_model = pickle.load(file)
-            # self.batch_model = xgb.Booster()
-            # self.batch_model.load_model(path)
+        self.model = xgb.Booster()
+        self.model.load_model(path)
 
+
+    #--------------------------------------------------
     # Returns/prints the importance of the features
     # -------------------------------------------------
     # verbose:   it also prints the features importance
     # -------------------------------------------------
     def get_feat_importance(self, verbose=False):
-
-        if (self.batch is False):
-            importance = self.sround_model.get_score(importance_type='gain')
-        else:
-            importance = self.batch_model.get_score(importance_type='gain')
+        
+        importance = self.model.get_score(importance_type='gain')        
 
         if verbose is True:
             for k, v in importance.items():
                 print("{0}:\t{1}".format(k, v))
 
         return importance
+
 
     # Returns parameters in dicrionary form
     def get_param_dict(self):

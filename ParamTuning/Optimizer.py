@@ -219,35 +219,34 @@ class Optimizer(object):
 
     
     #Load a custom dataset to train for the optimization
-    def loadTrainData(self, X_train=None, Y_train=None):
+    def loadTrainData(self, X_train=None, Y_train=None, dmat_train=None):
         #Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
         
-        self.MI.loadTrainData(X_train, Y_train)
+        self.MI.loadTrainData(X_train, Y_train, dmat_train)
 
     
     #Load a custom dataset to test for the optimization
-    def loadValData(self, X_val=None, Y_val=None):
+    def loadValData(self, X_val=None, Y_val=None, dmat_val=None):
         #Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
         
-        self.MI.loadValData(X_val, Y_val)
+        self.MI.loadValData(X_val, Y_val, dmat_val)
+
+    
+    #Load a custom dataset to test for the optimization
+    def loadTestData(self, X_test=None, Y_test=None, dmat_test=None):
+        #Initializing model interface if it's None
+        if self.MI is None:
+            self.defineMI()
+        
+        self.MI.loadTestData(X_test, Y_test, dmat_test)
 
     #---------------------------------------------------------------
     #                Batch train parameters
     #---------------------------------------------------------------
-    '''
-    #SPLITTED IN 3
-    #Train
-    def batchLoadSets(self, tot_train_split, tot_val_split, train_id, val_id, x_label, y_label):
-        #Initializing model interface if it's None
-        if self.MI is None:
-            self.defineMI()
-        
-        self.MI.batchLoadSets(tot_train_split, tot_val_split, train_id, val_id, x_label, y_label)
-    '''
     def batchTrain(self, tot_train_split, train_id):
         #Initializing model interface if it's None
         if self.MI is None:
@@ -262,6 +261,13 @@ class Optimizer(object):
         
         self.MI.batchVal(tot_val_split, val_id)
 
+    def batchTest(self, tot_test_split, test_id):
+        #Initializing model interface if it's None
+        if self.MI is None:
+            self.defineMI()
+        
+        self.MI.batchTest(tot_test_split, test_id)
+
     def setLabels(self, x_label, y_label):
         #Initializing model interface if it's None
         if self.MI is None:
@@ -274,12 +280,12 @@ class Optimizer(object):
     #---------------------------------------------------------------
     #         Setting non tuned parameters
     #---------------------------------------------------------------
-    def setParams(self, verbosity=1, 
+    def setParamsXGB(self, verbosity=1, 
                         process_type="default", 
                         tree_method="auto", 
                         objective="binary:logistic", 
                         num_parallel_tree=4, 
-                        eval_metric="auc", 
+                        eval_metric="rmsle", 
                         early_stopping_rounds=None):
         if self.MI is None:
             self.defineMI()

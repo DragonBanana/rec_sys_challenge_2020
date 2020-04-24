@@ -41,6 +41,26 @@ def main():
     #Kind of prediction eg. "like"
     kind = "LIKE"
     
+    '''
+    #Declaring optimizer
+    OP = Optimizer(model_name, 
+                   kind,
+                   mode=1,
+                   make_log=True, 
+                   make_save=False, 
+                   auto_save=False)
+    
+    OP.setParameters(n_calls=5, n_random_starts=5)
+    OP.batchTrain(tot_train_split=5, train_id="train_days_1")
+    OP.batchTest(tot_test_split=5, test_id="val_days_2")
+    OP.setLabels(X_label, Y_label)
+    OP.optimize()
+    #------------------------------------------
+    '''
+    '''
+    #------------------------------------------
+    #     NESTED CROSS VALIDATION EXAMPLE
+    #------------------------------------------
     #Declaring optimizer
     OP = Optimizer(model_name, 
                    kind,
@@ -50,34 +70,17 @@ def main():
                    auto_save=False)
     
     OP.setParameters(n_calls=5, n_random_starts=5)
-    OP.batchTrain(tot_train_split=5, train_id="train")
-    OP.batchVal(tot_val_split=5, val_id="test")
     OP.setLabels(X_label, Y_label)
     OP.optimize()
     #------------------------------------------
     '''
-    #------------------------------------------
-    #     NESTED CROSS VALIDATION EXAMPLE
-    #------------------------------------------
-    #Declaring optimizer
-    OP = Optimizer(model_name, 
-                   kind,
-                   mode=3,
-                   make_log=True, 
-                   make_save=False, 
-                   auto_save=False)
+
+
     
-    OP.setParameters(n_calls=5, n_random_starts=5)
-    OP.setLabels(X_label, Y_label)
-    OP.optimize()
-    #------------------------------------------
-    '''
-
-
-    '''
     # Defining the dataset used
-    train_dataset = "train_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
-    test_dataset = "val_split_with_timestamp_from_train_random_seed_888_timestamp_threshold_1581465600_holdout_1"
+    train_dataset = "train_days_1"
+    test_dataset = "val_days_3"
+    val_dataset = "val_days_2"
 
     # Define the X label
     X_label = [
@@ -103,15 +106,25 @@ def main():
 
     # Load test data
     X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
+
+    # Load val data
+    X_val, Y_val = Data.get_dataset_xgb(val_dataset, X_label, Y_label)
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
-    OP = Optimizer(model_name, kind, make_log=True, make_save=True)
-    OP.setParameters(n_calls=1, n_random_starts=1)
+    OP = Optimizer(model_name, 
+                   kind,
+                   mode=0,
+                   make_log=True, 
+                   make_save=False, 
+                   auto_save=False)
+    OP.setParameters(n_calls=30, n_random_starts=30)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
+    OP.loadValData(X_val, Y_val)
+    OP.setParamsXGB(early_stopping_rounds=5, eval_metric="rmsle")
     res=OP.optimize()
 
-    
+    '''
     #Add this for complete routine check
     print(res.func_vals.shape)
     path = OP.saveModel()
@@ -120,6 +133,7 @@ def main():
     print(res.func_vals.shape)
     print("END")
     '''
+    
 
 
 if __name__ == "__main__":
