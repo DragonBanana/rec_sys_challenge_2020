@@ -28,7 +28,7 @@ class LightGBM(RecommenderGBM):
                  #Not in tuning dict
                  objective= 'binary',
                  num_threads= 4,
-                 metric= ('auc', 'binary_logloss'),
+                 metric= ('auc', 'binary_logloss'),         #what does this parameter do here? 
                  #In tuning dict
                  num_rounds=15,
                  num_leaves= 31,
@@ -60,8 +60,8 @@ class LightGBM(RecommenderGBM):
                                'colsample_bynode': (0,1),
                                'colsample_bytree': (0,1),
                                'subsample': (0,1),
-                               'pos_subsample': (0,1),
-                               'neg_subsample': (0,1), 
+                               'pos_subsample': (0,1),          #with these two parameters we can regulate the unbalanced problems
+                               'neg_subsample': (0,1),          #so we may set the ranges differently for every problem
                                'bagging_freq': (0,1)}
 
         #INPUTS
@@ -69,6 +69,7 @@ class LightGBM(RecommenderGBM):
         self.batch=batch
         #Parameters
         self.objective= objective
+        self.num_iterations = 100              #TODO:PARAMETRIZE!!! 
         self.num_rounds=num_rounds
         self.num_leaves= num_leaves
         self.learning_rate= learning_rate
@@ -82,8 +83,8 @@ class LightGBM(RecommenderGBM):
         self.pos_subsample= pos_subsample       #In classification positive and negative-
         self.neg_subsample= neg_subsample       #-subsample ratio.
         self.bagging_freq= bagging_freq         #Default 0 perform bagging every k iterations
-        self.metric=metric
-
+        self.metric=metric                      #TODO: when is this parameter used???
+        
         #CLASS VARIABLES
         #Models
         self.sround_model = None    #No need to differentiate, but it's
@@ -113,9 +114,9 @@ class LightGBM(RecommenderGBM):
                                 categorical_feature=self.cat_feat) 
 
             #Defining and fitting the model
-            self.sround_model = lgb.train(self.param,  
+            self.sround_model = lgb.train(self.get_param_dict(),  
                                           train_set=train,       
-                                          num_boost_rounds=self.num_rounds)
+                                          num_boost_round=self.num_rounds)
 
             
         #Learning by consecutive batches
@@ -185,7 +186,7 @@ class LightGBM(RecommenderGBM):
     def get_prediction(self, X_tst=None):
         Y_pred = None
         #Tries to load X and Y if not directly passed        
-        if (X_tst is None) or (Y_tst is None):
+        if (X_tst is None):
             X_tst, Y_tst = self.load_data(self.test_dataset)
             print("Test set loaded from file.")
         if (self.sround_model is None) and (self.batch_model is None):
