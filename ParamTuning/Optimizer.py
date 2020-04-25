@@ -11,65 +11,63 @@ import datetime as dt
 from ParamTuning.ModelInterface import ModelInterface
 
 
-#----------------------------------------------------
+# ----------------------------------------------------
 #           Simple skopt optimizer
-#----------------------------------------------------
+# ----------------------------------------------------
 # With this it is possible to run an optimization in 
 # just a couple of commands.
-#----------------------------------------------------
+# ----------------------------------------------------
 # make_save:    saves reusable results
 # make_log:     saves human readable results
-#----------------------------------------------------
+# ----------------------------------------------------
 # old batch (boolean) is now mode, an integer with:
 # 0 --> monolithic optimization
 # 1 --> batch optimization
 # 2 --> nested cross validation
-#----------------------------------------------------
+# ----------------------------------------------------
 class Optimizer(object):
     def __init__(self, model_name,
-                       kind,
-                       mode=0,
-                       auto_save=True, # Saves the results at the end of optimization
-                       make_save=True, # Saves the results iteration per iteration
-                       make_log=True, # Make a human readable log iteration per iteration
-                       path=None,     # Define path in which to save results of optimization
-                       path_log = None): # Path in which to save logs
-        
-        #Inputs
+                 kind,
+                 mode=0,
+                 auto_save=True,  # Saves the results at the end of optimization
+                 make_save=True,  # Saves the results iteration per iteration
+                 make_log=True,  # Make a human readable log iteration per iteration
+                 path=None,  # Define path in which to save results of optimization
+                 path_log=None):  # Path in which to save logs
+
+        # Inputs
         self.model_name = model_name
         self.kind = kind
         self.mode = mode
-        self.auto_save=auto_save  #saves the results without explictly calling the method
-        self.make_save=make_save
-        self.make_log=make_log
-        self.path=path
+        self.auto_save = auto_save  # saves the results without explictly calling the method
+        self.make_save = make_save
+        self.make_log = make_log
+        self.path = path
         self.path_log = path_log
-        #ModelInterface
+        # ModelInterface
         self.MI = None
-        #Iteration counter
+        # Iteration counter
         self.iter_count = 0
-        #Declaring result variable
+        # Declaring result variable
         self.result = None
-                       
 
-
-    #Setting the parameters of the optimizer  
+    # Setting the parameters of the optimizer
     def setParameters(self,
                       n_calls=20,
-                      n_points = 10000,
-                      n_random_starts = 10,
-                      n_jobs = 1,
+                      n_points=10000,
+                      n_random_starts=10,
+                      n_jobs=1,
                       # noise = 'gaussian',
-                      noise = 1e-7,
-                      acq_func = 'gp_hedge',
-                      acq_optimizer = 'auto',
-                      random_state = None,
-                      verbose = True,
-                      n_restarts_optimizer = 5,
-                      xi = 0.01,
-                      kappa = 1.96,
-                      x0 = None,
-                      y0 = None):
+                      noise=1e-7,
+                      acq_func='gp_hedge',
+                      acq_optimizer='auto',
+                      random_state=None,
+                      verbose=True,
+                      n_restarts_optimizer=5,
+                      xi=0.01,
+                      kappa=1.96,
+                      x0=None,
+                      y0=None):
 
         self.n_point = n_points
         self.n_calls = n_calls
@@ -84,47 +82,46 @@ class Optimizer(object):
         self.kappa = kappa
         self.noise = noise
         self.x0 = x0
-        self.y0 = y0 
+        self.y0 = y0
 
+        # Setting the model interface
 
-    #Setting the model interface
     def defineMI(self, model_name=None, kind=None):
         if model_name is not None:
             self.model_name = model_name
         if kind is not None:
             self.kind = kind
 
-        #Model interface
+        # Model interface
         self.MI = ModelInterface(model_name=self.model_name,
                                  kind=self.kind,
                                  mode=self.mode)
 
-
-    #Defining the optimization method
+    # Defining the optimization method
     def optimize(self):
 
-        #Initializing model interface if it's None
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
-        
-        #Setting filename
+
+        # Setting filename
         if self.path is None:
             self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S"))
 
-        #Checking if callback has to be called to make logs
+        # Checking if callback has to be called to make logs
         if (self.make_save is True):
-            #Defining the callback function
+            # Defining the callback function
             callback_function = self.callback_func
         else:
             callback_function = None
-        
+
         # Making (or not) human readable logs
         self.MI.setSaveLog(self.make_log)
 
-        #Path in which to save logs
+        # Path in which to save logs
         if self.path_log is not None:
             self.MI.setLogPath(self.path_log)
-            
+
         self.result = gp_minimize(self.MI.getScoreFunc(),
                                   self.MI.getParams(),
                                   base_estimator=None,
@@ -143,16 +140,15 @@ class Optimizer(object):
                                   kappa=self.kappa,
                                   noise=self.noise,
                                   n_jobs=self.n_jobs)
-        
-        #Resetting the count for the logs
+
+        # Resetting the count for the logs
         self.MI.resetSaveLog()
-        
-        #Saving the obtained results
+
+        # Saving the obtained results
         if self.auto_save is True:
             self.saveRes(self.result)
-        
-        return self.result
 
+        return self.result
 
     def callback_func(self, res):
         if self.make_save is True:
@@ -162,13 +158,13 @@ class Optimizer(object):
             self.saveLog(res)
         '''
 
-
-    #Saving the results of the optimization with built-in method
+    # Saving the results of the optimization with built-in method
     def saveRes(self, res):
-        path = self.path + ".save"
-        #The only way to save this shit
-        skopt.dump(res, path)
-        #print("Results {0} successfully saved.".format(path))
+        path = self.path + ".save.npz"
+        # The only way to save this shit
+        np.savez(path, x0=res.x_iters, y0=res.func_vals)
+        # skopt.dump(res, path, store_objective=False)
+        # print("Results {0} successfully saved.".format(path))
 
     '''
     #MOVED INTO MODEL INTERFACE CLASS
@@ -191,7 +187,7 @@ class Optimizer(object):
             for i in range(len(p_names)):
                 to_write=str(str(p_names[i])+": "+str(x[self.iter_count][i])+"\n")
                 log.write(to_write)
-            
+
             #Written this way to be easily found
             to_write="--outcome--: "+str(y[self.iter_count])+"\n\n"
             log.write(to_write)
@@ -200,96 +196,92 @@ class Optimizer(object):
         self.iter_count = self.iter_count + 1
     '''
 
-
-        #Loading model with built-in method (errors even with pickle)
-    def loadModel(self, path = None):
+    # Loading model with built-in method (errors even with pickle)
+    def loadModel(self, path=None):
         if (path is None):
             print("File path missing.")
-        else:   
-            
-            #The only way to save this shit
-            model = skopt.utils.load(path)
+        else:
 
-            #Splitting the model
-            self.x0 = model.x_iters
-            self.y0 = model.func_vals
-            print(model.x_iters)
-            print(model.func_vals)
+            # The only way to save this shit
+            model = np.load(path)
+
+            # Splitting the model
+            self.x0 = model['x0']
+            self.y0 = model['y0']
+            print(model['x0'])
+            print(model['y0'])
             print("File {0} loaded successfully.".format(path))
 
-    
-    #Load a custom dataset to train for the optimization
+    # Load a custom dataset to train for the optimization
     def loadTrainData(self, X_train=None, Y_train=None, dmat_train=None):
-        #Initializing model interface if it's None
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
-        
+
         self.MI.loadTrainData(X_train, Y_train, dmat_train)
 
-    
-    #Load a custom dataset to test for the optimization
+    # Load a custom dataset to test for the optimization
     def loadValData(self, X_val=None, Y_val=None, dmat_val=None):
-        #Initializing model interface if it's None
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
-        
+
         self.MI.loadValData(X_val, Y_val, dmat_val)
 
-    
-    #Load a custom dataset to test for the optimization
+    # Load a custom dataset to test for the optimization
     def loadTestData(self, X_test=None, Y_test=None, dmat_test=None):
-        #Initializing model interface if it's None
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
-        
+
         self.MI.loadTestData(X_test, Y_test, dmat_test)
 
-    #---------------------------------------------------------------
+    # ---------------------------------------------------------------
     #                Batch train parameters
-    #---------------------------------------------------------------
+    # ---------------------------------------------------------------
     def batchTrain(self, tot_train_split, train_id):
-        #Initializing model interface if it's None
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
 
         self.MI.batchTrain(tot_train_split, train_id)
 
-    def batchVal(self, val_id):
-        #Initializing model interface if it's None
+    def batchVal(self, tot_val_split, val_id):
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
-        
-        self.MI.batchVal(val_id)
+
+        self.MI.batchVal(tot_val_split, val_id)
 
     def batchTest(self, tot_test_split, test_id):
-        #Initializing model interface if it's None
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
-        
+
         self.MI.batchTest(tot_test_split, test_id)
 
-    def setLabels(self, x_label, y_label, es_ncv=False):
-        #Initializing model interface if it's None
+    def setLabels(self, x_label, y_label):
+        # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
-        
-        self.MI.setLabels(x_label, y_label, es_ncv)
-    #---------------------------------------------------------------
 
+        self.MI.setLabels(x_label, y_label)
 
-    #---------------------------------------------------------------
+    # ---------------------------------------------------------------
+
+    # ---------------------------------------------------------------
     #         Setting non tuned parameters
-    #---------------------------------------------------------------
-    def setParamsXGB(self, verbosity=1, 
-                        process_type="default", 
-                        tree_method="auto", 
-                        objective="binary:logistic", 
-                        num_parallel_tree=4, 
-                        eval_metric="rmsle", 
-                        early_stopping_rounds=None):
+    # ---------------------------------------------------------------
+    def setParamsXGB(self, verbosity=1,
+                     process_type="default",
+                     tree_method="auto",
+                     objective="binary:logistic",
+                     num_parallel_tree=4,
+                     eval_metric="rmsle",
+                     early_stopping_rounds=None):
         if self.MI is None:
             self.defineMI()
-        
+
         self.MI.setParams(verbosity=verbosity,
                           process_type=process_type,
                           tree_method=tree_method,
@@ -297,4 +289,4 @@ class Optimizer(object):
                           num_parallel_tree=num_parallel_tree,
                           eval_metric=eval_metric,
                           early_stopping_rounds=early_stopping_rounds)
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
