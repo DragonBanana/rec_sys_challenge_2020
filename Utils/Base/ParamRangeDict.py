@@ -27,18 +27,13 @@ from skopt.space import Categorical
 #                    to be.
 #---------------------------------------------------------------
 
-<<<<<<< Updated upstream
-def xgbRange():
-    param_range_dict = [Integer(1500, 1501),                    #num_rounds
-=======
 LIKE = "likeLIKELike"
 RETWEET = "retweetRETWEETRetweet"
 COMMENT = "commentCOMMENTComment"
 REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
-    param_range_dict = [Integer(5, 200),                    #num_rounds
->>>>>>> Stashed changes
+    param_range_dict = [Integer(1500, 1501),                    #num_rounds
                         Integer(5, 200),                    #max_depth
                         Integer(1, 10),                     #min_child_weight
                         Real(0.3, 1),                       #colsample_bytree
@@ -49,8 +44,7 @@ def xgbRange(kind):
                         Real(0.5, 1.5),                     #scale_pos_weight
                         Real(0.1, 10),                      #gamma
                         Real(0.3, 1),                       #subsample
-                        Real(0.45,0.55)]                        #base_score
-                        Real(0.3,0.7),                      #base_score
+                        Real(0.45,0.55),                        #base_score
                         Real(1, 40)]                        #max_delta_step
 
     #Personalizing scale_pos_weight range for each class
