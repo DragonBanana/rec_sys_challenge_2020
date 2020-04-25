@@ -41,7 +41,7 @@ def main():
     #Kind of prediction eg. "like"
     kind = "LIKE"
     
-    '''
+    
     #Declaring optimizer
     OP = Optimizer(model_name, 
                    kind,
@@ -53,10 +53,11 @@ def main():
     OP.setParameters(n_calls=5, n_random_starts=5)
     OP.batchTrain(tot_train_split=5, train_id="train_days_1")
     OP.batchTest(tot_test_split=5, test_id="val_days_2")
+    OP.batchVal(val_id="val_days_3")
     OP.setLabels(X_label, Y_label)
     OP.optimize()
     #------------------------------------------
-    '''
+    
     '''
     #------------------------------------------
     #     NESTED CROSS VALIDATION EXAMPLE
@@ -70,13 +71,13 @@ def main():
                    auto_save=False)
     
     OP.setParameters(n_calls=5, n_random_starts=5)
-    OP.setLabels(X_label, Y_label)
+    OP.setLabels(X_label, Y_label, es_ncv=True)
     OP.optimize()
     #------------------------------------------
     '''
 
 
-    
+    '''
     # Defining the dataset used
     train_dataset = "train_days_1"
     test_dataset = "val_days_3"
@@ -117,14 +118,14 @@ def main():
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
-    OP.setParameters(n_calls=30, n_random_starts=30)
+    OP.setParameters(n_calls=100, n_random_starts=50, random_state=557)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
-    OP.setParamsXGB(early_stopping_rounds=5, eval_metric="rmsle")
+    #OP.setParamsXGB(early_stopping_rounds=5, eval_metric="rmsle")
     res=OP.optimize()
 
-    '''
+    
     #Add this for complete routine check
     print(res.func_vals.shape)
     path = OP.saveModel()

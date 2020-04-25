@@ -254,12 +254,12 @@ class Optimizer(object):
 
         self.MI.batchTrain(tot_train_split, train_id)
 
-    def batchVal(self, tot_val_split, val_id):
+    def batchVal(self, val_id):
         #Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
         
-        self.MI.batchVal(tot_val_split, val_id)
+        self.MI.batchVal(val_id)
 
     def batchTest(self, tot_test_split, test_id):
         #Initializing model interface if it's None
@@ -268,12 +268,12 @@ class Optimizer(object):
         
         self.MI.batchTest(tot_test_split, test_id)
 
-    def setLabels(self, x_label, y_label):
+    def setLabels(self, x_label, y_label, es_ncv=False):
         #Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
         
-        self.MI.setLabels(x_label, y_label)
+        self.MI.setLabels(x_label, y_label, es_ncv)
     #---------------------------------------------------------------
 
 

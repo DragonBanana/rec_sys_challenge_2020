@@ -47,7 +47,7 @@ class XGBoost(RecommenderGBM):
                  min_child_weight=1,  # Minimum sum of instance weight (hessian) needed in a child.
                  scale_pos_weight=1,
                  gamma=0,
-                 # max_delta_step= 0,
+                 max_delta_step= 0,
                  base_score=0.5,
                  subsample=1):
 
@@ -79,7 +79,7 @@ class XGBoost(RecommenderGBM):
         self.scale_pos_weight = scale_pos_weight
         self.subsample = subsample
         self.gamma = gamma
-        # self.max_delta_step=max_delta_step
+        self.max_delta_step=max_delta_step
         self.base_score = base_score
         self.subsample = subsample
 
@@ -109,6 +109,8 @@ class XGBoost(RecommenderGBM):
         if (dmat_val is None):
             self.early_stopping_rounds = None
             dmat_val = []
+        else:
+            dmat_val = [(dmat_val, "eval")]
 
         if self.model is not None:
             # Continue the training og a model already saved
@@ -228,8 +230,17 @@ class XGBoost(RecommenderGBM):
                       'scale_pos_weight': self.scale_pos_weight,
                       'subsample': self.subsample,
                       'gamma': self.gamma,
-                      # 'max_delta_step':self.max_delta_step,
+                      'max_delta_step':self.max_delta_step,
                       'base_score': self.base_score
                      }
 
         return param_dict
+
+
+    
+    #-----------------------------------------------------
+    #        Get the best iteration with ES
+    #-----------------------------------------------------
+    def getBestIter(self):
+        return self.model.best_iteration
+        

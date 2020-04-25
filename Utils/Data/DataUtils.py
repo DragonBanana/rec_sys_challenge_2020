@@ -37,8 +37,10 @@ DATASET_IDS = [
     "val_days_6",
     "val_days_7"
 ]
-
-#Declaring IDs for nested cross validation purposes
+#---------------------------------------------------
+#                      NCV
+#---------------------------------------------------
+# Declaring IDs for nested cross validation purposes
 TRAIN_IDS = [
     "train_days_1",
     "train_days_12",
@@ -48,7 +50,9 @@ TRAIN_IDS = [
     "train_days_123456",
 ]
 
-VAL_IDS = [
+# They're validation, but in order to keep coherence
+# with optimization class they're named test
+TEST_IDS = [
     "val_days_2",
     "val_days_3",
     "val_days_4",
@@ -56,6 +60,7 @@ VAL_IDS = [
     "val_days_6",
     "val_days_7"
 ]
+#---------------------------------------------------
 
 def populate_features():
     result = {}

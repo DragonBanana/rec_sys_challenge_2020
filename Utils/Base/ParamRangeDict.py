@@ -3,7 +3,7 @@ from skopt.space import Integer
 from skopt.space import Categorical
 
 #----------------------------------------------------------------
-#                       ABOUT XGB PARAMETERS
+#                   ABOUT XGB PARAMETERS
 #----------------------------------------------------------------
 # num_rounds:       # of rounds for boosting
 # max_depth:        Maximum depth of a tree. Increasing this
@@ -18,29 +18,51 @@ from skopt.space import Categorical
 # lambda_reg:       L2 regularization term.
 # scale_pos_weight: Control the balance of positive and negative 
 #                    weights, useful for unbalanced classes.
-# max_delta_step: Maximum delta step we allow each leaf output
-#                  to be.
-# gamma:          Minimum loss reduction required to make a 
-#                  further partition on a leaf node of the tree.
-# subsample:      Subsample ratio of the traning instances.
-# base_score:     The initial prediction score of all instances,
-#                  global bias
+# gamma:            Minimum loss reduction required to make a 
+#                    further partition on a leaf node of the tree.
+# subsample:        Subsample ratio of the traning instances.
+# base_score:       The initial prediction score of all instances,
+#                    global bias.
+# max_delta_step:   Maximum delta step we allow each leaf output
+#                    to be.
 #---------------------------------------------------------------
 
+<<<<<<< Updated upstream
 def xgbRange():
     param_range_dict = [Integer(1500, 1501),                    #num_rounds
+=======
+LIKE = "likeLIKELike"
+RETWEET = "retweetRETWEETRetweet"
+COMMENT = "commentCOMMENTComment"
+REPLY = "replyREPLYReply"
+
+def xgbRange(kind):
+    param_range_dict = [Integer(5, 200),                    #num_rounds
+>>>>>>> Stashed changes
                         Integer(5, 200),                    #max_depth
-                        Integer(1, 10),                    #min_child_weight
+                        Integer(1, 10),                     #min_child_weight
                         Real(0.3, 1),                       #colsample_bytree
                         Real(0.0001, 1, 'log-uniform'),     #learning rate
                         Real(0.0001, 1, 'log-uniform'),     #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),     #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
-                        Real(0.5, 1.5),                        #scale_pos_weight
-                        #Real(1, 40),                        #max_delta_step
-                        Real(0.1, 10),                       #gamma
+                        Real(0.5, 1.5),                     #scale_pos_weight
+                        Real(0.1, 10),                      #gamma
                         Real(0.3, 1),                       #subsample
                         Real(0.45,0.55)]                        #base_score
+                        Real(0.3,0.7),                      #base_score
+                        Real(1, 40)]                        #max_delta_step
+
+    #Personalizing scale_pos_weight range for each class
+    if kind in LIKE:
+        param_range_dict[7] = Real(0,1)
+    elif kind in RETWEET:
+        param_range_dict[7] = Real(0,1)
+    elif kind in COMMENT:
+        param_range_dict[7] = Real(0,1)
+    elif kind in REPLY:
+        param_range_dict[7] = Real(0,1)
+
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
     #use max_delta_step instead
@@ -56,10 +78,10 @@ def xgbName():
                        "alpha_reg",
                        "lambda_reg",
                        "scale_pos_weight",
-                       #"max_delta_step",
                        "gamma",
                        "subsample",
-                       "base_score"]
+                       "base_score",
+                       "max_delta_step"]
     return param_name_dict
 
 

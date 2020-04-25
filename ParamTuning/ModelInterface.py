@@ -7,7 +7,7 @@ from Utils.Base.ParamRangeDict import xgbRange
 from Utils.Base.ParamRangeDict import xgbName
 from Utils.Data.Data import get_dataset_xgb
 from Utils.Data.Data import get_dataset_xgb_batch
-from Utils.Data.DataUtils import TRAIN_IDS,  VAL_IDS
+from Utils.Data.DataUtils import TRAIN_IDS,  TEST_IDS
 import pandas as pd
 import datetime as dt
 import time
@@ -24,17 +24,13 @@ class ModelInterface(object):
         self.kind = kind
         self.mode = mode
         # Datasets
-        '''
-        self.X_train = None
-        self.Y_train = None
-        self.X_test = None
-        self.Y_test = None
-        self.X_val = None
-        self.Y_val = None
-        '''
         self.dmat_test = None
         self.dmat_train = None
         self.dmat_val = None
+        #Batch datasets
+        self.val_id = None
+        #NCV early stopping param
+        self.es_ncv = False
         # LOGS PARAMS
         # Counter of iterations
         self.iter_count = 1
@@ -49,7 +45,7 @@ class ModelInterface(object):
         self.objective="binary:logistic"
         self.num_parallel_tree=4
         self.eval_metric="rmsle"
-        self.early_stopping_rounds=None
+        self.early_stopping_rounds=5
         
         
 #------------------------------------------------------
@@ -77,17 +73,21 @@ class ModelInterface(object):
                         learning_rate= param[4],
                         reg_alpha= param[5],
                         reg_lambda= param[6],
-                        #max_delta_step= param[7],
                         scale_pos_weight= param[7],
                         gamma= param[8],                        
                         subsample= param[9],
-                        base_score= param[10])       
+                        base_score= param[10],
+                        max_delta_step= param[11])       
         #Training on custom set
         if (self.dmat_train is None):
             print("No train set passed to the model.")
         else:
             #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
-            model.fit(self.dmat_train, self.dmat_val)
+            model.fit(self.dmat_train, self.dmat_val)            
+            if self.dmat_val is not None:
+                best_iter = model.getBestIter()
+            else:
+                best_iter = -1
 
         #Evaluating on custom set
         if (self.dmat_test is None):
@@ -99,7 +99,8 @@ class ModelInterface(object):
         del model
         #Make human readable logs here
         if self.make_log is True:
-            self.saveRes(prauc, 
+            self.saveRes(best_iter,
+                         prauc, 
                          rce, 
                          confmat, 
                          max_pred, 
@@ -143,12 +144,13 @@ class ModelInterface(object):
                         learning_rate= param[4],
                         reg_alpha= param[5],
                         reg_lambda= param[6],
-                        #max_delta_step= param[7],
                         scale_pos_weight= param[7],
                         gamma= param[8],                        
                         subsample= param[9],
-                        base_score= param[10])
+                        base_score= param[10],
+                        max_delta_step= param[11])
 
+        best_iter = []
         #Batch train
         for split in tqdm(range(self.tot_train_split)):
             X, Y = get_dataset_xgb_batch(self.tot_train_split, 
@@ -156,15 +158,32 @@ class ModelInterface(object):
                                          self.train_id, 
                                          self.x_label, 
                                          self.y_label)
-            start_time_training_data = time.time()
+            #start_time_training_data = time.time()
             dmat_train = self.getDMat(X, Y) #------------------------------------- DMATRIX GENERATOR
             del X, Y
+
+            if self.val_id is not None:
+                X, Y = get_dataset_xgb_batch(self.tot_train_split, 
+                                             split, 
+                                             self.val_id, 
+                                             self.x_label, 
+                                             self.y_label)
+                dmat_val = self.getDMat(X, Y)
+                del X, Y
+            else:
+                dmat_val = None
+
             #Multistage model fitting
-            model.fit(dmat_train)
+            model.fit(dmat_train, dmat_val)
             del dmat_train
 
-        #TODO: last evaluation set may be smaller so it needs
-        # to be weighted according to its dimension.
+            #Get best iteration obtained with es
+            if dmat_val is not None:
+                best_iter.append(model.getBestIter())
+            else:
+                best_iter = -1
+            del dmat_val
+
 
         #Initializing variables
         tot_prauc = 0
@@ -213,7 +232,8 @@ class ModelInterface(object):
 
         #Make human readable logs here
         if self.make_log is True:
-            self.saveRes(tot_prauc, 
+            self.saveRes(best_iter,
+                         tot_prauc, 
                          tot_rce, 
                          tot_confmat, 
                          max_pred, 
@@ -258,14 +278,14 @@ class ModelInterface(object):
                         learning_rate= param[4],
                         reg_alpha= param[5],
                         reg_lambda= param[6],
-                        #max_delta_step= param[7],
                         scale_pos_weight= param[7],
                         gamma= param[8],                        
                         subsample= param[9],
-                        base_score= param[10])
+                        base_score= param[10],
+                        max_delta_step= param[11])
 
         #Iterable returns pair of train - val sets
-        id_pairs = zip(TRAIN_IDS, VAL_IDS)
+        id_pairs = zip(TRAIN_IDS, TEST_IDS)
 
         #Initializing variables
         weight_factor = 0
@@ -276,6 +296,7 @@ class ModelInterface(object):
         max_pred = 0
         min_pred = 1
         avg = 0
+        best_iter = []
         #Making iterative train-validations
         for dataset_ids in id_pairs:
             weight_factor += weight_factor+1
@@ -287,17 +308,40 @@ class ModelInterface(object):
             
             dmat_train = self.getDMat(X, Y) #------------------------------------- DMATRIX GENERATOR
             del X, Y
-            #Multistage model fitting
-            model.fit(dmat_train)
-            del dmat_train
-
-            #Fetching val set 
-            X, Y = get_dataset_xgb(dataset_ids[1], 
-                                   self.x_label, 
-                                   self.y_label)
+            # If early stopping is true for ncv fetching validation set
+            # by splitting in two the test set with batch method
+            if self.es_ncv is True:
+                #Fetching val set 
+                X, Y = get_dataset_xgb_batch(2, 0,dataset_ids[1], 
+                                             self.x_label, 
+                                             self.y_label)
+                dmat_val = self.getDMat(X, Y) #------------------------------------- DMATRIX GENERATOR
+                del X, Y
+            else:
+                dmat_val = None
             
-            dmat_test = self.getDMat(X, Y) #------------------------------------- DMATRIX GENERATOR
-            del X, Y
+            #Multistage model fitting
+            model.fit(dmat_train, dmat_val)
+            del dmat_train
+            if dmat_val is not None:
+                best_iter.append(model.getBestIter())
+            else:
+                best_iter = -1
+            del dmat_val
+
+            if self.es_ncv is True:
+                #Fetching test set 
+                X, Y = get_dataset_xgb_batch(2, 1,dataset_ids[1], 
+                                             self.x_label, 
+                                             self.y_label)
+                dmat_test = self.getDMat(X, Y) #------------------------------------- DMATRIX GENERATOR
+                del X, Y    
+            else:
+                X, Y = get_dataset_xgb(dataset_ids[1], 
+                                       self.x_label,
+                                       self.y_label)
+                dmat_test = self.getDMat(X, Y) #------------------------------------- DMATRIX GENERATOR
+                del X, Y
             #Multistage evaluation
             prauc, rce, confmat, max_tmp, min_tmp, avg_tmp= model.evaluate(dmat_test)
             del dmat_test
@@ -328,7 +372,8 @@ class ModelInterface(object):
 
         #Make human readable logs here
         if self.make_log is True:
-            self.saveRes(tot_prauc, 
+            self.saveRes(best_iter,
+                         tot_prauc, 
                          tot_rce, 
                          tot_confmat, 
                          max_pred, 
@@ -405,7 +450,7 @@ class ModelInterface(object):
     def getParams(self):
         # Returning an array containing the hyperparameters
         if self.model_name in "xgboost_classifier":
-            param_dict = xgbRange()
+            param_dict = xgbRange(self.kind)
 
         if self.model_name in "lightgbm_classifier":
             param_dict =  []
@@ -504,9 +549,9 @@ class ModelInterface(object):
         #self.X_val=X_val
         #self.Y_val=Y_val
         if dmat_val is None:
-            self.dmat_val = [(self.getDMat(X_val, Y_val), 'eval')]
+            self.dmat_val = self.getDMat(X_val, Y_val)
         else:
-            self.dmat_val = [(dmat_val, 'eval')]
+            self.dmat_val = dmat_val
 
 
     # Loads a custom data set
@@ -528,18 +573,18 @@ class ModelInterface(object):
         self.tot_train_split = tot_train_split
         self.train_id = train_id
     # Passing val set id and number of batches (batch only)
-    def batchVal(self, tot_val_split, val_id):
-        self.tot_val_split = tot_val_split
+    def batchVal(self, val_id):
         self.val_id = val_id
-    # Passing test set id and number of batches (batch only)
     # Passing val set id and number of batches (batch only)
     def batchTest(self, tot_test_split, test_id):
         self.tot_test_split = tot_test_split
         self.test_id = test_id
     # Setting labels to use in the sets (batch + NCV)
-    def setLabels(self, x_label, y_label):
+    # es parameter useful only for NCV
+    def setLabels(self, x_label, y_label, es_ncv):
         self.x_label = x_label
         self.y_label = y_label
+        self.es_ncv = es_ncv
     def setExtMemTrainPaths(self, ext_memory_paths):
         self.ext_memory_train_paths = ext_memory_paths
     def setExtMemValPaths(self, ext_memory_paths):
@@ -567,7 +612,7 @@ class ModelInterface(object):
 
 
     #Saves the results (called after the evaluation phase)
-    def saveRes(self, prauc, rce, confmat, max_arr, min_arr, avg):
+    def saveRes(self, best_iter, prauc, rce, confmat, max_arr, min_arr, avg):
         if self.path is None:
             #Taking the path provided
             self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S")) + ".log"
@@ -576,7 +621,8 @@ class ModelInterface(object):
             #Writing the log
             tn, fp, fn, tp = confmat.ravel()
             obj = self.metriComb(prauc, rce)
-            to_write = "-------\n"
+            to_write = "best_es_iteration: "+str(best_iter)+"\n"
+            to_write += "-------\n"
             to_write += "PRAUC = "+str(prauc)+"\n"
             to_write += "RCE   = "+str(rce)+"\n"
             to_write += "-------\n"
@@ -678,17 +724,18 @@ def run_xgb_external_memory(param, model_interface, queue):
                     learning_rate=param[4],
                     reg_alpha=param[5],
                     reg_lambda=param[6],
-                    # max_delta_step= param[7],
                     scale_pos_weight=param[7],
                     gamma=param[8],
                     subsample=param[9],
-                    base_score=param[10])
+                    base_score=param[10],
+                    max_delta_step= param[11])
 
     # Batch train
     for path in tqdm(model_interface.ext_memory_train_paths):
         # Multistage model fitting
         dmat_train = getDMat(path) #------------------------------------- DMATRIX GENERATOR
         model.fit(dmat_train)
+        del dmat_train
 
     # TODO: last evaluation set may be smaller so it needs
     # to be weighted according to its dimension.
@@ -708,6 +755,7 @@ def run_xgb_external_memory(param, model_interface, queue):
         
         # Multistage evaluation
         prauc, rce, confmat, max_tmp, min_tmp, avg_tmp = model.evaluate(dmat_test)
+        del dmat_test
 
         # Summing all the evaluations
         tot_prauc = tot_prauc + prauc
@@ -725,8 +773,9 @@ def run_xgb_external_memory(param, model_interface, queue):
             avg += avg_tmp
             # Computing confusion matrix
             tot_confmat = tot_confmat + confmat
+    del model
 
-        # Averaging the evaluations over # of validation splits
+    # Averaging the evaluations over # of validation splits
     tot_prauc = tot_prauc / model_interface.tot_val_split
     tot_rce = tot_rce / model_interface.tot_val_split
     avg = avg / model_interface.tot_val_split
