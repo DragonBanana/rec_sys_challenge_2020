@@ -627,9 +627,9 @@ class ModelInterface(object):
             obj = self.metriComb(prauc, rce)
             to_write = "-------\n"
 
-            to_write = "best_es_iteration: " + str(best_iter) + "\n"
+            to_write += "best_es_iteration: " + str(best_iter) + "\n"
 
-            to_write = "-------\n"
+            to_write += "-------\n"
 
             to_write += "PRAUC = " + str(prauc) + "\n"
             to_write += "RCE   = " + str(rce) + "\n"
