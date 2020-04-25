@@ -611,36 +611,58 @@ class ModelInterface(object):
                 log.write(to_write)
 
 
-    #Saves the results (called after the evaluation phase)
     def saveRes(self, best_iter, prauc, rce, confmat, max_arr, min_arr, avg):
         if self.path is None:
-            #Taking the path provided
+            # Taking the path provided
             self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S")) + ".log"
-        #Opening a file and writing into it the logs
-        with open(self.path, 'a') as log:          
-            #Writing the log
+        # Opening a file and writing into it the logs
+        with open(self.path, 'a') as log:
+            # Writing the log
             tn, fp, fn, tp = confmat.ravel()
+            total = tn + fp + fn + tp
+            precision = tp / (tp + fp)
+            recall = tp / (tp + fn)
+            f1 = 2 * ((precision * recall) / (precision + recall))
+
             obj = self.metriComb(prauc, rce)
-            to_write = "best_es_iteration: "+str(best_iter)+"\n"
+            to_write = "-------\n"
+
+            to_write = "best_es_iteration: " + str(best_iter) + "\n"
+
+            to_write = "-------\n"
+
+            to_write += "PRAUC = " + str(prauc) + "\n"
+            to_write += "RCE   = " + str(rce) + "\n"
+
             to_write += "-------\n"
-            to_write += "PRAUC = "+str(prauc)+"\n"
-            to_write += "RCE   = "+str(rce)+"\n"
+
+            # confusion matrix in percentages
+            to_write += "TN    = {:0.3f}%\n".format((tn / total) * 100)
+            to_write += "FP    = {:0.3f}%\n".format((fp / total) * 100)
+            to_write += "FN    = {:0.3f}%\n".format((fn / total) * 100)
+            to_write += "TP    = {:0.3f}%\n".format((tp / total) * 100)
+
             to_write += "-------\n"
-            to_write += "TN    = "+str(tn)+"\n"
-            to_write += "FP    = "+str(fp)+"\n"
-            to_write += "FN    = "+str(fn)+"\n"
-            to_write += "TP    = "+str(tp)+"\n"
+
+            to_write += "PREC    = {:0.5f}%\n".format(precision)
+            to_write += "RECALL    = {:0.5f}%\n".format(recall)
+            to_write += "F1    = {:0.5f}%\n".format(f1)
+
             to_write += "-------\n"
-            to_write += "MAX   ="+str(max_arr)+"\n"
-            to_write += "MIN   ="+str(min_arr)+"\n"
-            to_write += "AVG   ="+str(avg)+"\n"
+
+            to_write += "MAX   =" + str(max_arr) + "\n"
+            to_write += "MIN   =" + str(min_arr) + "\n"
+            to_write += "AVG   =" + str(avg) + "\n"
+
             to_write += "-------\n"
-            to_write += "OBJECTIVE: "+str(obj)+"\n\n\n"
+
+            to_write += "OBJECTIVE: " + str(obj) + "\n\n\n"
             log.write(to_write)
 
-        #Increasing the iteration count
+        # Increasing the iteration count
         self.iter_count = self.iter_count + 1
-#--------------------------------------------------
+
+    #--------------------------------------------------
 
 
 #--------------------------------------------------
