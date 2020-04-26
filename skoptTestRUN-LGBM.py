@@ -117,7 +117,7 @@ def main():
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
-    OP.setParameters(n_calls=30, n_random_starts=30)
+    OP.setParameters(n_calls=50, n_random_starts=30)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
