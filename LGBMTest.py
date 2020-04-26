@@ -6,8 +6,8 @@ from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
 
 if __name__ == '__main__':
-    train_dataset = "train_days_123456"
-    test_dataset = "val_days_7"
+    train_dataset = "train_days_123"
+    test_dataset = "val_days_4"
 
     # Define the X label
     X_label = [
@@ -39,6 +39,7 @@ if __name__ == '__main__':
     X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
+    #Initialize Model
     LGBM = LightGBM(kind="LIKE (TESTING)")
    
     # LGBM Training
@@ -48,7 +49,16 @@ if __name__ == '__main__':
 
     # LGBM Evaluation
     evaluation_start_time = time.time()
-    prauc, rce = LGBM.evaluate(X_test.to_numpy(), Y_test.to_numpy())
+    prauc, rce, conf, max_pred, min_pred, avg = LGBM.evaluate(X_test.to_numpy(), Y_test.to_numpy())
+    print(f"PRAUC:\t{prauc}")
+    print(f"RCE:\t{rce}")
+    print(f"TP:\t{conf[0,0]}")
+    print(f"FN:\t{conf[0,1]}")
+    print(f"FP:\t{conf[1,0]}")
+    print(f"TN:\t{conf[1,1]}")
+    print(f"MAX_PRED:\t{max_pred}")
+    print(f"MIN_PRED:\t{min_pred}")
+    print(f"AVG:\t{avg}")
     print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
     tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
@@ -59,4 +69,7 @@ if __name__ == '__main__':
     predictions = LGBM.get_prediction(X_test)
     print(f"Prediction time: {time.time() - prediction_start_time} seconds")
 
-    create_submission_file(tweets, users, predictions, "test_submission.csv")
+    #Uncomment to plot feature importance at the end of training
+    #LGBM.plot_fimportance()
+
+    #create_submission_file(tweets, users, predictions, "test_submission.csv")
