@@ -33,29 +33,19 @@ COMMENT = "commentCOMMENTComment"
 REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
-    param_range_dict = [Integer(1500, 1501),                    #num_rounds
+    param_range_dict = [Integer(500, 501),                    #num_rounds
                         Integer(5, 200),                    #max_depth
                         Integer(1, 10),                     #min_child_weight
                         Real(0.3, 1),                       #colsample_bytree
-                        Real(0.0001, 1, 'log-uniform'),     #learning rate
+                        Real(0.001, 1, 'log-uniform'),     #learning rate
                         Real(0.0001, 1, 'log-uniform'),     #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),     #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
-                        Real(0.5, 1.5),                     #scale_pos_weight
+                        Real(0.9, 1.1),                     #scale_pos_weight
                         Real(0.1, 10),                      #gamma
                         Real(0.3, 1),                       #subsample
                         Real(0.45,0.55),                        #base_score
-                        Real(1, 40)]                        #max_delta_step
-
-    #Personalizing scale_pos_weight range for each class
-    if kind in LIKE:
-        param_range_dict[7] = Real(0,1)
-    elif kind in RETWEET:
-        param_range_dict[7] = Real(0,1)
-    elif kind in COMMENT:
-        param_range_dict[7] = Real(0,1)
-    elif kind in REPLY:
-        param_range_dict[7] = Real(0,1)
+                        Real(1, 100)]                        #max_delta_step
 
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
