@@ -573,10 +573,14 @@ class ModelInterface(object):
     def metriComb(self, prauc, rce):
         # Superdumb combination
         metric = -rce
+        if rce > 0:
+            metric = - (rce * prauc)
+        else:
+            metric = - (rce * (1 - prauc))
         if np.isfinite(metric):
             return metric
         else:
-            return 1000
+            return float(1000)
 #-------------------------------------------------
 
 
@@ -686,10 +690,18 @@ class ModelInterface(object):
             to_write += "-------\n"
 
             # confusion matrix in percentages
-            to_write += "TN    = {:0.3f}%\n".format((tn / total) * 100)
-            to_write += "FP    = {:0.3f}%\n".format((fp / total) * 100)
-            to_write += "FN    = {:0.3f}%\n".format((fn / total) * 100)
-            to_write += "TP    = {:0.3f}%\n".format((tp / total) * 100)
+            to_write += "TN %  = {:0.3f}%\n".format((tn / total) * 100)
+            to_write += "FP %  = {:0.3f}%\n".format((fp / total) * 100)
+            to_write += "FN %  = {:0.3f}%\n".format((fn / total) * 100)
+            to_write += "TP %  = {:0.3f}%\n".format((tp / total) * 100)
+
+            to_write += "-------\n"
+
+            # confusion matrix in percentages
+            to_write += "TN    = {:n}\n".format(tn)
+            to_write += "FP    = {:n}\n".format(fp)
+            to_write += "FN    = {:n}\n".format(fn)
+            to_write += "TP    = {:n}\n".format(tp)
 
             to_write += "-------\n"
 

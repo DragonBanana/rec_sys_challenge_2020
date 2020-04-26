@@ -2,7 +2,6 @@ import xgboost as xgb
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_curve, auc, log_loss
 import time
 import pickle
 import os.path
@@ -11,7 +10,7 @@ import datetime as dt
 import sys
 import math
 from Utils.Base.RecommenderGBM import RecommenderGBM
-from Utils.Eval.Metrics import ComputeMetrics as CoMe
+from Utils.Eval.Metrics import ComputeMetrics as CoMe, CustomEvalXGBoost
 from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
 from Utils.Eval.ConfMatrix import confMatrix
@@ -112,6 +111,8 @@ class XGBoost(RecommenderGBM):
         else:
             dmat_val = [(dmat_val, "eval")]
 
+        custom_eval_xgb = CustomEvalXGBoost(int(self.early_stopping_rounds/2))
+
         if self.model is not None:
             # Continue the training og a model already saved
             self.model = xgb.train(self.get_param_dict(),
@@ -119,6 +120,7 @@ class XGBoost(RecommenderGBM):
                                    early_stopping_rounds=self.early_stopping_rounds,
                                    evals=dmat_val,
                                    dtrain=dmat_train,
+                                   feval=custom_eval_xgb.custom_eval,
                                    xgb_model=self.model)
 
         # if we have no model saved
@@ -127,6 +129,7 @@ class XGBoost(RecommenderGBM):
                                    num_boost_round=math.ceil(self.num_rounds),
                                    early_stopping_rounds=self.early_stopping_rounds,
                                    evals=dmat_val,
+                                   feval=custom_eval_xgb.custom_eval,
                                    dtrain=dmat_train)
 
 
@@ -219,7 +222,8 @@ class XGBoost(RecommenderGBM):
                       'process_type': self.process_type,
                       'tree_method': self.tree_method,
                       'objective': self.objective,
-                      'eval_metric': self.eval_metric,
+                      # 'eval_metric': self.eval_metric,
+                      'disable_default_eval_metric': 1,
                       'colsample_bytree': self.colsample_bytree,
                       'learning_rate': self.learning_rate,
                       'max_depth': math.ceil(self.max_depth),
@@ -243,4 +247,4 @@ class XGBoost(RecommenderGBM):
     #-----------------------------------------------------
     def getBestIter(self):
         return self.model.best_iteration
-        
+

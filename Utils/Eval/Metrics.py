@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve, auc, log_loss
+from math import log
+import xgboost as xgb
 #---------------------------------------------------
 # In this class are present the methods which define
 # the evaluation metrics used in the challenge.
@@ -67,3 +69,45 @@ class ComputeMetrics(object):
     #Computes some statistics about the prediction
     def computeStatistics(self):
         return max(self.pred), min(self.pred), np.mean(self.pred)
+
+
+class CustomEvalXGBoost:
+
+    def __init__(self, every_x_round: int):
+
+        assert every_x_round > 0, f"Parameter 'every_x_round' should be greater than 0"
+
+        self.every_x_round = every_x_round
+        self.counter = 0
+        self.current_best = np.inf
+        self.mode = "every_x_round"
+
+    def custom_eval(self, predt: np.ndarray, dtrain: xgb.DMatrix):
+        if self.mode == "every_x_round":
+            if self.counter % self.every_x_round == 0:
+                self.counter += 1
+                eval_metric = float(self.logloss(predt.astype(np.float64), dtrain.get_label().astype(np.bool)))
+                if eval_metric > self.current_best:
+                    self.mode = "every_round"
+                else:
+                    self.current_best = eval_metric
+                return 'custom_log_loss', eval_metric
+            else:
+                self.counter += 1
+                return 'custom_log_loss', 1000
+        else:
+            self.counter += 1
+            eval_metric = float(self.logloss(predt.astype(np.float64), dtrain.get_label().astype(np.bool)))
+            if eval_metric < self.current_best:
+                self.mode = "every_x_round"
+                self.current_best = eval_metric
+            return 'custom_log_loss', eval_metric
+
+
+
+    def logloss(self, predicted, target):
+        target = [float(x) for x in target]  # make sure all float values
+        predicted = [min([max([x, 1e-15]), 1 - 1e-15]) for x in predicted]  # within (0,1) interval
+        return -(1.0 / len(target)) * sum([target[i] * log(predicted[i]) + \
+                                           (1.0 - target[i]) * log(1.0 - predicted[i]) \
+                                           for i in range(len(target))])
