@@ -79,6 +79,49 @@ def xgbName():
     return param_name_dict
 
 
+####################################################
+#                     LIGHTGBM                     #
+####################################################
+
+def lgbmRange(kind):
+    param_range_dict = [Integer(5, 200),                        #num_iterations
+                        Integer(31, 70),                        #num_leaves
+                        Real(0.0001, 1, 'log-uniform'),         #learning rate
+                        Integer(5, 50),                         #max_depth
+                        Real(0.1, 1),                         #lambda_l1
+                        Real(0.1, 1),                         #lambda_l2
+                        Real(0.1, 1),                           #colsample_bytree
+                        Real(0.1, 1),                           #colsample_bynode
+                        Real(0.5, 1),                           #bagging_fraction
+                        Real(0.1,1),                            #pos_subsample
+                        Real(0.1,1),                            #neg_subsample
+                        # SCALE POS WEIGHT
+                        Real(1,1.000000000001),                         #scale_pos_weight
+                        # ALTERNATIVELY IS UMBALANCE MUST BE SET AS TRUE
+                        Integer(0,50),                             #bagging_freq
+    ]
+    return param_range_dict
+
+
+#Names of the hyperparameters that will be optimized
+def lgbmName():
+    param_name_dict = [
+                       "num_iterations",
+                       "num_leaves",
+                       "learning rate",
+                       "max_depth",
+                       "lambda_l1",
+                       "lambda_l2",
+                       "colsample_bytree",
+                       "colsample_bynode",
+                       "subsample",
+                       "pos_subsample",
+                       "neg_subsample",
+                       "scale_pos_weight",
+                       "bagging_freq"
+                       ]
+    return param_name_dict
+
 
 '''
 def dictBayOptLGB():

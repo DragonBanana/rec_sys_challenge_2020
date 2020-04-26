@@ -290,3 +290,28 @@ class Optimizer(object):
                           eval_metric=eval_metric,
                           early_stopping_rounds=early_stopping_rounds)
     # ----------------------------------------------------------------
+
+    #---------------------------------------------------------------
+    #         Setting non tuned parameters
+    #---------------------------------------------------------------
+    def setParamsLGB(self, verbosity=1, 
+                        process_type="default", 
+                        tree_method="auto", 
+                        #Not in tuning dict
+                        objective= 'binary',
+                        num_threads= 4,
+                        metric= ('cross_entropy','cross_entropy_lambda'),
+                        num_parallel_tree=4, 
+                        eval_metric="rmsle", 
+                        early_stopping_rounds=None):
+        if self.MI is None:
+            self.defineMI()
+        
+        self.MI.setParams(verbosity=verbosity,
+                          process_type=process_type,
+                          tree_method=tree_method,
+                          objective=objective,
+                          num_parallel_tree=num_parallel_tree,
+                          eval_metric=eval_metric,
+                          early_stopping_rounds=early_stopping_rounds)
+    #----------------------------------------------------------------

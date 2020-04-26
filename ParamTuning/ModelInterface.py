@@ -2,9 +2,12 @@ import functools
 import sys
 import os.path
 from Models.GBM.XGBoost import XGBoost
+from Models.GBM.LightGBM import LightGBM
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.Base.ParamRangeDict import xgbRange
 from Utils.Base.ParamRangeDict import xgbName
+from Utils.Base.ParamRangeDict import lgbmRange
+from Utils.Base.ParamRangeDict import lgbmName
 from Utils.Data.Data import get_dataset_xgb
 from Utils.Data.Data import get_dataset_xgb_batch
 from Utils.Data.DataUtils import TRAIN_IDS,  TEST_IDS
@@ -408,8 +411,54 @@ class ModelInterface(object):
 #-----------------------------------------
     # Score function for the lightGBM model
     def blackBoxLGB(self, param):
-        #TODO: implement this
-        return None
+        if self.make_log is True:
+            self.saveParam(param)
+        #Initializing the model it it wasn't already
+        model = LightGBM(kind=self.kind,
+                        objective=self.objective,
+                        #In tuning dict
+                        num_iterations =  param[0],
+                        num_leaves=       param[1],
+                        learning_rate=    param[2],
+                        max_depth=        param[3],
+                        lambda_l1=        param[4],
+                        lambda_l2=        param[5],
+                        colsample_bynode= param[6],
+                        colsample_bytree= param[7],
+                        bagging_fraction= param[8],
+                        pos_subsample=    param[9],  
+                        neg_subsample=    param[10],  
+                        scale_pos_weight= param[11],        #Remember that scale_pos_wiight and is_unbalance are mutually exclusive
+                        bagging_freq=     param[12],   
+        )
+        #Training on custom set
+        if (self.dmat_train is None):
+            print("No train set passed to the model.")
+        else:
+            #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
+            model.fit(self.X_train, self.Y_train)
+
+        #Evaluating on custom set
+        if (self.dmat_test is None):
+            print("No test set provided.")
+        else:
+            #dmat_test = self.getDMat(self.X_test, self.Y_test) #------------------------------------- DMATRIX GENERATOR
+            prauc, rce, confmat, max_pred, min_pred, avg = model.evaluate(self.X_test.to_numpy(),self.Y_test.to_numpy())
+
+        del model
+        #Make human readable logs here
+        if self.make_log is True:
+            self.saveRes(-1,
+                         prauc, 
+                         rce, 
+                         confmat, 
+                         max_pred, 
+                         min_pred, 
+                         avg)
+        
+        #Returning the dumbly combined scores
+        return self.metriComb(prauc, rce)
+
 
     
     # Score function for the CatBoost model
@@ -453,7 +502,7 @@ class ModelInterface(object):
             param_dict = xgbRange(self.kind)
 
         if self.model_name in "lightgbm_classifier":
-            param_dict =  []
+            param_dict =  lgbmRange(self.kind)
 
         if self.model_name in "catboost_classifier":
             param_dict = []
@@ -536,8 +585,8 @@ class ModelInterface(object):
 #-------------------------------------------------
     # Loads a custom train set
     def loadTrainData(self, X_train=None, Y_train=None, dmat_train=None):
-        #self.X_train=X_train
-        #self.Y_train=Y_train
+        self.X_train=X_train
+        self.Y_train=Y_train
         if dmat_train is None:
             self.dmat_train = self.getDMat(X_train, Y_train)
         else:
@@ -546,8 +595,8 @@ class ModelInterface(object):
     
     # Loads a custom data set
     def loadValData(self, X_val=None, Y_val=None, dmat_val=None):
-        #self.X_val=X_val
-        #self.Y_val=Y_val
+        self.X_val=X_val
+        self.Y_val=Y_val
         if dmat_val is None:
             self.dmat_val = self.getDMat(X_val, Y_val)
         else:
@@ -556,8 +605,8 @@ class ModelInterface(object):
 
     # Loads a custom data set
     def loadTestData(self, X_test=None, Y_test=None, dmat_test=None):
-        #self.X_test=X_test
-        #self.Y_test=Y_test
+        self.X_test=X_test
+        self.Y_test=Y_test
         if dmat_test is None:
             self.dmat_test = self.getDMat(X_test, Y_test)
         else:
