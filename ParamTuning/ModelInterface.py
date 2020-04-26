@@ -517,7 +517,7 @@ class ModelInterface(object):
             names_dict = xgbName()
 
         if self.model_name in "lightgbm_classifier":
-            names_dict =  []
+            names_dict =  lgbmName()
 
         if self.model_name in "catboost_classifier":
             names_dict = []
