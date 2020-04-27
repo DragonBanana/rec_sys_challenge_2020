@@ -1351,7 +1351,7 @@ class Booster(object):
                     feval_ret = feval(self.predict(dmat, training=False), dmat)
                     name, val = feval_ret
                     if val > self._custom_eval_current_best:
-                        self._custom_eval_mode = "every_round"
+                        self._custom_eval_mode = "every_x_round"
                     else:
                         self._custom_eval_current_best = val
                     res += '\t%s-%s:%f' % (evname, name, val)
