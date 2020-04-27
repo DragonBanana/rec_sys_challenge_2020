@@ -10,6 +10,7 @@ import datetime as dt
 import sys
 from Utils.Base.RecommenderGBM import RecommenderGBM
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
+import catboost
 
 #TODO: The categorical features must be imported from load_data() method
 
@@ -18,14 +19,27 @@ class CatBoost(RecommenderGBM):
                  kind="NO_NAME_GIVEN",
                  batch=False,
                  #Not in tuning dict
-                 verbose=False,
+                 verbose=True,
                  loss_function="Logloss",
                  eval_metric="AUC",
                  #In tuning dict
-                 iterations=10,
-                 depth=10,
+                 iterations=20,
+                 depth=16,
                  learning_rate = 0.1,
-                 l2_leaf_reg = 0.01):
+                 l2_leaf_reg = 0.01,
+                 bootstrap_type = "Bernoulli",
+                 subsample = 0.8,
+                 max_leaves = 31,
+                 min_data_in_leaf = 1,
+                 leaf_estimation_method = "Newton",
+                 leaf_estimation_iterations= 10,
+                 scale_pos_weight = 1,
+                 model_shrink_mode = "Constant",
+                 model_shrink_rate = 0.5,
+                 random_strenght = 0.5,
+                 colsample_bylevel = 0.5,
+                 early_stopping_rounds = 10,
+                 od_type = "Iter"):
 
         super(CatBoost, self).__init__(
               name="catboost_classifier",
@@ -42,8 +56,7 @@ class CatBoost(RecommenderGBM):
 
         #CLASS VARIABLES
         #Model
-        self.sround_model = None
-        self.batch_model = None
+        self.model = None
         #Prediction
         self.Y_pred = None
         #Categorical features
@@ -59,7 +72,43 @@ class CatBoost(RecommenderGBM):
         self.depth=depth
         self.learning_rate=learning_rate
         self.l2_leaf_reg=l2_leaf_reg
+        self.bootstrap_type = bootstrap_type
+        self.subsample = subsample
+        self.max_leaves = max_leaves
+        self.min_data_in_leaf = min_data_in_leaf
+        self.leaf_estimation_method = leaf_estimation_method
+        self.leaf_estimation_iterations = leaf_estimation_iterations
+        self.scale_pos_weight = scale_pos_weight
+        self.model_shrink_mode = model_shrink_mode
+        self.model_shrink_rate = model_shrink_rate
+        self.random_strenght = random_strenght
+        self.colsample_bylevel = colsample_bylevel
+        # ES parameters
+        self.early_stopping_rounds = early_stopping_rounds
+        self.od_type = od_type
 
+
+    def init_model(self):
+        return CatBoostClassifier(loss_function= self.loss_function,
+                                  eval_metric= self.eval_metric,
+                                  verbose= self.verbose,
+                                  iterations= self.iterations,
+                                  depth= self.depth,
+                                  learning_rate= self.learning_rate,
+                                  l2_leaf_reg= self.l2_leaf_reg,
+                                  bootstrap_type=self.bootstrap_type,
+                                  subsample=self.subsample,
+                                  max_leaves=self.max_leaves,
+                                  min_data_in_leaf=self.min_data_in_leaf,
+                                  leaf_estimation_method=self.leaf_estimation_method,
+                                  leaf_estimation_iterations=self.leaf_estimation_iterations,
+                                  scale_pos_weight=self.scale_pos_weight,
+                                  model_shrink_mode=self.model_shrink_mode,
+                                  model_shrink_rate=self.model_shrink_rate,
+                                  random_strength=self.random_strenght,
+                                  colsample_bylevel=self.colsample_bylevel,
+                                  od_wait=self.early_stopping_rounds,       # ES set here
+                                  od_type=self.od_type)                     # ES set here
         
 
     #-----------------------------------------------------
@@ -71,37 +120,27 @@ class CatBoost(RecommenderGBM):
     # sround_model and batch_model are differentiated
     # in order to avoid overwriting. (Maybe not necessary)
     #-----------------------------------------------------
-    def fit(self, X=None, Y=None):
-        if (X is None) or (Y is None):
-            X, Y = self.load_data(self.test_dataset)
-            print("Test set loaded from file.")
+    def fit(self, pool_train = None, pool_val = None):
 
-        #Learning in a single round
-        if self.batch is False:
-            #Getting the CatBoost Pool matrix format
-            train = Pool(data=X, 
-                         label=Y,
-                         cat_features=self.cat_feat)
-     	
-            #Defining and fitting the models
-            self.sround_model = self.init_model()
-            self.sround_model.fit(train)
+        # In case validation set is not provided set early stopping rounds to default
+        if (pool_val is None):
+            self.early_stopping_rounds = None
+            self.od_type = None
 
-        #Learning by consecutive batches
+
+        if self.model is not None:
+            self.model.fit(pool_train,
+                           eval_set=pool_val, 
+                           init_model=self.model)
+
         else:
-            #Getting the CatBoost Pool matrix format
-            train = Pool(data=X, 
-                         label=Y,
-                         cat_features=self.cat_feat)
+            #Defining and fitting the models
+            self.model = self.init_model()
+            self.model.fit(pool_train,
+                           eval_set=pool_val)
 
-            #Declaring and training the model
-            #Initializing the model only if it wasn't already
-            if (self.batch_model is None):
-                self.batch_model = self.init_model() 
-                self.batch_model.fit(train)
 
-            else:
-                self.batch_model.fit(train, init_model=self.batch_model)
+       
 
 
     # Returns the predictions and evaluates them
@@ -113,143 +152,89 @@ class CatBoost(RecommenderGBM):
     #---------------------------------------------------------------------------
     #           Works for both for batch and single training
     #---------------------------------------------------------------------------
-    def evaluate(self, X_tst=None, Y_tst=None):
-        Y_pred = None
-        if (X_tst is None) or (Y_tst is None):
-            X_tst, Y_tst = self.load_data(self.test_dataset)
-            print("Train set loaded from file.")
-        if (self.sround_model is None) and (self.batch_model is None):
+    def evaluate(self, pool_tst=None):
+        if (pool_tst is None):
+            print("No dataset provided.")    
+        if (self.model is None):
             print("No model trained yet.")
-        else:
-            #Selecting the coherent model for the evaluation
-            #According to the initial declaration (batch/single round)
-            if self.batch is False:
-                model = self.sround_model
-            else:
-                model = self.batch_model
-            
+        else:            
             #Preparing DMatrix
-            #p_test = Pool(X_tst)
+            #p_test = Pool(X_tst, label=Y_tst)
             #Making predictions
-            #Y_pred = model.predict(p_test)
-            Y_pred = self.get_prediction(X_tst)
+            #Y_pred = model.predict_proba(p_test)
+            Y_pred = self.get_prediction(pool_tst)
 
             # Declaring the class containing the
             # metrics.
-            cm = CoMe(Y_pred, Y_tst)
+            cm = CoMe(Y_pred, pool_tst.get_label())
 
-            #Evaluating
+            # Evaluating
             prauc = cm.compute_prauc()
             rce = cm.compute_rce()
-            print("PRAUC "+self.kind+": {0}".format(prauc))
-            print("RCE "+self.kind+": {0}".format(rce))
-            print("MAX: {0}".format(max(Y_pred)))
-            print("MIN: {0}\n".format(min(Y_pred)))
-        return prauc, rce
+            # Confusion matrix
+            conf = cm.confMatrix()
+            # Prediction stats
+            max_pred, min_pred, avg = cm.computeStatistics()
+
+            return prauc, rce, conf, max_pred, min_pred, avg
 
     
     # This method returns only the predictions
     #-------------------------------------------
     #           get_predictions(...)
     #-------------------------------------------
-    #X_tst:     Features of the test set
+    # pool_tst:     Features of the test set
     #-------------------------------------------
     # As above, but without computing the scores
     #-------------------------------------------
-    def get_prediction(self, X_tst=None):
+    def get_prediction(self, pool_tst=None):
         Y_pred = None
         #Tries to load X and Y if not directly passed        
-        if (X_tst is None):
-            X_tst, _ = self.load_data(self.test_dataset)
-            print("Test set loaded from file.")
-        if (self.sround_model is None) and (self.batch_model is None):
+        if (pool_tst is None):
+            print("No dataset provided.")
+        if (self.model is None):
             print("No model trained yet.")
         else:
-            #Selecting the coherent model for the evaluation
-            #According to the initial declaration (batch/single round)
-            if self.batch is False:
-                model = self.sround_model
-            else:
-                model = self.batch_model
-            
             #Preparing DMatrix
-            p_test = Pool(X_tst)
+            #p_test = Pool(X_tst)
 
-            #Making predictions
-            '''
+            #Making predictions            
             #Commented part gives probability but 2 columns
-            Y_pred = model.predict(p_test, prediction_type="Probability")
+            # First column probability to be 0
+            # Second column probability to be 1
+            Y_pred = self.model.predict_proba(pool_tst)
             Y_pred = Y_pred[:,1]
-            '''
-            Y_pred = model.predict(p_test)
-            
-            print(Y_pred.shape)
             return Y_pred
 
 
     #This method loads a model
     #-------------------------
-    #path: path to the model
+    # path: path to the model
     #-------------------------
-    def load_model(self, path):
-        if (self.batch is False):
-            #Reinitializing model
-            self.sround_model = CatBoostClassifier()
-            self.sround_model.load_model(path)
-            print("Model correctly loaded.\n")    
-
-        else:
-            #By loading in this way it is possible to keep on learning            
-            self.batch_model = CatBoostClassifier()
-            self.batch_model.load_model(path)
-            print("Batch model correctly loaded.\n")
+    def load_model(self, path):      
+        self.model = CatBoostClassifier()
+        self.model.load_model(path)
+        print("Model correctly loaded.\n")
             
     
-    #Returns/prints the importance of the features
+    # Returns/prints the importance of the features
     #-------------------------------------------------
-    #verbose:   it also prints the features importance
+    # verbose:   it also prints the features importance
     #-------------------------------------------------
     def get_feat_importance(self, verbose = False):
         
-        if (self.batch is False):
-            model = self.sround_model
-        else:
-            model = self.batch_model
         #Getting feature importance
-        importance = model.get_feature_importance(verbose=verbose)
+        importance = self.model.get_feature_importance(verbose=verbose)
+        #for fstr_type parameter assign it something like = catboost.EFStrType.SharpValues
             
         return importance
 
 
-    def init_model(self):
-        return CatBoostClassifier(loss_function= self.loss_function,
-                                  eval_metric= self.eval_metric,
-                                  verbose= self.verbose,
-                                  iterations= self.iterations,
-                                  depth= self.depth,
-                                  learning_rate= self.learning_rate,
-                                  l2_leaf_reg= self.l2_leaf_reg)
-
-
-
-    #This method loads the dataset from file
-    #-----------------------------------------------
-    #dataset:   defines if will be load the train or
-    #           test set, should be equal to either:
-    #
-    #           self.train_dataset
-    #           self.test_dataset
-    #-----------------------------------------------
-    # TODO: has to be extended if we want to use it
-    # too for LightGBM and CatBoost
-    #-----------------------------------------------
-    def load_data(self, dataset):
-        #X, Y = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
-        #X, Y, self.cat_feat = Data.get_dataset_xgb(...)
-        X = None
-        Y = None
-        return X, Y
-
+    #-----------------------------------------------------
+    #        Get the best iteration with ES
+    #-----------------------------------------------------
+    def getBestIter(self):
+        return self.model.best_iteration_
 
 
 
