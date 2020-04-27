@@ -111,7 +111,10 @@ class ModelInterface(object):
                          avg)
         
         #Returning the dumbly combined scores
-        return self.metriComb(prauc, rce)
+        if max_pred != min_pred:
+            return self.metriComb(prauc, rce)
+        else:
+            return 1000
 
 
 #------------------------------------------------------

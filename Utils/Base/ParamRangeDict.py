@@ -34,7 +34,7 @@ REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
     param_range_dict = [Integer(500, 501),                    #num_rounds
-                        Integer(5, 200),                    #max_depth
+                        Integer(5, 64),                    #max_depth
                         Integer(1, 10),                     #min_child_weight
                         Real(0.3, 1),                       #colsample_bytree
                         Real(0.001, 1, 'log-uniform'),     #learning rate
