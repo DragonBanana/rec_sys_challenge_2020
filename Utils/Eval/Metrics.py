@@ -86,7 +86,7 @@ class CustomEvalXGBoost:
         if self.mode == "every_x_round":
             if self.counter % self.every_x_round == 0:
                 self.counter += 1
-                eval_metric = float(self.logloss(predt.astype(np.float64), dtrain.get_label().astype(np.bool)))
+                eval_metric = float(log_loss(dtrain.get_label().astype(np.bool), predt.astype(np.float64)))
                 if eval_metric > self.current_best:
                     self.mode = "every_round"
                 else:
@@ -97,17 +97,8 @@ class CustomEvalXGBoost:
                 return 'custom_log_loss', 1000
         else:
             self.counter += 1
-            eval_metric = float(self.logloss(predt.astype(np.float64), dtrain.get_label().astype(np.bool)))
+            eval_metric = float(log_loss(dtrain.get_label().astype(np.bool), predt.astype(np.float64)))
             if eval_metric < self.current_best:
                 self.mode = "every_x_round"
                 self.current_best = eval_metric
             return 'custom_log_loss', eval_metric
-
-
-
-    def logloss(self, predicted, target):
-        target = [float(x) for x in target]  # make sure all float values
-        predicted = [min([max([x, 1e-15]), 1 - 1e-15]) for x in predicted]  # within (0,1) interval
-        return -(1.0 / len(target)) * sum([target[i] * log(predicted[i]) + \
-                                           (1.0 - target[i]) * log(1.0 - predicted[i]) \
-                                           for i in range(len(target))])
