@@ -13,7 +13,6 @@ import re
 import sys
 import warnings
 import json
-import time
 import numpy as np
 import scipy.sparse
 
@@ -1302,7 +1301,6 @@ class Booster(object):
         result: str
             Evaluation result string.
         """
-        start_time = time.time()
         for d in evals:
             if not isinstance(d[0], DMatrix):
                 raise TypeError('expected DMatrix, got {}'.format(
@@ -1353,11 +1351,9 @@ class Booster(object):
                     name, val = feval_ret
                     if val < self._custom_eval_current_best:
                         self._custom_eval_mode = "every_x_round"
-                    else:
                         self._custom_eval_current_best = val
                     res += '\t%s-%s:%f' % (evname, name, val)
 
-        print(f"ES evaluation time: {time.time() - start_time}")
         return res
 
     def eval(self, data, name='eval', iteration=0):
