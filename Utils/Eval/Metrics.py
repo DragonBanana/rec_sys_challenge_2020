@@ -73,15 +73,6 @@ class ComputeMetrics(object):
 
 class CustomEvalXGBoost:
 
-    def __init__(self, every_x_round: int):
-
-        assert every_x_round > 0, f"Parameter 'every_x_round' should be greater than 0"
-
-        self.every_x_round = every_x_round
-        self.counter = 0
-        self.current_best = np.inf
-        self.mode = "every_x_round"
-
     def custom_eval(self, predt: np.ndarray, dtrain: xgb.DMatrix):
         eval_metric = float(log_loss(dtrain.get_label().astype(np.bool), predt.astype(np.float64)))
         return 'custom_log_loss', eval_metric

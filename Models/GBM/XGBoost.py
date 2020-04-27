@@ -111,7 +111,7 @@ class XGBoost(RecommenderGBM):
         else:
             dmat_val = [(dmat_val, "eval")]
 
-        custom_eval_xgb = CustomEvalXGBoost(int(self.early_stopping_rounds/2))
+        custom_eval_xgb = CustomEvalXGBoost()
 
         if self.model is not None:
             # Continue the training og a model already saved
