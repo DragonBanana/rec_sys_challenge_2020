@@ -83,22 +83,5 @@ class CustomEvalXGBoost:
         self.mode = "every_x_round"
 
     def custom_eval(self, predt: np.ndarray, dtrain: xgb.DMatrix):
-        if self.mode == "every_x_round":
-            if self.counter % self.every_x_round == 0:
-                self.counter += 1
-                eval_metric = float(log_loss(dtrain.get_label().astype(np.bool), predt.astype(np.float64)))
-                if eval_metric > self.current_best:
-                    self.mode = "every_round"
-                else:
-                    self.current_best = eval_metric
-                return 'custom_log_loss', eval_metric
-            else:
-                self.counter += 1
-                return 'custom_log_loss', 1000
-        else:
-            self.counter += 1
-            eval_metric = float(log_loss(dtrain.get_label().astype(np.bool), predt.astype(np.float64)))
-            if eval_metric < self.current_best:
-                self.mode = "every_x_round"
-                self.current_best = eval_metric
-            return 'custom_log_loss', eval_metric
+        eval_metric = float(log_loss(dtrain.get_label().astype(np.bool), predt.astype(np.float64)))
+        return 'custom_log_loss', eval_metric
