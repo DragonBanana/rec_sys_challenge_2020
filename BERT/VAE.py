@@ -4,6 +4,7 @@ import torch
 import torch.utils.data
 from torch import nn
 from torch.nn import functional
+import numpy as np
 
 
 class VAE(nn.Module):
@@ -86,83 +87,3 @@ def loss_function(recon_x, x, mu, logvar):
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
     return BCE + KLD
-
-
-def read_text_embeddings(type):
-    if type == "train":
-        path = TRAIN_PATH
-        #max_rows = 1000
-    else:
-        path = VALID_PATH
-        #max_rows = 100
-    with open(path, 'r') as f:
-        num_cols = len(f.readline().split(','))  # read header
-        f.seek(0)
-        text_embeddings = np.loadtxt(f, delimiter=",", skiprows=1, usecols=range(1,num_cols), max_rows=1000000, dtype=np.float32)
-    
-    return text_embeddings
-
-
-def train(train_set, batch_size, epoch):
-    # set the train mode
-    model.train()
-    # loss of the epoch
-    train_loss = 0
-    
-    train_set_length = len(train_set)
-    
-    iterator = range(0, train_set_length, batch_size)
-
-    for batch_idx in tqdm(iterator, desc=f"\tTraining : "):
-
-        batch_start = batch_idx
-        batch_end = min(batch_start + batch_size, train_set_length)
-        
-        batch = train_set[batch_start:batch_end]
-        batch = batch.float().to(DEVICE)
-        
-        # update the gradients to zero
-        optimizer.zero_grad()
-        # forward pass (batch_sample is decode(encode(batch)))
-        batch_sample, z_mu, z_var = model(batch)
-        # loss 
-        loss = loss_function(batch_sample, batch, z_mu, z_var)
-        # backward pass
-        loss.backward()
-        train_loss += loss.item()
-        # update the weights
-        optimizer.step()
-
-    return train_loss
-
-
-def test(test_set, batch_size, epoch):
-    # set the evaluation mode
-    model.eval()
-    # test loss for the data
-    test_loss = 0
-
-    # we don't need to track the gradients, since we are not updating the parameters during evaluation / testing
-    with torch.no_grad():
-        
-        test_set_length = len(test_set)
-    
-        iterator = range(0, test_set_length, batch_size)
-
-        for batch_idx in tqdm(iterator, desc=f"\tValidation : "):
-
-            batch_start = batch_idx
-            batch_end = min(batch_start + batch_size, test_set_length)
-
-            batch = test_set[batch_start:batch_end]
-            batch = batch.float().to(DEVICE)
-            
-            # reshape the data
-            batch = batch.float().to(DEVICE)
-            # forward pass
-            batch_sample, z_mu, z_var = model(batch)
-            # loss 
-            loss = loss_function(batch_sample, batch, z_mu, z_var)
-            test_loss += loss.item()
-
-    return test_loss

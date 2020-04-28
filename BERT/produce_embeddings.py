@@ -131,33 +131,31 @@ def main():
                 header_in_first_line = True
             else:
                 header_in_first_line = False
+
+            input_file = os.path.join(directory, file)
+            output_file = os.path.join(args.output_dir, 'embeddings_' + file)  #.replace('.csv','') + '_COMPLETE.csv')
+
+            write_result_file_header(output_file)
+
+            print("\nFile number : ", index)
+            print("Embeddings for : ", input_file)
+            print("Output file : ", output_file)
                 
-            if "00" in file or "01" in file or "02" in file or "09" in file:
+            # each file is read in 100 batches
+            for i in range(100):
+                print('\tBatch number : ', i)
+                tweet_ids, sentences = read_sentences(input_file, int(args.sentences_number / 100), header_in_first_line)
+                #for s in sentences:
+                #    print(s)
 
-                input_file = os.path.join(directory, file)
-                output_file = os.path.join(args.output_dir, 'embeddings_' + file.replace('.csv','') + '_COMPLETE.csv')
+                embeddings = model.encode(sentences, already_tokenized=args.tokenized, already_padded=args.padded, batch_size=args.batch_size, convert_to_numpy=True)
 
-                write_result_file_header(output_file)
+                if args.debug:
+                    #print(embeddings)
+                    print('\tEmbeddings number : ', len(embeddings))
+                    print('\tEmbeddings shape : ', embeddings[0].shape)
 
-                print("\nFile number : ", index)
-                print("Embeddings for : ", input_file)
-                print("Output file : ", output_file)
-                
-                # each file read in 100 batches
-                for i in range(100):
-                    print('\tBatch number : ', i)
-                    tweet_ids, sentences = read_sentences(input_file, int(args.sentences_number / 100), header_in_first_line)
-                    #for s in sentences:
-                    #    print(s)
-
-                    embeddings = model.encode(sentences, already_tokenized=args.tokenized, already_padded=args.padded, batch_size=args.batch_size, convert_to_numpy=True)
-
-                    if args.debug:
-                        #print(embeddings)
-                        print('\tEmbeddings number : ', len(embeddings))
-                        print('\tEmbeddings shape : ', embeddings[0].shape)
-
-                    save_embeddings(output_file, tweet_ids, embeddings)
+                save_embeddings(output_file, tweet_ids, embeddings)
                 
     print("\nDone.")
 

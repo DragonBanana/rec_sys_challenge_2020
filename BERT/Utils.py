@@ -110,7 +110,6 @@ def save(identifier, text_tokens, text, mapped, count, output_file):
 def save_tweet_length(tweet_id, length, output_file):
     output_file.write(tweet_id + ',' + str(length) + '\n')
     
-    
 
 def split_line(l):
     l = l.split(',')
@@ -177,14 +176,14 @@ def read_sentences(input_file, lines_num, header_first_line):
                 break
             
             # produce embeddings not for all the rows
-            #if row % 100 == 0:
+            if row % 5 == 0:  # eget the 20% of the rows for validation
 
-            line = line.strip().split(',')
-            tweet_id = line[0]
-            input_ids = f_int(line[1])
+                line = line.strip().split(',')
+                tweet_id = line[0]
+                input_ids = f_int(line[1])
 
-            tweet_ids.append(tweet_id)
-            sentences.append(input_ids)
+                tweet_ids.append(tweet_id)
+                sentences.append(input_ids)
 
             row += 1
             

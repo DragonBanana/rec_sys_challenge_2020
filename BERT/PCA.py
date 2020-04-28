@@ -22,7 +22,7 @@ class IPCA:
         for batch_index in iterator:
             batch_start = batch_index
             batch_end = min(batch_start + batch_size, input_len)
-            print('batch size : ', batch_end-batch_start)
+            #print('batch size : ', batch_end-batch_start)
             try:
                 self.inc_pca.partial_fit(x[batch_start:batch_end])
             except:
