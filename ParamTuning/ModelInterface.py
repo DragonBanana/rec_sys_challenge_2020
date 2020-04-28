@@ -278,7 +278,7 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXgbNCV(self, param):
-        print(param)
+        #print(param)
         #Saving parameters
         if self.make_log is True:
             self.saveParam(param)
@@ -479,6 +479,19 @@ class ModelInterface(object):
         return self.metriComb(prauc, rce)
 
 
+    # Batch ones    
+    # Score function for the lightGBM model
+    def blackBoxLgbBatch(self, param):
+        #TODO: implement this
+        return None
+
+    # NCV ones    
+    # Score function for the lightGBM model
+    def blackBoxLgbNCV(self, param):
+        #TODO: implement this
+        return None
+
+
     #--------------------------------------
     # CatBoost single train optimization
     #-------------------------------------- 
@@ -539,31 +552,256 @@ class ModelInterface(object):
         
         #Returning the scores
         return self.metriComb(prauc, rce)
-        
 
-    # Batch ones    
-    # Score function for the lightGBM model
-    def blackBoxLgbBatch(self, param):
-        #TODO: implement this
-        return None
 
     
     # Score function for the CatBoost model
     def blackBoxCatBatch(self, param):
-        #TODO: implement this
-        return None
+        #Saving parameters
+        if self.make_log is True:
+            self.saveParam(param)
+        #Initializing the model it it wasn't already
+        model = CatBoost(kind = self.kind,
+                         verbose=self.verbosity,
+                         #Not in tuning dict
+                         boosting_type = self.boosting_type,
+                         model_shrink_mode = self.model_shrink_mode,
+                         leaf_estimation_method = self.leaf_estimation_method,
+                         bootstrap_type = self.bootstrap_type,
+                         #In tuning dict
+                         iterations=                 param[0],
+                         depth=                      param[1],
+                         learning_rate=              param[2],
+                         l2_leaf_reg=                param[3],
+                         subsample=                  param[4],
+                         random_strenght=            param[5],
+                         colsample_bylevel=          param[6],
+                         leaf_estimation_iterations= param[7],
+                         scale_pos_weight =          param[8],
+                         model_shrink_rate =         param[9],
+                         # ES parameters
+                         early_stopping_rounds = self.early_stopping_rounds)
 
-    # NCV ones    
-    # Score function for the lightGBM model
-    def blackBoxLgbNCV(self, param):
-        #TODO: implement this
-        return None
+        best_iter = []
+        #Batch train
+        for split in tqdm(range(self.tot_train_split)):
+            X, Y = get_dataset_xgb_batch(self.tot_train_split, 
+                                         split, 
+                                         self.train_id, 
+                                         self.x_label, 
+                                         self.y_label)
+            #start_time_training_data = time.time()
+            pool_train = self.getPool(X, Y) #------------------------------------- DMATRIX GENERATOR
+            del X, Y
+
+            if self.val_id is not None:
+                X, Y = get_dataset_xgb_batch(self.tot_train_split, 
+                                             split, 
+                                             self.val_id, 
+                                             self.x_label, 
+                                             self.y_label)
+                pool_val = self.getPool(X, Y)
+                del X, Y
+            else:
+                pool_val = None
+
+            #Multistage model fitting
+            model.fit(pool_train, pool_val)
+            del pool_train
+
+            #Get best iteration obtained with es
+            if pool_val is not None:
+                best_iter.append(model.getBestIter())
+            else:
+                best_iter = -1
+            del pool_val
+
+
+        #Initializing variables
+        tot_prauc = 0
+        tot_rce = 0
+        tot_confmat = [[0,0],[0,0]]
+        max_pred = 0 #Max set to the minimum
+        min_pred = 1 #Min set to the maximum
+        avg = 0
+        #Batch evaluation
+        for split in tqdm(range(self.tot_test_split)):
+            #Iteratively fetching the dataset
+            X, Y = get_dataset_xgb_batch(self.tot_test_split, 
+                                         split, 
+                                         self.test_id, 
+                                         self.x_label, 
+                                         self.y_label)
+
+            pool_test = self.getPool(X, Y) #------------------------------------- DMATRIX GENERATOR
+            del X, Y
+            #Multistage evaluation
+            prauc, rce, confmat, max_tmp, min_tmp, avg_tmp= model.evaluate(pool_test)
+            del pool_test
+
+            #Summing all the evaluations
+            tot_prauc = tot_prauc + prauc
+            tot_rce = tot_rce + rce
+            
+            #Computing some statistics for the log
+            if self.make_log is True:
+                # Getting maximum over iteration
+                if max_tmp > max_pred:
+                    max_pred = max_tmp
+                # Getting minimum over iteration
+                if min_tmp < min_pred:
+                    min_pred = min_tmp
+                # Getting average over itaration
+                avg += avg_tmp
+                # Computing confusion matrix
+                tot_confmat = tot_confmat + confmat
+        del model          
+
+        #Averaging the evaluations over # of validation splits
+        tot_prauc = tot_prauc/self.tot_test_split
+        tot_rce = tot_rce/self.tot_test_split
+        avg = avg/self.tot_test_split
+
+        #Make human readable logs here
+        if self.make_log is True:
+            self.saveRes(best_iter,
+                         tot_prauc, 
+                         tot_rce, 
+                         tot_confmat, 
+                         max_pred, 
+                         min_pred, 
+                         avg)
+        
+        #Returning the dumbly combined scores
+        return self.metriComb(tot_prauc, tot_rce)
 
     
     # Score function for the CatBoost model
     def blackBoxCatNCV(self, param):
-        #TODO: implement this
-        return None
+        #print(param)
+        #Saving parameters
+        if self.make_log is True:
+            self.saveParam(param)
+        #Initializing the model it it wasn't already
+        model = CatBoost(kind = self.kind,
+                         verbose=self.verbosity,
+                         #Not in tuning dict
+                         boosting_type = self.boosting_type,
+                         model_shrink_mode = self.model_shrink_mode,
+                         leaf_estimation_method = self.leaf_estimation_method,
+                         bootstrap_type = self.bootstrap_type,
+                         #In tuning dict
+                         iterations=                 param[0],
+                         depth=                      param[1],
+                         learning_rate=              param[2],
+                         l2_leaf_reg=                param[3],
+                         subsample=                  param[4],
+                         random_strenght=            param[5],
+                         colsample_bylevel=          param[6],
+                         leaf_estimation_iterations= param[7],
+                         scale_pos_weight =          param[8],
+                         model_shrink_rate =         param[9],
+                         # ES parameters
+                         early_stopping_rounds = self.early_stopping_rounds)
+
+        #Iterable returns pair of train - val sets
+        id_pairs = zip(TRAIN_IDS, TEST_IDS)
+
+        #Initializing variables
+        weight_factor = 0
+        averaging_factor = 0
+        tot_prauc = 0
+        tot_rce = 0
+        tot_confmat = [[0,0],[0,0]]
+        max_pred = 0
+        min_pred = 1
+        avg = 0
+        best_iter = []
+        #Making iterative train-validations
+        for dataset_ids in id_pairs:
+            weight_factor += weight_factor+1
+            averaging_factor += weight_factor
+            #Fetching train set
+            X, Y = get_dataset_xgb(dataset_ids[0], 
+                                   self.x_label, 
+                                   self.y_label)
+            
+            pool_train = self.getPool(X, Y) #------------------------------------- DMATRIX GENERATOR
+            del X, Y
+            # If early stopping is true for ncv fetching validation set
+            # by splitting in two the test set with batch method
+            if self.es_ncv is True:
+                #Fetching val set 
+                X, Y = get_dataset_xgb_batch(2, 0,dataset_ids[1], 
+                                             self.x_label, 
+                                             self.y_label)
+                pool_val = self.getPool(X, Y) #------------------------------------- DMATRIX GENERATOR
+                del X, Y
+            else:
+                pool_val = None
+            
+            #Multistage model fitting
+            model.fit(pool_train, pool_val)
+            del pool_train
+            if pool_val is not None:
+                best_iter.append(model.getBestIter())
+            else:
+                best_iter = -1
+            del pool_val
+
+            if self.es_ncv is True:
+                #Fetching test set 
+                X, Y = get_dataset_xgb_batch(2, 1,dataset_ids[1], 
+                                             self.x_label, 
+                                             self.y_label)
+                pool_test = self.getPool(X, Y) #------------------------------------- DMATRIX GENERATOR
+                del X, Y    
+            else:
+                X, Y = get_dataset_xgb(dataset_ids[1], 
+                                       self.x_label,
+                                       self.y_label)
+                pool_test = self.getPool(X, Y) #------------------------------------- DMATRIX GENERATOR
+                del X, Y
+            #Multistage evaluation
+            prauc, rce, confmat, max_tmp, min_tmp, avg_tmp= model.evaluate(pool_test)
+            del pool_test
+
+            #Weighting scores (based on how many days are in the train set)
+            tot_prauc += prauc * weight_factor
+            tot_rce += rce * weight_factor
+
+            #Computing some statistics for the log
+            if self.make_log is True:
+                #Getting maximum over iteration
+                if max_tmp > max_pred:
+                    max_pred = max_tmp
+                #Getting minimum over iteration
+                if min_tmp < min_pred:
+                    min_pred = min_tmp
+                #Getting average over itaration
+                avg += avg_tmp
+                #Computing the confusion matrix
+                tot_confmat = tot_confmat + confmat
+        del model
+
+        #Averaging scores
+        tot_prauc /= averaging_factor
+        tot_rce /= averaging_factor
+        #Averaging average (lol)
+        avg /= len(TRAIN_IDS)
+
+        #Make human readable logs here
+        if self.make_log is True:
+            self.saveRes(best_iter,
+                         tot_prauc, 
+                         tot_rce, 
+                         tot_confmat, 
+                         max_pred, 
+                         min_pred, 
+                         avg)
+        
+        #Returning the dumbly combined scores
+        return self.metriComb(tot_prauc, tot_rce)
 #------------------------------------------
 
 

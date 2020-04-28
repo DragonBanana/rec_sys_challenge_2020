@@ -246,7 +246,7 @@ class Optimizer(object):
 
         self.MI.batchTrain(tot_train_split, train_id)
 
-    def batchVal(self, tot_val_split, val_id):
+    def batchVal(self, val_id):
         # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()

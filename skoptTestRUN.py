@@ -45,21 +45,21 @@ def main():
     #Declaring optimizer
     OP = Optimizer(model_name, 
                    kind,
-                   mode=0,
+                   mode=1,
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
     
     OP.setParameters(n_calls=5, n_random_starts=5)
-    OP.loadTrainData()
-    OP.loadTestData()
-    OP.loadValData()
+    OP.batchTrain(5, "train_days_12")
+    OP.batchTest(2, "val_days_3")
+    OP.batchVal("val_days_4")
     OP.setLabels(X_label, Y_label)
     OP.optimize()
     #------------------------------------------
     '''
     
-    '''
+    
     #------------------------------------------
     #     NESTED CROSS VALIDATION EXAMPLE
     #------------------------------------------
@@ -75,10 +75,10 @@ def main():
     OP.setLabels(X_label, Y_label, es_ncv=True)
     OP.optimize()
     #------------------------------------------
-    '''
-
-
     
+
+
+    '''
     # Defining the dataset used
     train_dataset = "train_days_1"
     test_dataset = "val_days_3"
@@ -126,7 +126,7 @@ def main():
     #OP.setParamsXGB(early_stopping_rounds=5, eval_metric="rmsle")
     res=OP.optimize()
 
-    '''
+    
     #Add this for complete routine check
     print(res.func_vals.shape)
     path = OP.saveModel()
