@@ -42,7 +42,7 @@ def xgbRange(kind):
                         Real(0.0001, 1, 'log-uniform'),     #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
                         Real(0.9, 1.1),                     #scale_pos_weight
-                        Real(0.1, 10),                      #gamma
+                        Real(0.1, 10, 'log-uniform'),                      #gamma
                         Real(0.3, 1),                       #subsample
                         Real(0.45,0.55),                        #base_score
                         Real(1, 100)]                        #max_delta_step
