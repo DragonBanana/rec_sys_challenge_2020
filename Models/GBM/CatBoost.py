@@ -12,12 +12,56 @@ from Utils.Base.RecommenderGBM import RecommenderGBM
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 import catboost
 
-#TODO: The categorical features must be imported from load_data() method
+#-----------------------------------------------------------------------------
+#                           CATBOOST CLASSIFIER
+#-----------------------------------------------------------------------------
+#                            About Parameters
+#-----------------------------------------------------------------------------
+# loss_function:     Metric to use in train.
+# eval_metric:       Metric used for overfitting detection (Early
+#                     stopping). Can be custom. Check the link:
+'''
+https://catboost.ai/docs/concepts/python-usages-examples.html#custom-loss-function-eval-metric
+'''
+# iterations:        The maximum number of trees that can be built.
+# depth:         
+# learning_rate:     The learning rate.
+# l2_leaf_reg:       Coefficient at the L2 regularization term.
+# booststrap_type:   Method for sampling the weights of objects.
+# subsample:         Sample rate for bagging.
+# random_strenght:   Amount of randomness to use for scoring splits
+#                     when the tree structure is selected. Use this
+#                     paraeter to avoid overfitting.
+# depth:             Depth of the tree (max. to 16 for CPU).
+# min_data_in_leaf:  The minimum number of training sample in a leaf.
+# max_leaves:        Maximum number of leaves in resulting tree.
+# colsample_bylevel: Random subspace method. Percentage of features
+#                     to use at each split selection.
+# leaf_estimation_method:   Method used to calculate values in leaves.
+#                            (Newton good for classification).
+# leaf_estimation_iterations: Number of gradient steps when calculating
+#                              the values in leaves.
+# scale_pos_weight:           Weight for class 1 in binary classification
+#                              (the probability of a record to be positive).
+# boosting_type:              Plain value for big datasets. (Clasisg gradient
+#                              boosting).
+# model_shrink_rate:          The constant used to calculate teh cohefficient
+#                              for multiplying the model on each iteration.
+# model_shrink_mode           Determines how the actual model shrinkage
+#                              cohefficient is calculated at each iteration.
+#-----------------------------------------------------------------------------
+# TODO: ADD PARAMETERS FOR CATEGORICAL FEATURES
+#-----------------------------------------------------------------------------
+# For the complete list of parameters check this link:
+# https://catboost.ai/docs/concepts/python-reference_parameters-list.html#python-reference_parameters-list
+#-----------------------------------------------------------------------------
+# Check this for random_strenght and bagging_temperature:
+# https://github.com/catboost/catboost/issues/373
+#-----------------------------------------------------------------------------
 
 class CatBoost(RecommenderGBM):
     def __init__(self,
                  kind="NO_NAME_GIVEN",
-                 batch=False,
                  #Not in tuning dict
                  verbose=True,
                  loss_function="Logloss",
@@ -29,27 +73,25 @@ class CatBoost(RecommenderGBM):
                  l2_leaf_reg = 0.01,
                  bootstrap_type = "Bernoulli",
                  subsample = 0.8,
+                 random_strenght = 0.5,
                  max_leaves = 31,
-                 min_data_in_leaf = 1,
+                 colsample_bylevel = 0.5,
                  leaf_estimation_method = "Newton",
                  leaf_estimation_iterations= 10,
                  scale_pos_weight = 1,
+                 boosting_type = "Plain",
                  model_shrink_mode = "Constant",
                  model_shrink_rate = 0.5,
-                 random_strenght = 0.5,
-                 colsample_bylevel = 0.5,
                  early_stopping_rounds = 10,
-                 od_type = "Iter"):
+                 od_type = "Iter"): #Uses early stopping instead of another method
 
         super(CatBoost, self).__init__(
               name="catboost_classifier",
-              kind=kind,
-              batch=batch)
+              kind=kind)
 
         #Inputs
         #self.param=param
         self.kind=kind
-        self.batch=batch
 
         #TODO: Dictionary containing pamarameters' range
         self.param_dict = None
@@ -57,10 +99,6 @@ class CatBoost(RecommenderGBM):
         #CLASS VARIABLES
         #Model
         self.model = None
-        #Prediction
-        self.Y_pred = None
-        #Categorical features
-        self.cat_feat = None #Default value --> No categorical features
         #Save extension
         self.ext=".cbm"
         #Cannot pass parameters as a dict
@@ -75,10 +113,10 @@ class CatBoost(RecommenderGBM):
         self.bootstrap_type = bootstrap_type
         self.subsample = subsample
         self.max_leaves = max_leaves
-        self.min_data_in_leaf = min_data_in_leaf
         self.leaf_estimation_method = leaf_estimation_method
         self.leaf_estimation_iterations = leaf_estimation_iterations
         self.scale_pos_weight = scale_pos_weight
+        self.boosting_type = boosting_type
         self.model_shrink_mode = model_shrink_mode
         self.model_shrink_rate = model_shrink_rate
         self.random_strenght = random_strenght
@@ -99,10 +137,10 @@ class CatBoost(RecommenderGBM):
                                   bootstrap_type=self.bootstrap_type,
                                   subsample=self.subsample,
                                   max_leaves=self.max_leaves,
-                                  min_data_in_leaf=self.min_data_in_leaf,
                                   leaf_estimation_method=self.leaf_estimation_method,
                                   leaf_estimation_iterations=self.leaf_estimation_iterations,
                                   scale_pos_weight=self.scale_pos_weight,
+                                  boosting_type=self.boosting_type,
                                   model_shrink_mode=self.model_shrink_mode,
                                   model_shrink_rate=self.model_shrink_rate,
                                   random_strength=self.random_strenght,
@@ -114,33 +152,35 @@ class CatBoost(RecommenderGBM):
     #-----------------------------------------------------
     #                    fit(...)
     #-----------------------------------------------------
-    #X:         Learning features of the dataset
-    #Y:         Target feature of the dataset
+    # pool_train:   Pool containing the training set.
+    # pool_val:     Pool contaning the validation set.
+    # cat_feat:     Array containing the indices of the
+    #                columns containing categorical feat.
     #-----------------------------------------------------
-    # sround_model and batch_model are differentiated
-    # in order to avoid overwriting. (Maybe not necessary)
-    #-----------------------------------------------------
-    def fit(self, pool_train = None, pool_val = None):
+    def fit(self, pool_train = None, pool_val = None, cat_feat=None):
 
         # In case validation set is not provided set early stopping rounds to default
         if (pool_val is None):
             self.early_stopping_rounds = None
             self.od_type = None
 
+        if pool_train is None:
+            print("No train set provided.")
 
-        if self.model is not None:
+        elif self.model is not None:
+            # Fitting again an already trained model
             self.model.fit(pool_train,
-                           eval_set=pool_val, 
+                           cat_features=cat_feat,
+                           eval_set=pool_val,
                            init_model=self.model)
 
         else:
-            #Defining and fitting the models
+            # Defining and fitting the model
             self.model = self.init_model()
             self.model.fit(pool_train,
+                           cat_features=cat_feat,
                            eval_set=pool_val)
 
-
-       
 
 
     # Returns the predictions and evaluates them
@@ -166,7 +206,8 @@ class CatBoost(RecommenderGBM):
 
             # Declaring the class containing the
             # metrics.
-            cm = CoMe(Y_pred, pool_tst.get_label())
+            Y_test = np.array(pool_tst.get_label()).astype(np.int32)
+            cm = CoMe(Y_pred, Y_test)
 
             # Evaluating
             prauc = cm.compute_prauc()

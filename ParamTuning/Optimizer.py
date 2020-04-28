@@ -213,28 +213,28 @@ class Optimizer(object):
             print("File {0} loaded successfully.".format(path))
 
     # Load a custom dataset to train for the optimization
-    def loadTrainData(self, X_train=None, Y_train=None, dmat_train=None):
+    def loadTrainData(self, X_train=None, Y_train=None, holder_train=None):
         # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
 
-        self.MI.loadTrainData(X_train, Y_train, dmat_train)
+        self.MI.loadTrainData(X_train, Y_train, holder_train)
 
     # Load a custom dataset to test for the optimization
-    def loadValData(self, X_val=None, Y_val=None, dmat_val=None):
+    def loadValData(self, X_val=None, Y_val=None, holder_val=None):
         # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
 
-        self.MI.loadValData(X_val, Y_val, dmat_val)
+        self.MI.loadValData(X_val, Y_val, holder_val)
 
     # Load a custom dataset to test for the optimization
-    def loadTestData(self, X_test=None, Y_test=None, dmat_test=None):
+    def loadTestData(self, X_test=None, Y_test=None, holder_test=None):
         # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
 
-        self.MI.loadTestData(X_test, Y_test, dmat_test)
+        self.MI.loadTestData(X_test, Y_test, holder_test)
 
     # ---------------------------------------------------------------
     #                Batch train parameters
@@ -251,7 +251,7 @@ class Optimizer(object):
         if self.MI is None:
             self.defineMI()
 
-        self.MI.batchVal(tot_val_split, val_id)
+        self.MI.batchVal(val_id)
 
     def batchTest(self, tot_test_split, test_id):
         # Initializing model interface if it's None
@@ -260,17 +260,17 @@ class Optimizer(object):
 
         self.MI.batchTest(tot_test_split, test_id)
 
-    def setLabels(self, x_label, y_label):
+    def setLabels(self, x_label, y_label, es_ncv=False):
         # Initializing model interface if it's None
         if self.MI is None:
             self.defineMI()
 
-        self.MI.setLabels(x_label, y_label)
+        self.MI.setLabels(x_label, y_label, es_ncv)
 
     # ---------------------------------------------------------------
 
     # ---------------------------------------------------------------
-    #         Setting non tuned parameters
+    #         Setting non tuned parameters for xgb
     # ---------------------------------------------------------------
     def setParamsXGB(self, verbosity=1,
                      process_type="default",
@@ -282,17 +282,17 @@ class Optimizer(object):
         if self.MI is None:
             self.defineMI()
 
-        self.MI.setParams(verbosity=verbosity,
-                          process_type=process_type,
-                          tree_method=tree_method,
-                          objective=objective,
-                          num_parallel_tree=num_parallel_tree,
-                          eval_metric=eval_metric,
-                          early_stopping_rounds=early_stopping_rounds)
-    # ----------------------------------------------------------------
+        self.MI.setParamsXGB(verbosity=verbosity,
+                             process_type=process_type,
+                             tree_method=tree_method,
+                             objective=objective,
+                             num_parallel_tree=num_parallel_tree,
+                             eval_metric=eval_metric,
+                             early_stopping_rounds=early_stopping_rounds)
+    # --------------------------------------------------------------
 
     #---------------------------------------------------------------
-    #         Setting non tuned parameters
+    #         Setting non tuned parameters for lgb
     #---------------------------------------------------------------
     def setParamsLGB(self, verbosity=1, 
                         process_type="default", 
@@ -307,11 +307,31 @@ class Optimizer(object):
         if self.MI is None:
             self.defineMI()
         
-        self.MI.setParams(verbosity=verbosity,
-                          process_type=process_type,
-                          tree_method=tree_method,
-                          objective=objective,
-                          num_parallel_tree=num_parallel_tree,
-                          eval_metric=eval_metric,
-                          early_stopping_rounds=early_stopping_rounds)
-    #----------------------------------------------------------------
+        self.MI.setParamsLGB(verbosity=verbosity,
+                             process_type=process_type,
+                             tree_method=tree_method,
+                             objective=objective,
+                             num_parallel_tree=num_parallel_tree,
+                             eval_metric=eval_metric,
+                             early_stopping_rounds=early_stopping_rounds)
+    #---------------------------------------------------------------
+
+    #---------------------------------------------------------------
+    #         Setting non tuned parameters for cat
+    #---------------------------------------------------------------
+    def setParamsCAT(self, verbosity= 1,
+                           boosting_type= "Plain",
+                           model_shrink_mode= "Constant",
+                           leaf_estimation_method= "Newton",
+                           bootstrap_type= "Bernoulli",
+                           early_stopping_rounds= 5):
+        if self.MI is None:
+            self.defineMI()
+
+        self.MI.setParamsCAT(verbosity= verbosity,
+                             boosting_type= boosting_type,
+                             model_shrink_mode= model_shrink_mode,
+                             leaf_estimation_method= leaf_estimation_method,
+                             bootstrap_type= bootstrap_type,
+                             early_stopping_rounds= early_stopping_rounds)
+    #---------------------------------------------------------------
