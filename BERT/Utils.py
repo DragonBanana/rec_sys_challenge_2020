@@ -149,43 +149,45 @@ def map_to_unique_ids(_list, _dict, _current_mapping):
     return mapped
 
 
-def read_sentences(input_file, lines_num, header_first_line):
+def read_sentences(reader, lines_num, header_first_line):
     
     tweet_ids = []
     sentences = []
     
     row = 0
     
-    with open(input_file, "r", encoding='utf-8') as reader:
+    #with open(input_file, "r", encoding='utf-8') as reader:
         
-        if header_first_line:
-            reader.readline()  # ignore the first line since it contains the CSV header
+    if header_first_line:
+        reader.readline()  # ignore the first line since it contains the CSV header
         
-        while True:
+    while True:
             
-            #if row % 100000 == 0:
-            #    print("\tReading line: ", row)
+        #if row % 100000 == 0:
+        #    print("\tReading line: ", row)
                 
-            if row == lines_num:
-                print("\tLines : ", row)
-                return tweet_ids, sentences
+        if row == lines_num:
+            print("\tLines : ", row)
+            return tweet_ids, sentences
             
-            line = reader.readline()
+        line = reader.readline()
 
-            if not line:
-                break
+        if not line:
+            return tweet_ids, sentences
             
-            # produce embeddings not for all the rows
-            if row % 5 == 0:  # eget the 20% of the rows for validation
+        # produce embeddings not for all the rows
+        #if row % 5 == 0:  # eget the 20% of the rows for validation
+            
+        #print(line)
+            
+        line = line.strip().split(',')
+        tweet_id = line[0]
+        input_ids = f_int(line[1])
 
-                line = line.strip().split(',')
-                tweet_id = line[0]
-                input_ids = f_int(line[1])
+        tweet_ids.append(tweet_id)
+        sentences.append(input_ids)
 
-                tweet_ids.append(tweet_id)
-                sentences.append(input_ids)
-
-            row += 1
+        row += 1
             
     print("\tLines : ", row)
     
