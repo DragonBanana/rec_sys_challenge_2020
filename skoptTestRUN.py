@@ -37,11 +37,11 @@ def main():
     ]
 
     #Name of the model eg. xgboost_classifier
-    model_name="xgboost_classifier"
+    model_name="catboost_classifier"
     #Kind of prediction eg. "like"
     kind = "LIKE"
     
-    
+    '''
     #Declaring optimizer
     OP = Optimizer(model_name, 
                    kind,
@@ -51,14 +51,15 @@ def main():
                    auto_save=False)
     
     OP.setParameters(n_calls=5, n_random_starts=5)
-    OP.batchTrain(tot_train_split=5, train_id="train_days_1")
-    OP.batchTest(tot_test_split=5, test_id="val_days_2")
-    OP.batchVal(val_id="val_days_3")
+    OP.batchTrain(5, "train_days_12")
+    OP.batchTest(2, "val_days_3")
+    OP.batchVal("val_days_4")
     OP.setLabels(X_label, Y_label)
     OP.optimize()
     #------------------------------------------
-    
     '''
+    
+    
     #------------------------------------------
     #     NESTED CROSS VALIDATION EXAMPLE
     #------------------------------------------
@@ -74,7 +75,7 @@ def main():
     OP.setLabels(X_label, Y_label, es_ncv=True)
     OP.optimize()
     #------------------------------------------
-    '''
+    
 
 
     '''
