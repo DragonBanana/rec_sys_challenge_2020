@@ -15,9 +15,9 @@ from Utils.Data import Data
 
 def main():  
     # Defining the dataset used
-    train_dataset = "train_days_1234"
-    test_dataset = "val_days_5"
-    val_dataset = "val_days_5"
+    train_dataset = "train_days_12345"
+    test_dataset = "val_days_6"
+    val_dataset = "val_days_6"
 
     # Define the X label
     X_label = [
@@ -42,7 +42,6 @@ def main():
         "engager_feature_number_of_previous_reply_engagement_ratio",  #(18)
         "engager_feature_number_of_previous_reply_engagement",        #(19)
         "mapped_feature_tweet_language",                                 #(20)categorical
-        "engager_feature_know_tweet_language"                         #(21)categorical
     ]
     # Define the Y label
     Y_label = [
