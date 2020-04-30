@@ -434,7 +434,7 @@ class ModelInterface(object):
             self.saveParam(param)
         #Initializing the model it it wasn't already
         model = LightGBM(kind=self.kind,
-                        objective=self.objective,
+                        #objective=self.objective,
                         #In tuning dict
                         num_iterations =  param[0],
                         num_leaves=       param[1],
@@ -447,24 +447,23 @@ class ModelInterface(object):
                         bagging_fraction= param[8],
                         pos_subsample=    param[9],  
                         neg_subsample=    param[10],  
-                        scale_pos_weight= param[11],        #Remember that scale_pos_wiight and is_unbalance are mutually exclusive
-                        bagging_freq=     param[12],   
+                        #scale_pos_weight= param[11],        #Remember that scale_pos_wiight and is_unbalance are mutually exclusive
+                        bagging_freq=     param[11],
+                        max_bin =         param[12]
         )
         #Training on custom set
-        if (self.train is None):
+        if (self.Y_train is None):
             print("No train set passed to the model.")
         else:
-            #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
             model.fit(self.X_train, self.Y_train)
 
         #Evaluating on custom set
-        if (self.test is None):
+        if (self.Y_test is None):
             print("No test set provided.")
         else:
-            #dmat_test = self.getDMat(self.X_test, self.Y_test) #------------------------------------- DMATRIX GENERATOR
             prauc, rce, confmat, max_pred, min_pred, avg = model.evaluate(self.X_test.to_numpy(),self.Y_test.to_numpy())
-        del model
 
+        del model
         #Make human readable logs here
         if self.make_log is True:
             self.saveRes(-1,
@@ -477,6 +476,7 @@ class ModelInterface(object):
         
         #Returning the dumbly combined scores
         return self.metriComb(prauc, rce)
+
 
 
     # Batch ones    
