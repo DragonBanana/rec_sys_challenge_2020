@@ -212,6 +212,28 @@ class Optimizer(object):
             print(model['y0'])
             print("File {0} loaded successfully.".format(path))
 
+    def loadModelHardCoded(self, path=None):
+        # Splitting the model
+        self.x0 = [
+                265,
+                46,
+                0.15898209867759425,
+                28,
+                0.4267309590102383,
+                0.7106015549429759,
+                0.446213857304653,
+                1.0,
+                0.6629430145505582,
+                0.6997710091846678,
+                0.7287763868516478,
+                22,
+                2309
+        ]
+
+        self.y0 = [-5.47228466301597]
+
+        print("Loaded Hard Coded Model as Prior Knowledge")
+
     # Load a custom dataset to train for the optimization
     def loadTrainData(self, X_train=None, Y_train=None, holder_train=None):
         # Initializing model interface if it's None
