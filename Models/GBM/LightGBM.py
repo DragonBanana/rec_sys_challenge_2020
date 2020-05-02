@@ -316,10 +316,10 @@ class LightGBM(RecommenderGBM):
         import matplotlib.pyplot as plt
         lgb.plot_importance(model,importance_type="split")
         plt.title("Feature Importance: SPLIT")
-        plt.show()
+        plt.savefig("fimportance_split.png")
         lgb.plot_importance(model,importance_type="gain")
         plt.title("Feature Importance: GAIN")
-        plt.show()
+        plt.savefig("fimportance_gain.png")
 
     #Returns the parameters in dictionary form
     def get_param_dict(self):

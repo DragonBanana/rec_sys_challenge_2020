@@ -88,10 +88,10 @@ if __name__ == '__main__':
 
     # LGBM Prediction
     prediction_start_time = time.time()
-    predictions = LGBM.get_prediction(X_test)
+    predictions = LGBM.get_prediction(X_test.to_numpy())
     print(f"Prediction time: {time.time() - prediction_start_time} seconds")
 
     #Uncomment to plot feature importance at the end of training
-    #LGBM.plot_fimportance()
+    LGBM.plot_fimportance()
 
     create_submission_file(tweets, users, predictions, "lgbm_like_submission.csv")
