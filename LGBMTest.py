@@ -6,8 +6,8 @@ from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
 
 if __name__ == '__main__':
-    train_dataset = "train_days_1234"
-    test_dataset = "val_days_6"
+    train_dataset = "train_days_12345"
+    test_dataset = "val_days_7"
 
     # Define the X label
     X_label = [
