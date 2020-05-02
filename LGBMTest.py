@@ -6,7 +6,7 @@ from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
 
 if __name__ == '__main__':
-    train_dataset = "train_days_12345"
+    train_dataset = "train_days_1234"
     test_dataset = "val_days_6"
 
     # Define the X label
@@ -49,19 +49,19 @@ if __name__ == '__main__':
 
     #Initialize Model
     LGBM = LightGBM(
-        num_iterations    =     265,
-        num_leaves        =     46,
-        learning_rate     =     0.15898209867759425,
-        max_depth         =     28,
-        lambda_l1         =     0.4267309590102383,
-        lambda_l2         =     0.7106015549429759,
-        colsample_bytree  =     0.446213857304653,
-        colsample_bynode  =     1.0,
-        bagging_fraction  =     0.6629430145505582,
-        pos_subsample     =     0.6997710091846678,
-        neg_subsample     =     0.7287763868516478,
-        bagging_freq      =     22,
-        max_bin           =     2309
+        num_iterations    =     400,
+        num_leaves        =     43,
+        learning_rate     =     0.4082108467287959,
+        max_depth         =     91,
+        lambda_l1         =     0.20520435539282497,
+        lambda_l2         =     1.0,
+        colsample_bynode  =     0.4463237463387104,
+        colsample_bytree  =     0.772727835899646,
+        bagging_fraction  =     0.622227405626987,
+        pos_subsample     =     0.7188734449859797,
+        neg_subsample     =     0.7341754949841821,
+        bagging_freq      =     12,
+        max_bin           =     423
         )
 
     # LGBM Training
