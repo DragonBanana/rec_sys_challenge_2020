@@ -101,7 +101,7 @@ class LightGBM(RecommenderGBM):
         #                    tweet_feature_is_retweet,tweet_feature_is_quote,tweet_feature_is_top_level,\
         #                    raw_feature_engagement_creator_follows_engager"
         
-        self.categorical_feature = 2,5,6,7,8,9,20
+        self.categorical_feature = 2,5,6,7,8,9,12
         
         #Extension of saving file
         self.ext=".txt"

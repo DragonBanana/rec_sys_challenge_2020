@@ -23,15 +23,7 @@ if __name__ == '__main__':
         "raw_feature_engagement_creator_follows_engager",           #(9)categorical
         "tweet_feature_creation_timestamp_hour",                    #(10)
         "tweet_feature_creation_timestamp_week_day",                #(11)
-        "engager_feature_number_of_previous_like_engagement_ratio",  #(12)
-        "engager_feature_number_of_previous_like_engagement",        #(13)
-        "engager_feature_number_of_previous_retweet_engagement_ratio",  #(14)
-        "engager_feature_number_of_previous_retweet_engagement",        #(15)
-        "engager_feature_number_of_previous_comment_engagement_ratio",  #(16)
-        "engager_feature_number_of_previous_comment_engagement",        #(17)
-        "engager_feature_number_of_previous_reply_engagement_ratio",  #(18)
-        "engager_feature_number_of_previous_reply_engagement",        #(19)
-        "mapped_feature_tweet_language",                                 #(20)categorical
+        "mapped_feature_tweet_language",                            #(12)categorical
     ]
     # Define the Y label
     Y_label = [
@@ -83,15 +75,15 @@ if __name__ == '__main__':
     #print(f"AVG:\t{avg}")
     #print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
-    #tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    #users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
 
     # LGBM Prediction
-    #prediction_start_time = time.time()
-    #predictions = LGBM.get_prediction(X_test.to_numpy())
-    #print(f"Prediction time: {time.time() - prediction_start_time} seconds")
+    prediction_start_time = time.time()
+    predictions = LGBM.get_prediction(X_test.to_numpy())
+    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
 
     #Uncomment to plot feature importance at the end of training
-    LGBM.plot_fimportance()
+    #LGBM.plot_fimportance()
 
-    #create_submission_file(tweets, users, predictions, "lgbm_like_submission.csv")
+    create_submission_file(tweets, users, predictions, "lgbm_like_submission.csv")
