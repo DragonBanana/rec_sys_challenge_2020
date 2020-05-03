@@ -37,15 +37,15 @@ def xgbRange(kind):
                         Integer(5, 40),                    #max_depth
                         Integer(1, 10),                    #min_child_weight
                         Real(0.3, 1),                      #colsample_bytree
-                        Real(0.01, 1, 'log-uniform'),      #learning rate
+                        Real(0.005, 0.5, 'log-uniform'),      #learning rate
                         Real(0.0001, 1, 'log-uniform'),    #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),    #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
-                        Real(0.9, 1.1),                     #scale_pos_weight
+                        Real(0.8, 1.2),                     #scale_pos_weight
                         Real(0.1, 10, 'log-uniform'),                      #gamma
                         Real(0.3, 1),                       #subsample
-                        Real(0.45,0.55),                        #base_score
-                        Real(1, 100)]                        #max_delta_step
+                        Real(0.4,0.5),                        #base_score
+                        Real(0, 100)]                        #max_delta_step
     
     '''
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
