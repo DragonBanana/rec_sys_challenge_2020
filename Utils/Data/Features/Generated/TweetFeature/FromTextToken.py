@@ -1,7 +1,10 @@
 from Utils.Data.Dictionary.MappingDictionary import *
+from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import TweetBasicFeatureTextEmbeddingsDictArray
+from Utils.Data.Features.Feature import Feature
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
 import pandas as pd
 import numpy as np
+import gzip
 
 from Utils.Data.Features.MappedFeatures import MappedFeatureTweetId
 
@@ -56,3 +59,65 @@ class TweetFeatureNumberOfMentions(GeneratedFeaturePickle):
 
         # Save the dataframe
         self.save_feature(mnumber_of_mentions_df)
+        
+
+class TweetFeatureTextEmbeddings(Feature):
+
+    def __init__(self, feature_name: str, dataset_id: str):
+        super().__init__(feature_name, dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
+        
+    def has_feature(self):
+        return self.csv_path.is_file()
+
+    def load_feature(self):
+        assert self.has_feature(), f"The feature {self.feature_name} does not exists. Create it first."
+        # get the list of embeddings columns (can vary among different datasets)
+        with gzip.open(self.csv_path, "rt") as reader:
+            columns = reader.readline().strip().split(',')
+            
+        dataframe = pd.read_csv(self.csv_path, compression="gzip")
+        # load one column at a time
+        #for col in columns[1:4]:
+            # always load one embedding column at a time
+        #    dataframe[col] = pd.read_csv(self.csv_path, usecols=[col], compression="gzip", nrows=5)
+            
+        return dataframe
+
+    def create_feature(self):
+        # Load tweet ids
+        tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
+        tweet_id_df = tweet_id_feature.load_or_create()
+        
+        tweet_id_df = tweet_id_df.head(25)
+        
+        print(tweet_id_df.head())
+        
+        tweet_text_embeddings_dict_array = TweetBasicFeatureTextEmbeddingsDictArray(self.feature_name)
+        embeddings_array = tweet_text_embeddings_dict_array.load_or_create()
+        
+        columns_num = embeddings_array.shape[1]
+        
+        # this will be the final dataframe
+        embeddings_feature_df = pd.DataFrame()
+        # load all the tweet ids
+        embeddings_feature_df["mapped_feature_tweet_id"] = tweet_id_df["mapped_feature_tweet_id"]
+        
+        print(embeddings_feature_df)
+        
+        # for each column, map the embeddings dictionary to all the tweets
+        for col in range(columns_num):
+            embeddings_feature_df[f"embedding_{col}"] = embeddings_feature_df["mapped_feature_tweet_id"].map(lambda x: embeddings_array[x, col])
+            
+        print(embeddings_feature_df)
+        
+        # Save the dataframe
+        self.save_feature(embeddings_feature_df)
+        
+
+    def save_feature(self, dataframe: pd.DataFrame):
+        self.csv_path.parent.mkdir(parents=True, exist_ok=True)
+        dataframe.to_csv(self.csv_path, compression='gzip')
