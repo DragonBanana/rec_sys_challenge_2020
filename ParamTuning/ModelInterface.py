@@ -62,6 +62,7 @@ class ModelInterface(object):
         self.model_shrink_mode = "Constant"
         self.leaf_estimation_method = "Newton"
         self.bootstrap_type = "Bernoulli"
+        self.categorical_features = None
         # Initialized above no need to do it again
         # self.early_stopping_rounds=5
         # self.verbosity
@@ -535,7 +536,7 @@ class ModelInterface(object):
             print("No train set passed to the model.")
         else:
             #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
-            model.fit(self.train, self.val)            
+            model.fit(self.train, self.val, self.categorical_features)            
             if self.val is not None:
                 best_iter = model.getBestIter()
             else:
