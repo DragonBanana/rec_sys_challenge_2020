@@ -2,6 +2,7 @@ from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
@@ -144,6 +145,22 @@ def populate_features():
         result[("engager_feature_number_of_previous_comment_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementRatio(dataset_id)
         result[("engager_feature_number_of_previous_positive_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementRatio(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementRatio(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS BETWEEN CREATOR AND ENGAGER BY CREATIR
+        result[("engager_feature_number_of_previous_like_engagement_betweet_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
+        result[("engager_feature_number_of_previous_reply_engagement_betweet_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
+        result[("engager_feature_number_of_previous_retweet_engagement_betweet_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
+        result[("engager_feature_number_of_previous_comment_engagement_betweet_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
+        result[("engager_feature_number_of_previous_negative_engagement_betweet_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
+        result[("engager_feature_number_of_previous_positive_engagement_betweet_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS BETWEEN CREATOR AND ENGAGER BY ENGAGER
+        result[("engager_feature_number_of_previous_like_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
+        result[("engager_feature_number_of_previous_reply_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
+        result[("engager_feature_number_of_previous_retweet_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
+        result[("engager_feature_number_of_previous_comment_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
+        result[("engager_feature_number_of_previous_negative_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
+        result[("engager_feature_number_of_previous_positive_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
+
+
 
         # IS ENGAGEMENT TYPE
         if dataset_id != "test":

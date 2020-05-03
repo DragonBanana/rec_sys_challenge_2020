@@ -124,8 +124,12 @@ def get_dataset(features: list, dataset_id: str):
 
 def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split_n: int, sample: float):
     assert split_n < total_n_split, "split_n parameter should be less than total_n_split parameter"
-    dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
-                                          total_n_split)[split_n] for feature_name in features], axis=1)
+    if sample < 1:
+        dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
+                                              total_n_split)[split_n] for feature_name in features], axis=1)
+    else:
+        dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id),
+                                              total_n_split)[split_n] for feature_name in features], axis=1)
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
