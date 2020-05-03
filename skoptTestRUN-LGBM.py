@@ -13,92 +13,43 @@ from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 
 
-def main():
-    #------------------------------------------
-    #           BATCH EXAMPLE
-    #------------------------------------------
-    # Define the X label
-    X_label = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count",
-        "raw_feature_engager_follower_count",
-        "raw_feature_engager_following_count",
-        "tweet_feature_number_of_photo",
-        "tweet_feature_number_of_video",
-        "tweet_feature_number_of_gif",
-        "tweet_feature_is_reply",
-        "tweet_feature_is_retweet",
-        "tweet_feature_is_quote",
-        "tweet_feature_is_top_level"
-    ]
-    # Define the Y label
-    Y_label = [
-        "tweet_feature_engagement_is_like"
-    ]
-
-    #Name of the model eg. xgboost_classifier
-    model_name="lightgbm_classifier"
-    #Kind of prediction eg. "like"
-    kind = "LIKE"
-    
-    '''
-    #Declaring optimizer
-    OP = Optimizer(model_name, 
-                   kind,
-                   mode=1,
-                   make_log=True, 
-                   make_save=False, 
-                   auto_save=False)
-    
-    OP.setParameters(n_calls=5, n_random_starts=5)
-    OP.batchTrain(tot_train_split=5, train_id="train_days_1")
-    OP.batchTest(tot_test_split=5, test_id="val_days_2")
-    OP.setLabels(X_label, Y_label)
-    OP.optimize()
-    #------------------------------------------
-    '''
-    '''
-    #------------------------------------------
-    #     NESTED CROSS VALIDATION EXAMPLE
-    #------------------------------------------
-    #Declaring optimizer
-    OP = Optimizer(model_name, 
-                   kind,
-                   mode=2,
-                   make_log=True, 
-                   make_save=False, 
-                   auto_save=False)
-    
-    OP.setParameters(n_calls=5, n_random_starts=5)
-    OP.setLabels(X_label, Y_label)
-    OP.optimize()
-    #------------------------------------------
-    '''
-
-
-    
+def main():  
     # Defining the dataset used
-    train_dataset = "train_days_1"
-    test_dataset = "val_days_3"
-    val_dataset = "val_days_2"
+    train_dataset = "train_days_12345"
+    test_dataset = "val_days_6"
+    val_dataset = "val_days_6"
 
     # Define the X label
     X_label = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count",
-        "raw_feature_creator_is_verified",
-        "raw_feature_engager_follower_count",
-        "raw_feature_engager_following_count",
-        "raw_feature_engager_is_verified",
-        "tweet_feature_is_retweet",
-        "tweet_feature_is_quote",
-        "tweet_feature_is_top_level",
-        "raw_feature_engagement_creator_follows_engager"
+        "raw_feature_creator_follower_count",                       #(0)
+        "raw_feature_creator_following_count",                      #(1)
+        "raw_feature_creator_is_verified",                          #(2)categorical
+        "raw_feature_engager_follower_count",                       #(3)
+        "raw_feature_engager_following_count",                      #(4)
+        "raw_feature_engager_is_verified",                          #(5)categorical
+        "tweet_feature_is_retweet",                                 #(6)categorical
+        "tweet_feature_is_quote",                                   #(7)categorical
+        "tweet_feature_is_top_level",                               #(8)categorical
+        "raw_feature_engagement_creator_follows_engager",            #(9)categorical
+        "tweet_feature_creation_timestamp_hour",                    #(10)
+        "tweet_feature_creation_timestamp_week_day",                #(11)
+        "engager_feature_number_of_previous_like_engagement_ratio",  #(12)
+        "engager_feature_number_of_previous_like_engagement",        #(13)
+        "engager_feature_number_of_previous_retweet_engagement_ratio",  #(14)
+        "engager_feature_number_of_previous_retweet_engagement",        #(15)
+        "engager_feature_number_of_previous_comment_engagement_ratio",  #(16)
+        "engager_feature_number_of_previous_comment_engagement",        #(17)
+        "engager_feature_number_of_previous_reply_engagement_ratio",  #(18)
+        "engager_feature_number_of_previous_reply_engagement",        #(19)
+        "mapped_feature_tweet_language",                                 #(20)categorical
     ]
     # Define the Y label
     Y_label = [
         "tweet_feature_engagement_is_like"
     ]
+
+    model_name = "lightgbm_classifier"
+    kind = "like"
 
     # Load train data
     loading_data_start_time = time.time()
@@ -117,11 +68,12 @@ def main():
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
-    OP.setParameters(n_calls=50, n_random_starts=30)
+    OP.setParameters(n_calls=50, n_random_starts=1)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
     OP.setParamsLGB(early_stopping_rounds=5, eval_metric="rmsle")
+    OP.loadModelHardCoded()
     res=OP.optimize()
 
     '''

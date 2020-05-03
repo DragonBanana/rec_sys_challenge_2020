@@ -4,6 +4,7 @@ import json
 import numpy as np
 import torch
 import logging
+import gzip
 
 from collections import OrderedDict
 
@@ -17,7 +18,7 @@ from PCA import IPCA
 
 
 def write_result_file_header(path):
-    with open(path, "w+") as writer:
+    with gzip.open(path, "wt") as writer:
         string = "tweet_features_tweet_id"
         for i in range(768):
             string += ",embedding_" + str(i)
@@ -27,7 +28,7 @@ def write_result_file_header(path):
 
 def save_embeddings(path, tweet_ids, embeddings):
     assert len(tweet_ids) == len(embeddings)
-    with open(path, "a") as writer:
+    with gzip.open(path, "at") as writer:
         for i in range(len(tweet_ids)):
             string = tweet_ids[i] + ',' + ','.join(map(str, embeddings[i])) + '\n'
             writer.write(string)
@@ -65,8 +66,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
 
     ## Required parameters
-    parser.add_argument("--input_dir", default=None, type=str, required=True)
-    parser.add_argument("--output_dir", default=None, type=str, required=True)
+    parser.add_argument("--input", default=None, type=str, required=True)
+    parser.add_argument("--output", default=None, type=str, required=True)
     parser.add_argument("--bert_model", default=None, type=str, required=True,
                         help="Bert pre-trained model selected in the list: bert-base-uncased, "
                              "bert-large-uncased, bert-base-cased, bert-base-multilingual, bert-base-chinese.")
@@ -121,43 +122,55 @@ def main():
     model = SentenceTransformer(modules=[embedding_model, pooling_model], device=device)
     
     # cycle over data files (batches)
-    for directory, subdirectories, files in os.walk(args.input_dir):
+    #for directory, subdirectories, files in os.walk(args.input):
         
-        print('\nEmbeddings for : ', files)
+    print('\nEmbeddings for : ', args.input)
     
-        for index, file in enumerate(files):
+        #for index, file in enumerate(files):
 
-            if "00" in file:
-                header_in_first_line = True
-            else:
-                header_in_first_line = False
+        #    if "00" in file:
+        #        header_in_first_line = True
+        #    else:
+        #        header_in_first_line = False
+
+        #    input_file = os.path.join(directory, file)
+        #    output_file = os.path.join(args.output, 'embeddings_' + file)  #.replace('.csv','') + '_COMPLETE.csv')
+
+    write_result_file_header(args.output)
+
+            #print("\nFile number : ", index)
+            #print("Embeddings for : ", input_file)
+            #print("Output file : ", output_file)
                 
-            if "00" in file or "01" in file or "02" in file or "09" in file:
-
-                input_file = os.path.join(directory, file)
-                output_file = os.path.join(args.output_dir, 'embeddings_' + file.replace('.csv','') + '_COMPLETE.csv')
-
-                write_result_file_header(output_file)
-
-                print("\nFile number : ", index)
-                print("Embeddings for : ", input_file)
-                print("Output file : ", output_file)
+    input_reader = open(args.input, "r")
+    
+    finished = False
+    i = 0
+    
+    while not finished:
+        
+        print('\nBATCH NUMBER : ', i)
+        
+        #if i == 2:
+        #    tweet_ids, sentences = read_sentences(input_reader, 5, header_first_line=True)
+        #else:
+        tweet_ids, sentences = read_sentences(input_reader, args.sentences_number, header_first_line=True)
+                #for s in sentences:
+                #    print(s)
                 
-                # each file read in 100 batches
-                for i in range(100):
-                    print('\tBatch number : ', i)
-                    tweet_ids, sentences = read_sentences(input_file, int(args.sentences_number / 100), header_in_first_line)
-                    #for s in sentences:
-                    #    print(s)
+        if len(tweet_ids) < args.sentences_number:
+            finished = True
 
-                    embeddings = model.encode(sentences, already_tokenized=args.tokenized, already_padded=args.padded, batch_size=args.batch_size, convert_to_numpy=True)
+        embeddings = model.encode(sentences, already_tokenized=args.tokenized, already_padded=args.padded, batch_size=args.batch_size, convert_to_numpy=True)
 
-                    if args.debug:
-                        #print(embeddings)
-                        print('\tEmbeddings number : ', len(embeddings))
-                        print('\tEmbeddings shape : ', embeddings[0].shape)
+        if args.debug:
+            #print(embeddings)
+            #print('\tEmbeddings number : ', len(embeddings))
+            print('\tEmbeddings shape : ', embeddings[0].shape, 'each')
 
-                    save_embeddings(output_file, tweet_ids, embeddings)
+        save_embeddings(args.output, tweet_ids, embeddings)
+        
+        i += 1
                 
     print("\nDone.")
 
