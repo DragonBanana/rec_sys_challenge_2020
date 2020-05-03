@@ -38,7 +38,6 @@ class EngagerFeatureNumberOfPreviousLikeEngagement(GeneratedFeaturePickle):
 
         # Save the column name
         eng_col = engagers_feature.feature_name
-
         dataframe = pd.concat([
             creation_timestamps_feature.load_or_create(),
             engagers_feature.load_or_create(),
@@ -46,13 +45,13 @@ class EngagerFeatureNumberOfPreviousLikeEngagement(GeneratedFeaturePickle):
         ], axis=1)
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
         engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id] for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])]
+            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
+             for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])],
+            index=dataframe.index
         )
-
         if not EngagerFeatureNumberOfPreviousLikeEngagement(train_dataset_id).has_feature():
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousLikeEngagement(train_dataset_id).save_feature(result)
@@ -65,19 +64,19 @@ class EngagerFeatureNumberOfPreviousLikeEngagement(GeneratedFeaturePickle):
                 creation_timestamps_feature.load_or_create(),
                 engagers_feature.load_or_create(),
             ], axis=1)
-
             dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
-                    pad_width=dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size,
+                    pad_width=(0, dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
-
-            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]))
+            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
+                                  index=dataframe.index)
             result.sort_index(inplace=True)
+
             EngagerFeatureNumberOfPreviousLikeEngagement(test_dataset_id).save_feature(result)
 
 
@@ -118,7 +117,9 @@ class EngagerFeatureNumberOfPreviousReplyEngagement(GeneratedFeaturePickle):
         engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id] for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])]
+            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
+             for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])],
+            index=dataframe.index
         )
 
         if not EngagerFeatureNumberOfPreviousReplyEngagement(train_dataset_id).has_feature():
@@ -139,12 +140,14 @@ class EngagerFeatureNumberOfPreviousReplyEngagement(GeneratedFeaturePickle):
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
-                    pad_width=dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size,
+                    pad_width=(0, dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
 
-            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]))
+
+            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
+                                  index=dataframe.index)
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousReplyEngagement(test_dataset_id).save_feature(result)
 
@@ -186,7 +189,9 @@ class EngagerFeatureNumberOfPreviousRetweetEngagement(GeneratedFeaturePickle):
         engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id] for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])]
+            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
+             for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])],
+            index=dataframe.index
         )
 
         if not EngagerFeatureNumberOfPreviousRetweetEngagement(train_dataset_id).has_feature():
@@ -207,12 +212,13 @@ class EngagerFeatureNumberOfPreviousRetweetEngagement(GeneratedFeaturePickle):
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
-                    pad_width=dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size,
+                    pad_width=(0, dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
 
-            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]))
+            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
+                                  index=dataframe.index)
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousRetweetEngagement(test_dataset_id).save_feature(result)
 
@@ -254,7 +260,9 @@ class EngagerFeatureNumberOfPreviousCommentEngagement(GeneratedFeaturePickle):
         engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id] for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])]
+            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
+             for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])],
+            index=dataframe.index
         )
 
         if not EngagerFeatureNumberOfPreviousCommentEngagement(train_dataset_id).has_feature():
@@ -275,12 +283,13 @@ class EngagerFeatureNumberOfPreviousCommentEngagement(GeneratedFeaturePickle):
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
-                    pad_width=dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size,
+                    pad_width=(0, dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
 
-            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]))
+            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
+                                  index=dataframe.index)
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousCommentEngagement(test_dataset_id).save_feature(result)
 
@@ -322,7 +331,9 @@ class EngagerFeatureNumberOfPreviousPositiveEngagement(GeneratedFeaturePickle):
         engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id] for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])]
+            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
+             for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])],
+            index=dataframe.index
         )
 
         if not EngagerFeatureNumberOfPreviousPositiveEngagement(train_dataset_id).has_feature():
@@ -343,12 +354,13 @@ class EngagerFeatureNumberOfPreviousPositiveEngagement(GeneratedFeaturePickle):
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
-                    pad_width=dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size,
+                    pad_width=(0, dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
 
-            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]))
+            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
+                                  index=dataframe.index)
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousPositiveEngagement(test_dataset_id).save_feature(result)
 
@@ -390,7 +402,9 @@ class EngagerFeatureNumberOfPreviousNegativeEngagement(GeneratedFeaturePickle):
         engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id] for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])]
+            [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
+             for engager_id, engagement in zip(dataframe[eng_col], dataframe[engagement_feature.feature_name])],
+            index=dataframe.index
         )
 
         if not EngagerFeatureNumberOfPreviousNegativeEngagement(train_dataset_id).has_feature():
@@ -411,12 +425,13 @@ class EngagerFeatureNumberOfPreviousNegativeEngagement(GeneratedFeaturePickle):
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
-                    pad_width=dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size,
+                    pad_width=(0, dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
 
-            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]))
+            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
+                                  index=dataframe.index)
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousNegativeEngagement(test_dataset_id).save_feature(result)
 
@@ -456,7 +471,8 @@ class EngagerFeatureNumberOfPreviousEngagement(GeneratedFeaturePickle):
         engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(engager_id, engager_counter_array) for engager_id in dataframe[eng_col]]
+            [find_and_increase(engager_id, engager_counter_array) for engager_id in dataframe[eng_col]],
+            index=dataframe.index
         )
 
         if not EngagerFeatureNumberOfPreviousEngagement(train_dataset_id).has_feature():
@@ -477,13 +493,14 @@ class EngagerFeatureNumberOfPreviousEngagement(GeneratedFeaturePickle):
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
-                    pad_width=dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size,
+                    pad_width=(0, dataframe[engagers_feature.feature_name].max() + 1 - engager_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
 
             result = pd.DataFrame(
-                [find_and_increase(engager_id, engager_counter_array) for engager_id in dataframe[eng_col]]
+                [find_and_increase(engager_id, engager_counter_array) for engager_id in dataframe[eng_col]],
+                index=dataframe.index
             )
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousEngagement(test_dataset_id).save_feature(result)
