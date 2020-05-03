@@ -23,6 +23,7 @@ import numpy as np
 import multiprocessing as mp
 import xgboost as xgb
 import catboost as cat
+import lightgbm as lgbm
 
 
 class ModelInterface(object):
@@ -61,6 +62,7 @@ class ModelInterface(object):
         self.model_shrink_mode = "Constant"
         self.leaf_estimation_method = "Newton"
         self.bootstrap_type = "Bernoulli"
+        self.categorical_features = None
         # Initialized above no need to do it again
         # self.early_stopping_rounds=5
         # self.verbosity
@@ -434,7 +436,8 @@ class ModelInterface(object):
             self.saveParam(param)
         #Initializing the model it it wasn't already
         model = LightGBM(kind=self.kind,
-                        #objective=self.objective,
+                        objective=self.objective,
+                        metric=self.eval_metric,
                         #In tuning dict
                         num_iterations =  param[0],
                         num_leaves=       param[1],
@@ -449,13 +452,20 @@ class ModelInterface(object):
                         neg_subsample=    param[10],  
                         #scale_pos_weight= param[11],        #Remember that scale_pos_wiight and is_unbalance are mutually exclusive
                         bagging_freq=     param[11],
-                        max_bin =         param[12]
+                        max_bin =         param[12],
+                        #Early stopping
+                        early_stopping_rounds=self.early_stopping_rounds
         )
         #Training on custom set
         if (self.Y_train is None):
             print("No train set passed to the model.")
         else:
-            model.fit(self.X_train, self.Y_train)
+            if self.X_val is None:
+                model.fit(self.X_train, self.Y_train, categorical_feature=self.categorical_features)           #TODO: AGGIUNGI CATEGORICAL FEATURE
+                best_iter = -1
+            else:
+                model.fit(self.X_train, self.Y_train, X_val=self.X_val, Y_val=self.Y_val, categorical_feature=self.categorical_features)
+                best_iter = model.get_best_iter()
 
         #Evaluating on custom set
         if (self.Y_test is None):
@@ -466,7 +476,7 @@ class ModelInterface(object):
         del model
         #Make human readable logs here
         if self.make_log is True:
-            self.saveRes(-1,
+            self.saveRes(best_iter,
                          prauc, 
                          rce, 
                          confmat, 
@@ -526,7 +536,7 @@ class ModelInterface(object):
             print("No train set passed to the model.")
         else:
             #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
-            model.fit(self.train, self.val)            
+            model.fit(self.train, self.val, self.categorical_features)            
             if self.val is not None:
                 best_iter = model.getBestIter()
             else:
@@ -928,12 +938,7 @@ class ModelInterface(object):
                 self.val = self.getDMat(X_val, Y_val)
 
             elif self.model_name in "catboost_classifier":
-                self.val = self.getPool(X_val, Y_val)
-            '''
-            #ADD IF WANT TO USE Dataset FROM LIGHTGBM
-            elif self.model_name in "lightgbm_classifier":
-                self.train = self.getDataset(X_val, Y_val)
-            '''
+                self.val = self.getPool(X_val, Y_val)            
         else:
             self.val = holder_val
 
@@ -1151,6 +1156,14 @@ class ModelInterface(object):
 #--------------------------------------------------
 
 #--------------------------------------------------
+#           Set the categorical features
+#--------------------------------------------------
+#              Used in Cat and Lgbm
+#--------------------------------------------------
+    def setCategoricalFeatures(self,categorical_features=None):
+        self.categorical_features = categorical_features
+
+#--------------------------------------------------
 #           Generator of DMatrices
 #--------------------------------------------------
 #              Used in XGBoost
@@ -1168,9 +1181,6 @@ class ModelInterface(object):
         l = np.array(Y).astype(np.int32)
         return cat.Pool(X, label=l)
 #--------------------------------------------------
-
-
-
 
 #----------------------------------------------------------
 def getDMat(X, Y=None):
