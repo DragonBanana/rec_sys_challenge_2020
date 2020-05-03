@@ -16,7 +16,7 @@ from Utils.Data import Data
 def main():  
     # Defining the dataset used
     train_dataset = "train_days_12345"
-    test_dataset = "val_days_6"
+    test_dataset = "val_days_7"
     val_dataset = "val_days_6"
 
     # Define the X label
@@ -33,15 +33,7 @@ def main():
         "raw_feature_engagement_creator_follows_engager",            #(9)categorical
         "tweet_feature_creation_timestamp_hour",                    #(10)
         "tweet_feature_creation_timestamp_week_day",                #(11)
-        "engager_feature_number_of_previous_like_engagement_ratio",  #(12)
-        "engager_feature_number_of_previous_like_engagement",        #(13)
-        "engager_feature_number_of_previous_retweet_engagement_ratio",  #(14)
-        "engager_feature_number_of_previous_retweet_engagement",        #(15)
-        "engager_feature_number_of_previous_comment_engagement_ratio",  #(16)
-        "engager_feature_number_of_previous_comment_engagement",        #(17)
-        "engager_feature_number_of_previous_reply_engagement_ratio",  #(18)
-        "engager_feature_number_of_previous_reply_engagement",        #(19)
-        "mapped_feature_tweet_language",                                 #(20)categorical
+        "mapped_feature_tweet_language",                            #(12)categorical
     ]
     # Define the Y label
     Y_label = [
@@ -68,12 +60,14 @@ def main():
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
+
     OP.setParameters(n_calls=50, n_random_starts=1)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
-    OP.setParamsLGB(early_stopping_rounds=5, eval_metric="rmsle")
-    OP.loadModelHardCoded()
+    OP.setParamsLGB(objective='binary',early_stopping_rounds=5, eval_metric="cross_entropy")
+    OP.setCategoricalFeatures(set([2,5,6,7,8,9,12]))
+    #OP.loadModelHardCoded()
     res=OP.optimize()
 
     '''

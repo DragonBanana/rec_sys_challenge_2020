@@ -29,8 +29,8 @@ class LightGBM(RecommenderGBM):
                  batch=False,
                  #Not in tuning dict
                  objective= 'binary',
-                 num_threads= 16,
-                 metric= ('auc','binary_logloss'),         
+                 metric='cross_entropy',
+                 num_threads= 16,       
                  #In tuning dict
                  num_iterations = 100,
                  num_leaves= 31,
@@ -46,7 +46,9 @@ class LightGBM(RecommenderGBM):
                  is_unbalance= None,                        #let LightGBM deal with the unbalance problem on its own (worsen RCE 100x in local if used alone)
                  bagging_freq= 5,                           #Default 0 perform bagging every k iterations
                  bagging_fraction= 1,                       #Rnadomly selects specified fraciton of the data without resampling
-                 max_bin = 255):
+                 max_bin = 255,
+                 #For early stopping
+                 early_stopping_rounds = None):
 
         super(LightGBM, self).__init__(
                 name="lightgbm_classifier", #name of the recommender
@@ -60,6 +62,7 @@ class LightGBM(RecommenderGBM):
         self.params= {
                 #Parameters
                 'objective':objective,
+                'metric':metric,
                 'num_iterations':num_iterations,
                 'num_leaves':num_leaves,
                 'learning_rate':learning_rate,
@@ -78,6 +81,7 @@ class LightGBM(RecommenderGBM):
                 'max_bin':max_bin,
                 'boost_from_average': True,             #default: True
                 #'boosting': "dart"                     #default: gbdt, it is said that dart provides more acurate predictions, while risking overfitting tho
+                'early_stopping_round': early_stopping_rounds,
         }
 
         if scale_pos_weight is None and is_unbalance is None:
@@ -96,12 +100,8 @@ class LightGBM(RecommenderGBM):
         #Models
         self.sround_model = None    #No need to differentiate, but it's
         self.batch_model = None     #way more readable.
-        # List of categorical features
-        #self.categorical_feature = "name:raw_feature_creator_is_verified,raw_feature_engager_is_verified,\
-        #                    tweet_feature_is_retweet,tweet_feature_is_quote,tweet_feature_is_top_level,\
-        #                    raw_feature_engagement_creator_follows_engager"
-        
-        self.categorical_feature = 2,5,6,7,8,9,12
+        # Default for categorical features
+        self.categorical_feature = 'auto'
         
         #Extension of saving file
         self.ext=".txt"
@@ -157,7 +157,7 @@ class LightGBM(RecommenderGBM):
                                'bagging_freq': (0,1),
                                'bagging_fraction': (0,1)}
 
-    def fit(self, X=None, Y=None, categorical_feature=None):
+    def fit(self, X=None, Y=None, X_val=None, Y_val=None, categorical_feature=None):
         #Tries to load X and Y if not directly passed        
         if (X is None) or (Y is None):
             X, Y = self.load_data(self.test_dataset)        #still to be implemented
@@ -169,14 +169,26 @@ class LightGBM(RecommenderGBM):
 
         #Learning in a single round
         if self.batch is False:
-            #Declaring LightGBM Dataset
-            train = lgb.Dataset(data=X,
-                                label=Y,
-                                categorical_feature=self.categorical_feature) 
-            #Defining and fitting the model
-            self.sround_model = lgb.train(self.get_param_dict(),  
-                                          train_set=train,       
-                                          )
+            if X_val is None:
+                #Declaring LightGBM Dataset
+                train = lgb.Dataset(data=X,
+                                    label=Y,
+                                    categorical_feature=categorical_feature) 
+                #Defining and fitting the model
+                self.sround_model = lgb.train(self.get_param_dict(),  
+                                            train_set=train,
+                                            categorical_feature=categorical_feature)
+            else:
+                #Declaring LightGBM Train Dataset
+                train = lgb.Dataset(data=X,
+                    label=Y,
+                    categorical_feature=categorical_feature) 
+                validation = lgb.Dataset(data=X_val, label=Y_val,categorical_feature=categorical_feature)
+                #Defining and fitting the model
+                self.sround_model = lgb.train(self.get_param_dict(),  
+                                            train_set=train,       
+                                            valid_sets=validation,
+                                            categorical_feature=categorical_feature)
 
         #Learning by consecutive batches
         else:
@@ -355,3 +367,6 @@ class LightGBM(RecommenderGBM):
             # we have an already saved model due to incremental training
             self.load_model(self.previous_model_path)
             return self.batch_model
+
+    def get_best_iter(self):
+        return self.sround_model.best_iteration

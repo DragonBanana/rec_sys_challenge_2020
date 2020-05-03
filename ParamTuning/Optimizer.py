@@ -357,3 +357,7 @@ class Optimizer(object):
                              bootstrap_type= bootstrap_type,
                              early_stopping_rounds= early_stopping_rounds)
     #---------------------------------------------------------------
+
+
+    def setCategoricalFeatures(self,categorical_features=None):
+        self.MI.setCategoricalFeatures(categorical_features)
