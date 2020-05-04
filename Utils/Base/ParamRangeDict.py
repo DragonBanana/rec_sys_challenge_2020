@@ -106,7 +106,7 @@ def xgbName():
 #
 #---------------------------------------------------------------
 def lgbmRange(kind):
-    param_range_dict = [Integer(5, 600),                        #num_iterations
+    param_range_dict = [Integer(500, 700),                        #num_iterations
                         Integer(31, 70),                        #num_leaves
                         Real(0.0001, 1, 'log-uniform'),         #learning rate
                         Integer(5, 100),                        #max_depth
