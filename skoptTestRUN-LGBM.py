@@ -21,19 +21,33 @@ def main():
 
     # Define the X label
     X_label = [
-        "raw_feature_creator_follower_count",                       #(0)
-        "raw_feature_creator_following_count",                      #(1)
-        "raw_feature_creator_is_verified",                          #(2)categorical
-        "raw_feature_engager_follower_count",                       #(3)
-        "raw_feature_engager_following_count",                      #(4)
-        "raw_feature_engager_is_verified",                          #(5)categorical
-        "tweet_feature_is_retweet",                                 #(6)categorical
-        "tweet_feature_is_quote",                                   #(7)categorical
-        "tweet_feature_is_top_level",                               #(8)categorical
-        "raw_feature_engagement_creator_follows_engager",            #(9)categorical
-        "tweet_feature_creation_timestamp_hour",                    #(10)
-        "tweet_feature_creation_timestamp_week_day",                #(11)
-        "mapped_feature_tweet_language",                            #(12)categorical
+        "raw_feature_creator_follower_count",                                       # 0                                                    
+        "raw_feature_creator_following_count",                                      # 1               
+        "raw_feature_engager_follower_count",                                       # 2               
+        "raw_feature_engager_following_count",                                      # 3               
+        "tweet_feature_number_of_photo",                                            # 4           
+        "tweet_feature_number_of_video",                                            # 5           
+        "tweet_feature_number_of_gif",                                              # 6       
+        "tweet_feature_is_retweet",                                                 # 7(categorical) 
+        "tweet_feature_is_quote",                                                   # 8(categorical   
+        "tweet_feature_is_top_level",                                               # 9(categorical      
+        "tweet_feature_number_of_hashtags",                                         # 10          
+        "tweet_feature_creation_timestamp_hour",                                    # 11                 
+        "tweet_feature_creation_timestamp_week_day",                                # 12                       
+        "tweet_feature_number_of_mentions",                                         # 13           
+        "engager_feature_number_of_previous_like_engagement",                       # 14                               
+        "engager_feature_number_of_previous_reply_engagement",                      # 15                               
+        "engager_feature_number_of_previous_retweet_engagement",                    # 16                                   
+        "engager_feature_number_of_previous_comment_engagement",                    # 17                                  
+        "engager_feature_number_of_previous_positive_engagement",                   # 18                                   
+        "engager_feature_number_of_previous_negative_engagement",                   # 19                                   
+        "engager_feature_number_of_previous_engagement",                            # 20                           
+        "engager_feature_number_of_previous_like_engagement_ratio",                 # 21                                   
+        "engager_feature_number_of_previous_reply_engagement_ratio",                # 22                                       
+        "engager_feature_number_of_previous_retweet_engagement_ratio",              # 23                                       
+        "engager_feature_number_of_previous_comment_engagement_ratio",              # 24                                       
+        "engager_feature_number_of_previous_positive_engagement_ratio",             # 25                                       
+        "engager_feature_number_of_previous_negative_engagement_ratio"              # 26                                       
     ]
     # Define the Y label
     Y_label = [
@@ -65,8 +79,8 @@ def main():
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
-    OP.setParamsLGB(objective='binary',early_stopping_rounds=5, eval_metric="cross_entropy")
-    OP.setCategoricalFeatures(set([2,5,6,7,8,9,12]))
+    OP.setParamsLGB(objective='binary',early_stopping_rounds=5, eval_metric="binary")
+    OP.setCategoricalFeatures(set([7,8,9]))
     #OP.loadModelHardCoded()
     res=OP.optimize()
 
