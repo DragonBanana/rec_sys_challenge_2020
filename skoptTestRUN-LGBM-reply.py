@@ -51,11 +51,11 @@ def main():
     ]
     # Define the Y label
     Y_label = [
-        "tweet_feature_engagement_is_like"
+        "tweet_feature_engagement_is_reply"
     ]
 
     model_name = "lightgbm_classifier"
-    kind = "like"
+    kind = "reply"
 
     # Load train data
     loading_data_start_time = time.time()
@@ -75,11 +75,11 @@ def main():
                    make_save=False, 
                    auto_save=False)
 
-    OP.setParameters(n_calls=30, n_random_starts=10)
+    OP.setParameters(n_calls=40, n_random_starts=15)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
-    OP.setParamsLGB(objective='binary',early_stopping_rounds=5, eval_metric="binary")
+    OP.setParamsLGB(objective='binary',early_stopping_rounds=5, eval_metric="binary",is_unbalance=True)
     OP.setCategoricalFeatures(set([7,8,9]))
     #OP.loadModelHardCoded()
     res=OP.optimize()

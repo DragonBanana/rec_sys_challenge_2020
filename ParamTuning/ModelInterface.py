@@ -454,7 +454,8 @@ class ModelInterface(object):
                         bagging_freq=     param[11],
                         max_bin =         param[12],
                         #Early stopping
-                        early_stopping_rounds=self.early_stopping_rounds
+                        early_stopping_rounds=self.early_stopping_rounds,
+                        is_unbalance=self.is_unbalance
         )
         #Training on custom set
         if (self.Y_train is None):
@@ -1128,7 +1129,8 @@ class ModelInterface(object):
                            objective, 
                            num_parallel_tree, 
                            eval_metric, 
-                           early_stopping_rounds):
+                           early_stopping_rounds,
+                           is_unbalance=False):
         self.verbosity=verbosity
         self.process_type=process_type
         self.tree_method=tree_method
@@ -1136,6 +1138,7 @@ class ModelInterface(object):
         self.num_parallel_tree=num_parallel_tree
         self.eval_metric=eval_metric
         self.early_stopping_rounds=early_stopping_rounds
+        self.is_unbalance=is_unbalance
 #--------------------------------------------------
 
 #--------------------------------------------------
