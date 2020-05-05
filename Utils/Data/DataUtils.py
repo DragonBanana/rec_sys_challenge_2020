@@ -5,6 +5,7 @@ from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
+from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
 from Utils.Data.Features.Generated.TweetFeature.FromTextToken import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
@@ -24,14 +25,14 @@ import multiprocessing as mp
 
 DATASET_IDS = [
     "train",
-    "train_days_1",
+    # "train_days_1",
     "train_days_12",
     "train_days_123",
     "train_days_1234",
     "train_days_12345",
     "train_days_123456",
     "test",
-    "val_days_2",
+    # "val_days_2",
     "val_days_3",
     "val_days_4",
     "val_days_5",
@@ -128,8 +129,8 @@ def populate_features():
         result[("tweet_feature_creation_timestamp_week_day", dataset_id)] = TweetFeatureCreationTimestampWeekDay(
             dataset_id)
         # FROM TEXT TOKEN FEATURES
-        result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
-        result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
+        #result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
+        #result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS
         result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagement(dataset_id)
@@ -159,7 +160,14 @@ def populate_features():
         result[("engager_feature_number_of_previous_comment_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
         result[("engager_feature_number_of_previous_positive_engagement_betweet_creator_and_engager_by_engager", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementBetweenCreatorAndEngagerByEngager(dataset_id)
-
+        # MAIN LANGUAGE
+        result[("engager_main_language", dataset_id)] = EngagerMainLanguage(dataset_id)
+        result[("creator_main_language", dataset_id)] = CreatorMainLanguage(dataset_id)
+        result[("creator_and_engager_have_same_main_language", dataset_id)] = CreatorAndEngagerHaveSameMainLanguage(dataset_id)
+        result[("is_tweet_in_creator_main_language", dataset_id)] = IsTweetInCreatorMainLanguage(dataset_id)
+        result[("is_tweet_in_engager_main_language", dataset_id)] = IsTweetInEngagerMainLanguage(dataset_id)
+        result[("statistical_probability_main_language_of_engager_engage_tweet_language_1", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage1(dataset_id)
+        result[("statistical_probability_main_language_of_engager_engage_tweet_language_2", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage2(dataset_id)
 
 
         # IS ENGAGEMENT TYPE
