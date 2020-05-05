@@ -72,6 +72,7 @@ def main():
                    kind,
                    mode=0,
                    path="like",
+                   path_log="like",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)

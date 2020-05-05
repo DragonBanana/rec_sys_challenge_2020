@@ -72,6 +72,7 @@ def main():
                    kind,
                    mode=0,
                    path="comment",
+                   path_log="comment",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)

@@ -72,9 +72,11 @@ def main():
                    kind,
                    mode=0,
                    path="reply",
+                   path_log="reply",
                    make_log=True, 
                    make_save=False, 
-                   auto_save=False)
+                   auto_save=False
+                   )
 
     OP.setParameters(n_calls=40, n_random_starts=15)
     OP.loadTrainData(X_train, Y_train)
