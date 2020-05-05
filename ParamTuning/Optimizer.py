@@ -325,7 +325,8 @@ class Optimizer(object):
                         metric= ('cross_entropy','cross_entropy_lambda'),
                         num_parallel_tree=4, 
                         eval_metric="rmsle", 
-                        early_stopping_rounds=None):
+                        early_stopping_rounds=None,
+                        is_unbalance=False):
         if self.MI is None:
             self.defineMI()
         
@@ -335,7 +336,8 @@ class Optimizer(object):
                              objective=objective,
                              num_parallel_tree=num_parallel_tree,
                              eval_metric=eval_metric,
-                             early_stopping_rounds=early_stopping_rounds)
+                             early_stopping_rounds=early_stopping_rounds,
+                             is_unbalance=is_unbalance)
     #---------------------------------------------------------------
 
     #---------------------------------------------------------------

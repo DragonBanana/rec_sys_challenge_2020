@@ -43,7 +43,7 @@ class LightGBM(RecommenderGBM):
                  pos_subsample= 0.5,                        #In classification positive and negative-
                  neg_subsample= 0.5,                        #Subsample ratio.
                  scale_pos_weight= None,                    #(same as xgboost)
-                 is_unbalance= None,                        #let LightGBM deal with the unbalance problem on its own (worsen RCE 100x in local if used alone)
+                 is_unbalance= False,                       #let LightGBM deal with the unbalance problem on its own (worsen RCE 100x in local if used alone)
                  bagging_freq= 5,                           #Default 0 perform bagging every k iterations
                  bagging_fraction= 1,                       #Rnadomly selects specified fraciton of the data without resampling
                  max_bin = 255,
@@ -82,6 +82,7 @@ class LightGBM(RecommenderGBM):
                 'boost_from_average': True,             #default: True
                 #'boosting': "dart"                     #default: gbdt, it is said that dart provides more acurate predictions, while risking overfitting tho
                 'early_stopping_round': early_stopping_rounds,
+                'is_unbalance':is_unbalance
         }
 
         if scale_pos_weight is None and is_unbalance is None:
