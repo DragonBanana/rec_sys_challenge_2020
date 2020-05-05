@@ -1001,13 +1001,22 @@ class ModelInterface(object):
             self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S")) + ".log"
         #Get hyperparameter names
         p_names = self.getParamNames()
+        #---------------------------------
+        telegram_message=""
+        #---------------------------------
         #Opening a file and writing into it the logs
         with open(self.path, 'a') as log:
             to_write = "ITERATION NUMBER " + str(self.iter_count) + "\n"
             log.write(to_write)
+            telegram_message+=to_write
+            telegram_message+="\n"
             for i in range(len(p_names)):
                 to_write=str(str(p_names[i])+"= "+str(param[i])+"\n")
                 log.write(to_write)
+                telegram_message+=to_write
+                telegram_message+="\n"
+
+        telegram_bot_send_update(self.path+"\n"+telegram_message)
 
 
     def saveRes(self, best_iter, prauc, rce, confmat, max_arr, min_arr, avg):
@@ -1065,6 +1074,7 @@ class ModelInterface(object):
 
             to_write += "OBJECTIVE: " + str(obj) + "\n\n\n"
             log.write(to_write)
+            telegram_bot_send_update(self.path+"\n"+to_write)
 
         # Increasing the iteration count
         self.iter_count = self.iter_count + 1
@@ -1277,3 +1287,22 @@ def run_xgb_external_memory(param, model_interface, queue):
     queue.put(model_interface.metriComb(tot_prauc, tot_rce))
     return model_interface.metriComb(tot_prauc, tot_rce)
 #--------------------------------------------------------------
+
+
+#----------------------------------------------------------------
+#                       TELEGRAM BOT
+#----------------------------------------------------------------
+
+
+import requests
+
+def telegram_bot_send_update(update):
+	
+	bot_token='1188007388:AAFjZeeKPkxocN-AtnfICXbOZi_0cjTUpiU'
+	group_id='-479667758'
+	
+	send_update='https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + group_id + '&sparse_mode=Markdown&text=' + update
+	#send_update = 'https://api.telegram.org/bot' + bot_token +'/getUpdates'
+	response = requests.get(send_update)
+	
+	return response.json()

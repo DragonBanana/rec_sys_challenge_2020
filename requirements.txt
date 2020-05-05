@@ -15,3 +15,4 @@ bayesian-optimization==1.1.0
 graphviz==0.13.2
 lightgbm==2.3.1
 catboost==0.23
+requests==2.23.0

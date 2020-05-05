@@ -71,6 +71,7 @@ def main():
     OP = Optimizer(model_name, 
                    kind,
                    mode=0,
+                   path="retweet",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
