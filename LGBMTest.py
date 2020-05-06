@@ -121,7 +121,8 @@ if __name__ == '__main__':
         pos_subsample     =     0.17208466069341272,
         neg_subsample     =     0.37003597658609644,
         bagging_freq      =     47,
-        max_bin           =     3319
+        max_bin           =     3319,
+        early_stopping_rounds=5
         )
 
     # LGBM Training
