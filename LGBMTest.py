@@ -105,7 +105,7 @@ if __name__ == '__main__':
     LGBM = LightGBM(
         objective         =     'binary',
         num_threads       =     32,
-        num_iterations    =     1,
+        num_iterations    =     669,
         num_leaves        =     56,
         learning_rate     =     0.24415290666671663,
         max_depth         =     5,
