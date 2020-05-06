@@ -81,7 +81,7 @@ def main():
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
-    OP.setParamsLGB(objective='binary',early_stopping_rounds=5, eval_metric="binary",is_unbalance=True)
+    OP.setParamsLGB(objective='binary',early_stopping_rounds=10, eval_metric="binary",is_unbalance=True)
     OP.setCategoricalFeatures(set([7,8,9]))
     #OP.loadModelHardCoded()
     res=OP.optimize()
