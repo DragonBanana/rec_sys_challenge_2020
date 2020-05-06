@@ -26,7 +26,7 @@ if __name__ == '__main__':
         "tweet_feature_number_of_hashtags",                                         # 10          
         "tweet_feature_creation_timestamp_hour",                                    # 11                 
         "tweet_feature_creation_timestamp_week_day",                                # 12                       
-        "tweet_feature_number_of_mentions",                                         # 13           
+        #"tweet_feature_number_of_mentions",                                         # 13           
         "engager_feature_number_of_previous_like_engagement",                       # 14                               
         "engager_feature_number_of_previous_reply_engagement",                      # 15                               
         "engager_feature_number_of_previous_retweet_engagement",                    # 16                                   
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     X_local, Y_local= Data.get_dataset_xgb(local_test_set, X_label, Y_label)
 
     # Load test data
-    X_test = Data.get_dataset(X_label, test_dataset)
+    #X_test = Data.get_dataset(X_label, test_dataset)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     colsample_bynode=           0.31156106645302606
     colsample_bytree=           0.1
     bagging_fraction=           0.8438671225197703
-    pos_subsample=              0.17208466069341272
+    pos_subsample=              0.1720846606934p1272
     neg_subsample=              0.37003597658609644
     bagging_freq=               47
     max_bin=                    3319
@@ -104,25 +104,65 @@ if __name__ == '__main__':
     -------
     OBJECTIVE: -13.515465900872789
     '''
-
+    '''
+    RETWEET BEST PARAMETERS
+    ITERATION NUMBER 33
+    num_iterations=             553
+    num_leaves=                 43
+    learning rate=              0.07234179743791337
+    max_depth=                  78
+    lambda_l1=                  0.10925388213814866
+    lambda_l2=                  0.13906150286387464
+    colsample_bynode=           0.7571414570845095
+    colsample_bytree=           0.759345076151701
+    bagging_fraction=           0.7860415589753853
+    pos_subsample=              0.1
+    neg_subsample=              1.0
+    bagging_freq=               8
+    max_bin=                    4809
+    -------
+    best_es_iteration: 74
+    -------
+    PRAUC = 0.45857804917489947
+    RCE   = 23.272860065620648
+    -------
+    TN %  = 87.778%
+    FP %  = 1.978%
+    FN %  = 7.110%
+    TP %  = 3.134%
+    -------
+    TN    = 17210912
+    FP    = 387826
+    FN    = 1394079
+    TP    = 614434
+    -------
+    PREC    = 0.61305%
+    RECALL    = 0.30591%
+    F1    = 0.40816%
+    -------
+    MAX   =0.9225121224824677
+    MIN   =0.006078680570960089
+    AVG   =0.11372346903657954
+    -------
+    OBJECTIVE: -10.67242276761274
+'''
     #Initialize Model
     LGBM = LightGBM(
         objective         =     'binary',
         num_threads       =     32,
-        num_iterations    =     669,
-        num_leaves        =     56,
-        learning_rate     =     0.24415290666671663,
-        max_depth         =     5,
-        lambda_l1         =     0.10764946399034334,
-        lambda_l2         =     1.0,
-        colsample_bynode  =     0.31156106645302606,
-        colsample_bytree  =     0.1,
-        bagging_fraction  =     0.8438671225197703,
-        pos_subsample     =     0.17208466069341272,
-        neg_subsample     =     0.37003597658609644,
-        bagging_freq      =     47,
-        max_bin           =     3319,
-        early_stopping_rounds=5
+        num_iterations    =     800,
+        num_leaves        =     59,
+        learning_rate     =     0.28068796160472104,
+        max_depth         =     96,
+        lambda_l1         =     1.0,
+        lambda_l2         =     0.3488769942821451,
+        colsample_bynode  =     0.9722850779607921,
+        colsample_bytree  =     1.0,
+        pos_subsample     =     0.7809828696143716,
+        neg_subsample     =     0.9218901492343142,
+        bagging_freq      =     12,
+        max_bin           =     5000,
+        early_stopping_rounds=15
         )
 
     # LGBM Training
@@ -144,15 +184,15 @@ if __name__ == '__main__':
     print(f"AVG:\t{avg}")
     print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
-    tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    #tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    #users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
 
     # LGBM Prediction
-    prediction_start_time = time.time()
-    predictions = LGBM.get_prediction(X_test.to_numpy())
-    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
+    #prediction_start_time = time.time()
+    #predictions = LGBM.get_prediction(X_test.to_numpy())
+    #print(f"Prediction time: {time.time() - prediction_start_time} seconds")
 
     #Uncomment to plot feature importance at the end of training
     #LGBM.plot_fimportance()
 
-    create_submission_file(tweets, users, predictions, "lgbm_like_submission.csv")
+    #create_submission_file(tweets, users, predictions, "lgbm_like_submission.csv")
