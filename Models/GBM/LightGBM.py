@@ -29,7 +29,7 @@ class LightGBM(RecommenderGBM):
                  batch=False,
                  #Not in tuning dict
                  objective= 'binary',
-                 metric='cross_entropy',
+                 metric='binary',
                  num_threads= 16,       
                  #In tuning dict
                  num_iterations = 100,
