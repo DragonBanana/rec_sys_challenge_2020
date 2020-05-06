@@ -115,8 +115,8 @@ def lgbmRange(kind):
                         Real(0.1, 1),                           #colsample_bynode
                         Real(0.1, 1),                           #colsample_bytree
                         Real(0.5, 1),                           #bagging_fraction
-                        Real(0.1, 1),                            #pos_subsample
-                        Real(0.1, 1),                            #neg_subsample
+                        #Real(0.1, 1),                            #pos_subsample
+                        #Real(0.1, 1),                            #neg_subsample
                         # SCALE POS WEIGHT
                         #Real(1,10),                            #scale_pos_weight
                         # ALTERNATIVELY IS UMBALANCE MUST BE SET AS TRUE
@@ -138,8 +138,8 @@ def lgbmName():
                        "colsample_bynode",
                        "colsample_bytree",
                        "bagging_fraction",
-                       "pos_subsample",
-                       "neg_subsample",
+                       #"pos_subsample",
+                       #"neg_subsample",
                        #"scale_pos_weight",
                        "bagging_freq",
                        "max_bin"
