@@ -72,7 +72,7 @@ def main():
                    kind,
                    mode=0,
                    path="comment",
-                   path_log="comment",
+                   path_log="lgbm-comment",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)

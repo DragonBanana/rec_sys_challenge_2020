@@ -72,7 +72,7 @@ def main():
                    kind,
                    mode=0,
                    path="reply",
-                   path_log="reply",
+                   path_log="lgbm-reply",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False
