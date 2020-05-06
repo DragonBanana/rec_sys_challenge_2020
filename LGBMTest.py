@@ -146,18 +146,6 @@ if __name__ == '__main__':
     -------
     OBJECTIVE: -10.67242276761274
 '''
-
-num_leaves=         55
-learning rate=      0.5365850492533777
-max_depth=          100
-lambda_l1=          0.7084815798585039
-lambda_l2=          0.17770074200237315
-colsample_bynode=   0.8509869113377452
-colsample_bytree=   1.0
-pos_subsample=      0.5661907967636856
-neg_subsample=      0.35276725146328414
-bagging_freq=       0
-max_bin=            4951
     #Initialize Model
     LGBM = LightGBM(
         objective         =     'binary',
