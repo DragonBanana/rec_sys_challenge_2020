@@ -34,7 +34,7 @@ def main():
         "tweet_feature_number_of_hashtags",                                         # 10          
         "tweet_feature_creation_timestamp_hour",                                    # 11                 
         "tweet_feature_creation_timestamp_week_day",                                # 12                       
-        "tweet_feature_number_of_mentions",                                         # 13           
+        "tweet_feature_number_of_mentions",                                         # 13
         "engager_feature_number_of_previous_like_engagement",                       # 14                               
         "engager_feature_number_of_previous_reply_engagement",                      # 15                               
         "engager_feature_number_of_previous_retweet_engagement",                    # 16                                   
@@ -59,7 +59,7 @@ def main():
 
     # Load train data
     loading_data_start_time = time.time()
-    X_train, Y_train = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
+    X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.5)
 
     # Load test data
     X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
@@ -78,7 +78,7 @@ def main():
                    auto_save=False
                    )
 
-    OP.setParameters(n_calls=40, n_random_starts=15)
+    OP.setParameters(n_calls=100, n_random_starts=20)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
