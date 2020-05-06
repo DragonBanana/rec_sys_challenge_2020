@@ -29,7 +29,7 @@ class LightGBM(RecommenderGBM):
                  batch=False,
                  #Not in tuning dict
                  objective= 'binary',
-                 metric='cross_entropy',
+                 metric='binary',
                  num_threads= 16,       
                  #In tuning dict
                  num_iterations = 100,
@@ -63,7 +63,7 @@ class LightGBM(RecommenderGBM):
                 #Parameters
                 'objective':objective,
                 'metric':metric,
-                'num_iterations':num_iterations,
+                'num_iterations':800,
                 'num_leaves':num_leaves,
                 'learning_rate':learning_rate,
                 'num_threads':num_threads,
@@ -74,10 +74,7 @@ class LightGBM(RecommenderGBM):
                 'colsample_bynode':colsample_bynode,
                 'pos_subsample':pos_subsample,       
                 'neg_subsample':neg_subsample,       
-                'scale_pos_weight':scale_pos_weight,
-                'is_unbalance':is_unbalance,
                 'bagging_freq':bagging_freq,         
-                'bagging_fraction':bagging_fraction,
                 'max_bin':max_bin,
                 'boost_from_average': True,             #default: True
                 #'boosting': "dart"                     #default: gbdt, it is said that dart provides more acurate predictions, while risking overfitting tho
