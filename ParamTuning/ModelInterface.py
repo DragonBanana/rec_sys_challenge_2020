@@ -448,11 +448,11 @@ class ModelInterface(object):
                         colsample_bynode= param[6],
                         colsample_bytree= param[7],
                         bagging_fraction= param[8],
-                        #pos_subsample=    param[9],  
-                        #neg_subsample=    param[10],  
+                        pos_subsample=    param[9],
+                        neg_subsample=    param[10],
                         #scale_pos_weight= param[11],        #Remember that scale_pos_wiight and is_unbalance are mutually exclusive
-                        bagging_freq=     param[9],
-                        max_bin =         param[10],
+                        bagging_freq=     param[11],
+                        max_bin =         param[12],
                         #Early stopping
                         early_stopping_rounds=self.early_stopping_rounds,
                         is_unbalance=self.is_unbalance

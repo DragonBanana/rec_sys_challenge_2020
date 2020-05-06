@@ -25,14 +25,14 @@ import multiprocessing as mp
 
 DATASET_IDS = [
     "train",
-    # "train_days_1",
+    "train_days_1",
     "train_days_12",
     "train_days_123",
     "train_days_1234",
     "train_days_12345",
     "train_days_123456",
     "test",
-    # "val_days_2",
+    "val_days_2",
     "val_days_3",
     "val_days_4",
     "val_days_5",
@@ -129,8 +129,8 @@ def populate_features():
         result[("tweet_feature_creation_timestamp_week_day", dataset_id)] = TweetFeatureCreationTimestampWeekDay(
             dataset_id)
         # FROM TEXT TOKEN FEATURES
-        #result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
-        #result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
+        result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
+        result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS
         result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagement(dataset_id)
