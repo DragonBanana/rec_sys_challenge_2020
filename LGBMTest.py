@@ -6,8 +6,9 @@ from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
 
 if __name__ == '__main__':
-    train_dataset = "train_days_123456"
-    val_dataset = "val_days_7"
+    train_dataset = "train_days_12345"
+    val_dataset = "val_days_6"
+    local_test_set = "val_days_7"
     test_dataset="test"
 
     # Define the X label
@@ -52,6 +53,9 @@ if __name__ == '__main__':
 
     # Load val data
     X_val, Y_val= Data.get_dataset_xgb(val_dataset, X_label, Y_label)
+
+    # Load local_test data
+    X_local, Y_local= Data.get_dataset_xgb(local_test_set, X_label, Y_label)
 
     # Load test data
     X_test = Data.get_dataset(X_label, test_dataset)
@@ -126,18 +130,18 @@ if __name__ == '__main__':
     print(f"Training time: {time.time() - training_start_time} seconds")
 
     # LGBM Evaluation
-    #evaluation_start_time = time.time()
-    #prauc, rce, conf, max_pred, min_pred, avg = LGBM.evaluate(X_test.to_numpy(), Y_test.to_numpy())
-    #print(f"PRAUC:\t{prauc}")
-    #print(f"RCE:\t{rce}")
-    #print(f"TN:\t{conf[0,0]}")
-    #print(f"FP:\t{conf[0,1]}")
-    #print(f"FN:\t{conf[1,0]}")
-    #print(f"TP:\t{conf[1,1]}")
-    #print(f"MAX_PRED:\t{max_pred}")
-    #print(f"MIN_PRED:\t{min_pred}")
-    #print(f"AVG:\t{avg}")
-    #print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
+    evaluation_start_time = time.time()
+    prauc, rce, conf, max_pred, min_pred, avg = LGBM.evaluate(X_local.to_numpy(), Y_local.to_numpy())
+    print(f"PRAUC:\t{prauc}")
+    print(f"RCE:\t{rce}")
+    print(f"TN:\t{conf[0,0]}")
+    print(f"FP:\t{conf[0,1]}")
+    print(f"FN:\t{conf[1,0]}")
+    print(f"TP:\t{conf[1,1]}")
+    print(f"MAX_PRED:\t{max_pred}")
+    print(f"MIN_PRED:\t{min_pred}")
+    print(f"AVG:\t{avg}")
+    print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
     tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
     users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
