@@ -16,8 +16,7 @@ from Utils.Data import Data
 def main():  
     # Defining the dataset used
     train_dataset = "train_days_12345"
-    test_dataset = "val_days_7"
-    val_dataset = "val_days_6"
+    test_dataset = "val_days_6"
 
     # Define the X label
     X_label = [
@@ -34,7 +33,7 @@ def main():
         "tweet_feature_number_of_hashtags",                                         # 10          
         "tweet_feature_creation_timestamp_hour",                                    # 11                 
         "tweet_feature_creation_timestamp_week_day",                                # 12                       
-        "tweet_feature_number_of_mentions",                                         # 13           
+        #"tweet_feature_number_of_mentions",                                         # 13           
         "engager_feature_number_of_previous_like_engagement",                       # 14                               
         "engager_feature_number_of_previous_reply_engagement",                      # 15                               
         "engager_feature_number_of_previous_retweet_engagement",                    # 16                                   
@@ -59,29 +58,29 @@ def main():
 
     # Load train data
     loading_data_start_time = time.time()
-    X_train, Y_train = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
+    X_train, Y_train = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 0.25)
 
     # Load test data
-    X_test, Y_test = Data.get_dataset_xgb(test_dataset, X_label, Y_label)
+    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 0.5)
+    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 0.5)
 
-    # Load val data
-    X_val, Y_val = Data.get_dataset_xgb(val_dataset, X_label, Y_label)
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
     OP = Optimizer(model_name, 
                    kind,
                    mode=0,
                    path="like",
-                   path_log="like",
+                   path_log="lghm-like\nCon subsample del dataset per fare più in fretta.\nTrainato su 12345, ES su metà del giorno 6, test sull'altra\
+                             metà del giorno 6. Trovato questo minimo lo testeremo sul giorno 7, mai visto durante il training.",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
 
-    OP.setParameters(n_calls=40, n_random_starts=15)
+    OP.setParameters(n_calls=50, n_random_starts=15)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
-    OP.setParamsLGB(objective='binary',early_stopping_rounds=5, eval_metric="binary",is_unbalance=False)
+    OP.setParamsLGB(objective='binary',early_stopping_rounds=15, eval_metric="binary",is_unbalance=False)
     OP.setCategoricalFeatures(set([7,8,9]))
     #OP.loadModelHardCoded()
     res=OP.optimize()

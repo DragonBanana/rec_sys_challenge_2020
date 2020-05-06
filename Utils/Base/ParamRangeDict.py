@@ -106,22 +106,19 @@ def xgbName():
 #
 #---------------------------------------------------------------
 def lgbmRange(kind):
-    param_range_dict = [Integer(500, 700),                        #num_iterations
-                        Integer(31, 70),                        #num_leaves
-                        Real(0.005, 1, 'log-uniform'),         #learning rate
+    param_range_dict = [Integer(31, 70),                        #num_leaves
+                        Real(0.005, 1, 'log-uniform'),          #learning rate
                         Integer(5, 100),                        #max_depth
                         Real(0.1, 1, 'log-uniform'),            #lambda_l1
                         Real(0.1, 1, 'log-uniform'),            #lambda_l2
                         Real(0.1, 1),                           #colsample_bynode
                         Real(0.1, 1),                           #colsample_bytree
-                        Real(0.5, 1),                           #bagging_fraction
-                        Real(0.005, 1),                            #pos_subsample
-                        Real(0.1, 1),                            #neg_subsample
-                        # SCALE POS WEIGHT
-                        #Real(1,10),                            #scale_pos_weight
-                        # ALTERNATIVELY IS UMBALANCE MUST BE SET AS TRUE
-                        Integer(0, 50),                          #bagging_freq
-                        Integer(255, 5000)                       #max_bin
+                        Real(0.1, 1),                           #pos_subsample
+                        Real(0.1, 1),                           #neg_subsample
+                        #Real(0.1, 1),                           #bagging_positive_over_total_ratio
+                        #Real(0.1, 1),                           #dominant_bagging
+                        Integer(0, 50),                         #bagging_freq
+                        Integer(255, 5000)                      #max_bin
     ]
     return param_range_dict
 
@@ -129,7 +126,6 @@ def lgbmRange(kind):
 #Names of the hyperparameters that will be optimized
 def lgbmName():
     param_name_dict = [
-                       "num_iterations",
                        "num_leaves",
                        "learning rate",
                        "max_depth",
@@ -137,10 +133,10 @@ def lgbmName():
                        "lambda_l2",
                        "colsample_bynode",
                        "colsample_bytree",
-                       "bagging_fraction",
                        "pos_subsample",
                        "neg_subsample",
-                       #"scale_pos_weight",
+                       #"bagging_positive_over_total_ratio",
+                       #"dominant_bagging",
                        "bagging_freq",
                        "max_bin"
                        ]
