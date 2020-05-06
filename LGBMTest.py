@@ -146,22 +146,34 @@ if __name__ == '__main__':
     -------
     OBJECTIVE: -10.67242276761274
 '''
+
+num_leaves=         55
+learning rate=      0.5365850492533777
+max_depth=          100
+lambda_l1=          0.7084815798585039
+lambda_l2=          0.17770074200237315
+colsample_bynode=   0.8509869113377452
+colsample_bytree=   1.0
+pos_subsample=      0.5661907967636856
+neg_subsample=      0.35276725146328414
+bagging_freq=       0
+max_bin=            4951
     #Initialize Model
     LGBM = LightGBM(
         objective         =     'binary',
         num_threads       =     32,
         num_iterations    =     800,
-        num_leaves        =     59,
-        learning_rate     =     0.28068796160472104,
-        max_depth         =     96,
-        lambda_l1         =     1.0,
-        lambda_l2         =     0.3488769942821451,
-        colsample_bynode  =     0.9722850779607921,
+        num_leaves        =     55,
+        learning_rate     =     0.5365850492533777,
+        max_depth         =     100,
+        lambda_l1         =     0.7084815798585039,
+        lambda_l2         =     0.17770074200237315,
+        colsample_bynode  =     0.8509869113377452,
         colsample_bytree  =     1.0,
-        pos_subsample     =     0.7809828696143716,
-        neg_subsample     =     0.9218901492343142,
-        bagging_freq      =     12,
-        max_bin           =     5000,
+        pos_subsample     =     0.5661907967636856,
+        neg_subsample     =     0.35276725146328414,
+        bagging_freq      =     0,
+        max_bin           =     4951,
         early_stopping_rounds=15
         )
 
