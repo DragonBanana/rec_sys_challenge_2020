@@ -70,8 +70,7 @@ def main():
                    kind,
                    mode=0,
                    path="like",
-                   path_log="llgbm-like\nCon subsample del dataset per fare più in fretta.\nTrainato su 12345, ES su metà del giorno 6, test sull'altra\
-                             metà del giorno 6. Trovato questo minimo lo testeremo sul giorno 7, mai visto durante il training.\nSTAVOLTA GIUSTO.",
+                   path_log="lgbm-like-test-overfit-STAVOLTA-GIUSTO",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
