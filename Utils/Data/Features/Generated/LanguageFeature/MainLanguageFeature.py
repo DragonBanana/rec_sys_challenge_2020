@@ -1,9 +1,17 @@
 import numpy as np
 
+from Utils.Data.DatasetUtils import is_test_or_val_set, get_train_set_id_from_test_or_val_set, \
+    get_test_or_val_set_id_from_train
+from Utils.Data.Dictionary.UserBasicFeaturesDictArray import UserBasicFeatureDictArrayNumpy
 from Utils.Data.Dictionary.UserFeaturesDictArray import MainLanguageUserBasicFeatureDictArray
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.MappedFeatures import MappedFeatureEngagerId, MappedFeatureCreatorId, \
-    MappedFeatureTweetLanguage
+    MappedFeatureTweetLanguage, MappedFeatureTweetId
+from Utils.Data.Sparse.CSR_SparseMatrix import CSR_SparseMatrix
+import numpy as np
+import scipy.sparse as sps
+import time
+import multiprocessing as mp
 
 
 class EngagerMainLanguage(GeneratedFeaturePickle):
@@ -19,7 +27,7 @@ class EngagerMainLanguage(GeneratedFeaturePickle):
         engager_id_feature = MappedFeatureEngagerId(self.dataset_id)
         engager_id_df = engager_id_feature.load_or_create()
 
-        users_main_language_array = MainLanguageUserBasicFeatureDictArray().load_or_create()
+        users_main_language_array = MainLanguageUserBasicFeatureDictArray(self.dataset_id).load_or_create()
 
         result = pd.DataFrame(
             engager_id_df[engager_id_feature.feature_name].map(lambda x: users_main_language_array[x])
@@ -41,7 +49,7 @@ class CreatorMainLanguage(GeneratedFeaturePickle):
         creator_id_feature = MappedFeatureCreatorId(self.dataset_id)
         creator_id_df = creator_id_feature.load_or_create()
 
-        users_main_language_array = MainLanguageUserBasicFeatureDictArray().load_or_create()
+        users_main_language_array = MainLanguageUserBasicFeatureDictArray(self.dataset_id).load_or_create()
 
         result = pd.DataFrame(
             creator_id_df[creator_id_feature.feature_name].map(lambda x: users_main_language_array[x])

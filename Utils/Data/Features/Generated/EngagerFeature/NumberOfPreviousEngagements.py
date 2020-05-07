@@ -498,9 +498,7 @@ class EngagerFeatureNumberOfPreviousEngagement(GeneratedFeaturePickle):
                     constant_values=0
                 )
 
-            result = pd.DataFrame(
-                [find_and_increase(engager_id, engager_counter_array) for engager_id in dataframe[eng_col]],
-                index=dataframe.index
-            )
+            result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
+                                  index=dataframe.index)
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousEngagement(test_dataset_id).save_feature(result)
