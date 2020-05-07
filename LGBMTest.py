@@ -58,7 +58,7 @@ if __name__ == '__main__':
     X_local, Y_local= Data.get_dataset_xgb(local_test_set, X_label, Y_label)
 
     # Load test data
-    #X_test = Data.get_dataset(X_label, test_dataset)
+    X_test = Data.get_dataset(X_label, test_dataset)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
@@ -184,15 +184,14 @@ if __name__ == '__main__':
     print(f"AVG:\t{avg}")
     print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
-    #tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    #users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
 
     # LGBM Prediction
-    #prediction_start_time = time.time()
-    #predictions = LGBM.get_prediction(X_test.to_numpy())
-    #print(f"Prediction time: {time.time() - prediction_start_time} seconds")
-
+    prediction_start_time = time.time()
+    predictions = LGBM.get_prediction(X_test.to_numpy())
+    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
     #Uncomment to plot feature importance at the end of training
     #LGBM.plot_fimportance()
 
-    #create_submission_file(tweets, users, predictions, "lgbm_like_submission.csv")
+    create_submission_file(tweets, users, predictions, "lgbm_like_submission.csv")
