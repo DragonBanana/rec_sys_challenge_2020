@@ -32,33 +32,6 @@ class TweetBasicFeatureDictArrayNumpy(Dictionary):
     def save_dictionary(self, arr: np.ndarray):
         self.npz_path.parent.mkdir(parents=True, exist_ok=True)
         np.savez_compressed(self.npz_path, x=arr)
-        
-
-class TweetBasicFeatureTextEmbeddingsDictArray(TweetBasicFeatureDictArrayNumpy):
-
-    def __init__(self, dictionary_name: str, ):
-        super().__init__(dictionary_name)
-        self.csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/from_text_token/{self.dictionary_name}.csv.gz")
-        self.npz_path = pl.Path(f"{Dictionary.ROOT_PATH}/basic_features/tweet/{self.dictionary_name}.npz")
-
-    def create_dictionary(self):
-        # simply convert the embeddings dataframe to a numpy array (of arrays)
-        # get the list of embeddings columns (can vary among different datasets)
-        with gzip.open(self.csv_path, "rt") as reader:
-            columns = reader.readline().strip().split(',')
-        
-        # this will be the final dataframe
-        embeddings_feature_df = pd.DataFrame()
-        # load the tweet id column
-        embeddings_feature_df = pd.read_csv(self.csv_path, usecols=[columns[0]])
-        for col in columns[1:]:
-            # load one embedding column at a time
-            embeddings_feature_df[col] = pd.read_csv(self.csv_path, usecols=[col])
-            
-        # convert to numpy all the columns except the tweet id
-        arr = np.array(embeddings_feature_df.sort_values(by='tweet_features_tweet_id')[columns[1:]])
-        
-        self.save_dictionary(arr)
 
 
 class HashtagsTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):

@@ -1,5 +1,6 @@
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
+from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
@@ -21,7 +22,7 @@ from Utils.Data.Sparse.CSR.DomainMatrix import *
 from Utils.Data.Sparse.CSR.Language.LanguageMatrixOnlyPositive import LanguageMatrixOnlyPositive
 from Utils.Data.Sparse.CSR.LinkMatrix import *
 
-import multiprocessing as mp
+import billiard as mp
 
 DATASET_IDS = [
     "train",
@@ -131,6 +132,7 @@ def populate_features():
         # FROM TEXT TOKEN FEATURES
         result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
         result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
+        #result[("text_embeddings_clean_PCA_32", dataset_id)] = TweetTextEmbeddingsFeatureDictArray(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS
         result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagement(dataset_id)
@@ -228,6 +230,8 @@ DICT_ARRAYS = {
     "is_verified_user_dict_array": IsVerifiedUserBasicFeatureDictArray(),
     "creation_timestamp_user_dict_array": CreationTimestampUserBasicFeatureDictArray(),
     "language_user_dict_array": LanguageUserBasicFeatureDictArray(),
+    # TWEET TEXT FEATURE
+    "tweet_text_feature_dict_array": TweetTextEmbeddingsFeatureDictArray()
 
 }
 
@@ -243,7 +247,7 @@ SPARSE_MATRIXES = {
 def create_all():
     # For more parallelism
     features_grouped = [[v for k, v in FEATURES.items() if k[1] == dataset_id] for dataset_id in DATASET_IDS]
-    with mp.Pool(4) as pool:
+    with mp.Pool(8) as pool:
         pool.map(create_features, features_grouped)
     # list(map(create_feature, FEATURES.values()))
     list(map(create_dictionary, DICTIONARIES.values()))
@@ -293,3 +297,4 @@ def consistency_check(dataset_id: str):
 def consistency_check_all():
     for dataset_id in DATASET_IDS:
         consistency_check(dataset_id)
+
