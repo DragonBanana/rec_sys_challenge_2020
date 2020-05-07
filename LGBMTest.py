@@ -145,7 +145,8 @@ if __name__ == '__main__':
     AVG   =0.11372346903657954
     -------
     OBJECTIVE: -10.67242276761274
-    '''
+'''
+
     #Initialize Model
     LGBM = LightGBM(
         objective         =     'binary',
@@ -191,6 +192,7 @@ if __name__ == '__main__':
     prediction_start_time = time.time()
     predictions = LGBM.get_prediction(X_test.to_numpy())
     print(f"Prediction time: {time.time() - prediction_start_time} seconds")
+
     #Uncomment to plot feature importance at the end of training
     #LGBM.plot_fimportance()
 
