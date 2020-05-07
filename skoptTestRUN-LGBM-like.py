@@ -33,7 +33,7 @@ def main():
         "tweet_feature_number_of_hashtags",                                         # 10          
         "tweet_feature_creation_timestamp_hour",                                    # 11                 
         "tweet_feature_creation_timestamp_week_day",                                # 12                       
-        #"tweet_feature_number_of_mentions",                                         # 13           
+        "tweet_feature_number_of_mentions",                                         # 13           
         "engager_feature_number_of_previous_like_engagement",                       # 14                               
         "engager_feature_number_of_previous_reply_engagement",                      # 15                               
         "engager_feature_number_of_previous_retweet_engagement",                    # 16                                   
@@ -58,11 +58,11 @@ def main():
 
     # Load train data
     loading_data_start_time = time.time()
-    X_train, Y_train = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 0.25)
+    X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.25)
 
     # Load test data
-    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 0.5)
-    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 0.5)
+    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
+    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
@@ -70,13 +70,13 @@ def main():
                    kind,
                    mode=0,
                    path="like",
-                   path_log="lghm-like\nCon subsample del dataset per fare più in fretta.\nTrainato su 12345, ES su metà del giorno 6, test sull'altra\
-                             metà del giorno 6. Trovato questo minimo lo testeremo sul giorno 7, mai visto durante il training.",
+                   path_log="llgbm-like\nCon subsample del dataset per fare più in fretta.\nTrainato su 12345, ES su metà del giorno 6, test sull'altra\
+                             metà del giorno 6. Trovato questo minimo lo testeremo sul giorno 7, mai visto durante il training.\nSTAVOLTA GIUSTO.",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
 
-    OP.setParameters(n_calls=50, n_random_starts=15)
+    OP.setParameters(n_calls=90, n_random_starts=35)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
