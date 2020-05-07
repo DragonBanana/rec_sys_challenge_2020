@@ -1,5 +1,5 @@
 from Utils.Data.Dictionary.MappingDictionary import *
-from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import TweetBasicFeatureTextEmbeddingsDictArray
+from Utils.Data.Dictionary.TweetTextFeaturesDictArray import TweetTextEmbeddingsFeatureDictArray
 from Utils.Data.Features.Feature import Feature
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
 import pandas as pd
@@ -92,27 +92,22 @@ class TweetFeatureTextEmbeddings(Feature):
         tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
         tweet_id_df = tweet_id_feature.load_or_create()
         
-        tweet_id_df = tweet_id_df.head(25)
+        #tweet_id_df = tweet_id_df.head(25)
+        #print(tweet_id_df)
         
-        print(tweet_id_df.head())
-        
-        tweet_text_embeddings_dict_array = TweetBasicFeatureTextEmbeddingsDictArray(self.feature_name)
+        tweet_text_embeddings_dict_array = TweetTextEmbeddingsFeatureDictArray(dictionary_name=self.feature_name)
         embeddings_array = tweet_text_embeddings_dict_array.load_or_create()
         
         columns_num = embeddings_array.shape[1]
         
         # this will be the final dataframe
         embeddings_feature_df = pd.DataFrame()
-        # load all the tweet ids
-        embeddings_feature_df["mapped_feature_tweet_id"] = tweet_id_df["mapped_feature_tweet_id"]
-        
-        print(embeddings_feature_df)
         
         # for each column, map the embeddings dictionary to all the tweets
         for col in range(columns_num):
-            embeddings_feature_df[f"embedding_{col}"] = embeddings_feature_df["mapped_feature_tweet_id"].map(lambda x: embeddings_array[x, col])
+            embeddings_feature_df[f"embedding_{col}"] = tweet_id_df["mapped_feature_tweet_id"].map(lambda x: embeddings_array[x, col])
             
-        print(embeddings_feature_df)
+        #print(embeddings_feature_df)
         
         # Save the dataframe
         self.save_feature(embeddings_feature_df)
