@@ -16,6 +16,7 @@ class TweetTextFeatureDictArrayNumpy(Dictionary):
 
     def __init__(self, dictionary_name: str, ):
         super().__init__(dictionary_name)
+        self.csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/from_text_token/{self.dictionary_name}.csv.gz")
         self.npz_path = pl.Path(f"{Dictionary.ROOT_PATH}/text_features/{self.dictionary_name}.npz")
 
     def has_dictionary(self):
@@ -36,10 +37,8 @@ class TweetTextFeatureDictArrayNumpy(Dictionary):
 
 class TweetTextEmbeddingsFeatureDictArray(TweetTextFeatureDictArrayNumpy):
 
-    def __init__(self, dictionary_name: str, ):
-        super().__init__(dictionary_name)
-        self.csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/from_text_token/{self.dictionary_name}.csv.gz")
-        self.npz_path = pl.Path(f"{Dictionary.ROOT_PATH}/text_features/{self.dictionary_name}.npz")
+    def __init__(self):
+        super().__init__("tweet_text_feature_dict_array")
 
     def create_dictionary(self):
         # simply convert the embeddings dataframe to a numpy array (of arrays)

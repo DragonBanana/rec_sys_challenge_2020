@@ -95,7 +95,7 @@ class TweetFeatureTextEmbeddings(Feature):
         #tweet_id_df = tweet_id_df.head(25)
         #print(tweet_id_df)
         
-        tweet_text_embeddings_dict_array = TweetTextEmbeddingsFeatureDictArray(dictionary_name=self.feature_name)
+        tweet_text_embeddings_dict_array = TweetTextEmbeddingsFeatureDictArray()
         embeddings_array = tweet_text_embeddings_dict_array.load_or_create()
         
         columns_num = embeddings_array.shape[1]
@@ -116,3 +116,4 @@ class TweetFeatureTextEmbeddings(Feature):
     def save_feature(self, dataframe: pd.DataFrame):
         self.csv_path.parent.mkdir(parents=True, exist_ok=True)
         dataframe.to_csv(self.csv_path, compression='gzip')
+
