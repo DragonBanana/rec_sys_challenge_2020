@@ -26,7 +26,7 @@ if __name__ == '__main__':
         "tweet_feature_number_of_hashtags",                                         # 10          
         "tweet_feature_creation_timestamp_hour",                                    # 11                 
         "tweet_feature_creation_timestamp_week_day",                                # 12                       
-        #"tweet_feature_number_of_mentions",                                         # 13           
+        "tweet_feature_number_of_mentions",                                         # 13           
         "engager_feature_number_of_previous_like_engagement",                       # 14                               
         "engager_feature_number_of_previous_reply_engagement",                      # 15                               
         "engager_feature_number_of_previous_retweet_engagement",                    # 16                                   
@@ -145,23 +145,23 @@ if __name__ == '__main__':
     AVG   =0.11372346903657954
     -------
     OBJECTIVE: -10.67242276761274
-'''
+    '''
     #Initialize Model
     LGBM = LightGBM(
         objective         =     'binary',
         num_threads       =     32,
         num_iterations    =     800,
-        num_leaves        =     55,
-        learning_rate     =     0.5365850492533777,
-        max_depth         =     100,
-        lambda_l1         =     0.7084815798585039,
-        lambda_l2         =     0.17770074200237315,
-        colsample_bynode  =     0.8509869113377452,
-        colsample_bytree  =     1.0,
-        pos_subsample     =     0.5661907967636856,
-        neg_subsample     =     0.35276725146328414,
-        bagging_freq      =     0,
-        max_bin           =     4951,
+        num_leaves        =     56,
+        learning_rate     =     0.02564305846383492,
+        max_depth         =     5,
+        lambda_l1         =     0.1,
+        lambda_l2         =     0.2696701759567981,
+        colsample_bynode  =     0.1,
+        colsample_bytree  =     0.6191196305851764,
+        pos_subsample     =     0.37369316337877945,
+        neg_subsample     =     0.5480321574272446,
+        bagging_freq      =     23,
+        max_bin           =     1123,
         early_stopping_rounds=15
         )
 
