@@ -89,8 +89,8 @@ def run(label: str):
                    make_log=True,
                    make_save=True,
                    auto_save=True,
-                   path=f"{folder}/label",
-                   path_log=f"{folder}/label")
+                   path=f"{folder}/{label}",
+                   path_log=f"{folder}/{label}")
 
     # if pl.Path(f"{label}.save.npz").is_file():
     #     OP.loadModel(f"{label}.save.npz")
