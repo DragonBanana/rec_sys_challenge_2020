@@ -146,13 +146,7 @@ For each dataset we have the following features:
  
    - **tweet_feature_creation_timestamp_week_day**: int:
  <br>The week day when the tweet has been created (0-6 UTC date)
- 
- #### Is in language X
- It is possible to choose the languages to load, by default all languages are included (~60 languages). One column for each language.
- 
-   - **tweet_is_language_x**: bool:
- <br>True if the tweet is in language X.
- 
+
  #### Is engagement type
  **Only for train and local validation test**
  
@@ -169,25 +163,21 @@ For each dataset we have the following features:
    - **tweet_feature_engagement_is_negative**: bool:
  <br>True if the tweet has been involved in a pseudo negative engagement by the engager.
  
- ### Generated Creator Features
- 
- #### Known count of engagement
- 
-   - **engager_feature_known_number_of_like_engagement**: int:
- <br>Known count of the like engagement the engager has been involved. When using a val set or test this count has been computed using the train set.
-   - **engager_feature_known_number_of_reply_engagement**: int:
- <br>Known count of the reply engagement the engager has been involved. When using a val set or test this count has been computed using the train set.
-   - **engager_feature_known_number_of_retweet_engagement**: int:
- <br>Known count of the retweet engagement the engager has been involved. When using a val set or test this count has been computed using the train set.
-   - **engager_feature_known_number_of_comment_engagement**: int:
- <br>Known count of the comment engagement the engager has been involved. When using a val set or test this count has been computed using the train set.
-   - **engager_feature_known_number_of_positive_engagement**: int:
- <br>Known count of the positive engagement the engager has been involved. When using a val set or test this count has been computed using the train set.
-   - **engager_feature_known_number_of_negative_engagement**: int:
- <br>Known count of the negative engagement the engager has been involved. When using a val set or test this count has been computed using the train set.
- 
- #### Ebgager know tweet language
- - **engager_feature_know_tweet_language**: bool:
- <br>Given a tweet T, an engager E and the language of the tweet L.
- <br>True if in the train set there's at least one positive engagement of E with a tweet in language L. 
- 
+ #### Main Language
+
+  - **engager_main_language**: int:
+ <br>The main language of the engager.
+  - **creator_main_language**: int:
+ <br>The main language of the creator.
+  - **creator_and_engager_have_same_main_language**: int:
+ <br>True if the creator and the engager have the same main language.
+   - **is_tweet_in_creator_main_language**: int:
+ <br>True if the tweet is in the creator main language.
+   - **is_tweet_in_engager_main_language**: int:
+ <br>True if the tweet is in the engager main language.
+   - **is_tweet_in_engager_main_language**: int:
+ <br>True if the tweet is in the engager main language.
+   - **statistical_probability_main_language_of_engager_engage_tweet_language_1**: int:
+ <br>Statical data explaining how probable a user that have a certain language know also the tweet language. (Excluding the relation language_X - language_X)
+   - **statistical_probability_main_language_of_engager_engage_tweet_language_2**: int:
+ <br>Statical data explaining how probable a user that have a certain language know also the tweet language. (Including the relation language_X - language_X)

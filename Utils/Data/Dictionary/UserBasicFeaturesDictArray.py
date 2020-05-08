@@ -15,7 +15,7 @@ class UserBasicFeatureDictArrayNumpy(Dictionary):
     Abstract class representing a dictionary array that works with numpy/pickle file.
     """
 
-    def __init__(self, dictionary_name: str, ):
+    def __init__(self, dictionary_name: str):
         super().__init__(dictionary_name)
         self.npz_path = pl.Path(f"{Dictionary.ROOT_PATH}/basic_features/user/{self.dictionary_name}.npz")
 
