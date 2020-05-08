@@ -20,8 +20,8 @@ class EngagerFeatureNumberOfPreviousLikeEngagementRatio(GeneratedFeaturePickle):
                 overall_feature.feature_name]
         )
 
-        result.fillna(-1, inplace=True)
-        result.replace([np.inf, -np.inf], -1, inplace=True)
+        result.fillna(0, inplace=True)
+        result.replace([np.inf, -np.inf], 0, inplace=True)
 
         self.save_feature(result)
 
@@ -44,8 +44,8 @@ class EngagerFeatureNumberOfPreviousReplyEngagementRatio(GeneratedFeaturePickle)
                 overall_feature.feature_name]
         )
 
-        result.fillna(-1, inplace=True)
-        result.replace([np.inf, -np.inf], -1, inplace=True)
+        result.fillna(0, inplace=True)
+        result.replace([np.inf, -np.inf], 0, inplace=True)
 
         self.save_feature(result)
 
@@ -68,8 +68,8 @@ class EngagerFeatureNumberOfPreviousRetweetEngagementRatio(GeneratedFeaturePickl
                 overall_feature.feature_name]
         )
 
-        result.fillna(-1, inplace=True)
-        result.replace([np.inf, -np.inf], -1, inplace=True)
+        result.fillna(0, inplace=True)
+        result.replace([np.inf, -np.inf], 0, inplace=True)
 
         self.save_feature(result)
 
@@ -92,8 +92,8 @@ class EngagerFeatureNumberOfPreviousCommentEngagementRatio(GeneratedFeaturePickl
                 overall_feature.feature_name]
         )
 
-        result.fillna(-1, inplace=True)
-        result.replace([np.inf, -np.inf], -1, inplace=True)
+        result.fillna(0, inplace=True)
+        result.replace([np.inf, -np.inf], 0, inplace=True)
 
         self.save_feature(result)
 
@@ -116,8 +116,8 @@ class EngagerFeatureNumberOfPreviousPositiveEngagementRatio(GeneratedFeaturePick
                 overall_feature.feature_name]
         )
 
-        result.fillna(-1, inplace=True)
-        result.replace([np.inf, -np.inf], -1, inplace=True)
+        result.fillna(0, inplace=True)
+        result.replace([np.inf, -np.inf], 0, inplace=True)
 
         self.save_feature(result)
 
@@ -140,7 +140,7 @@ class EngagerFeatureNumberOfPreviousNegativeEngagementRatio(GeneratedFeaturePick
                 overall_feature.feature_name]
         )
 
-        result.fillna(-1, inplace=True)
-        result.replace([np.inf, -np.inf], -1, inplace=True)
+        result.fillna(0, inplace=True)
+        result.replace([np.inf, -np.inf], 0, inplace=True)
 
         self.save_feature(result)
