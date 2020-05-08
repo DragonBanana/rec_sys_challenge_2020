@@ -11,7 +11,7 @@ labels = [
     "comment"
 ]
 
-folder = f"svm_files"
+folder = f"skopt_result"
 
 train_dataset_id = "train_days_123456"
 val_dataset_id = "val_days_7"
@@ -89,8 +89,8 @@ def run(label: str):
                    make_log=True,
                    make_save=True,
                    auto_save=True,
-                   path=label,
-                   path_log=label)
+                   path=f"{folder}/label",
+                   path_log=f"{folder}/label")
 
     # if pl.Path(f"{label}.save.npz").is_file():
     #     OP.loadModel(f"{label}.save.npz")
