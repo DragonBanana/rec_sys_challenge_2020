@@ -41,7 +41,9 @@ DATASET_IDS = [
     "val_days_4",
     "val_days_5",
     "val_days_6",
-    "val_days_7"
+    "val_days_7",
+    "holdout/train",
+    "holdout/test"
 ]
 #---------------------------------------------------
 #                      NCV
