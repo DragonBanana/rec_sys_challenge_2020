@@ -38,8 +38,8 @@ class TweetTextFeatureDictArrayNumpy(Dictionary):
 
 class TweetTextEmbeddingsFeatureDictArray(TweetTextFeatureDictArrayNumpy):
 
-    def __init__(self):
-        super().__init__("tweet_text_feature_dict_array")
+    def __init__(self, dictionary_name : str):
+        super().__init__(dictionary_name)
 
     def create_dictionary(self):
         # simply convert the embeddings dataframe to a numpy array (of arrays)
