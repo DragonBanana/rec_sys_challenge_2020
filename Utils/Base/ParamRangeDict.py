@@ -149,16 +149,16 @@ def lgbmName():
 
 
 def catRange(kind):
-    param_range_dict = [Integer(5,200),                     # iterations
+    param_range_dict = [Integer(600,601),                   # iterations
                         Integer(1,16),                      # depth
                         Real(0.0001, 1, 'log_uniform'),     # learning_rate
-                        Real(0.0001, 20, 'log_uniform'),    # l2_leaf_reg
+                        Real(0.0001, 10, 'log_uniform'),    # l2_leaf_reg
                         Real(0.1, 0.9),                     # subsample
-                        Real(0.001, 30),                    # random_strenght
-                        Real(0.01, 1, 'log_uniform'),       # colsample_bylevel
-                        Integer(1, 200),                    # leaf_estimation_iterations
-                        Real(1,300),                        # scale_pos_weight
-                        Real(0.0001,1, 'log_uniform')]      # model_shrink_rate
+                        Real(0.0001, 30, 'log_uniform'),    # random_strenght
+                        Real(0.1, 1),                       # colsample_bylevel
+                        Integer(10, 100),                   # leaf_estimation_iterations
+                        Real(1,5),                          # scale_pos_weight
+                        Real(0.001,1, 'log_uniform')]       # model_shrink_rate
 
     '''
     #PERSONALIZED SCALE_POS_WEIGHT---------------SET PROPER RANGE FOR EACH CLASS

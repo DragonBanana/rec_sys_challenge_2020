@@ -76,3 +76,30 @@ class CustomEvalXGBoost:
     def custom_eval(self, predt: np.ndarray, dtrain: xgb.DMatrix):
         eval_metric = float(log_loss(dtrain.get_label().astype(np.bool), predt.astype(np.float64)))
         return 'custom_log_loss', eval_metric
+
+
+# Custom evaluation function for catboost
+#----------------------------------------
+# The entire object has to be passed to
+# eval_metric parameter.
+#----------------------------------------
+class CustomEvalCATBoost(object):
+    def is_max_optimal(self):
+        # Returns whether great values of metric are better
+        pass
+
+    def evaluate(self, approxes, target, weight):
+        # approxes is a list of indexed containers
+        # (containers with only __len__ and __getitem__ defined),
+        # one container per approx dimension.
+        # Each container contains floats.
+        # weight is a one dimensional indexed container.
+        # target is a one dimensional indexed container.
+        
+        # weight parameter can be None.
+        # Returns pair (error, weights sum)
+        pass
+    
+    def get_final_error(self, error, weight):
+        # Returns final value of metric based on error and weight
+        pass

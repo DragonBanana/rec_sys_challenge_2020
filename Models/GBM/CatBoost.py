@@ -65,7 +65,7 @@ class CatBoost(RecommenderGBM):
                  #Not in tuning dict
                  verbose=True,
                  loss_function="Logloss",
-                 eval_metric="AUC",
+                 eval_metric="Logloss",
                  #In tuning dict
                  iterations=20,
                  depth=16,

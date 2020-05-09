@@ -57,7 +57,7 @@ def main():
     OP.setLabels(X_label, Y_label)
     OP.optimize()
     #------------------------------------------
-    '''
+    
     
     
     #------------------------------------------
@@ -75,10 +75,10 @@ def main():
     OP.setLabels(X_label, Y_label, es_ncv=True)
     OP.optimize()
     #------------------------------------------
-    
-
-
     '''
+
+
+    
     # Defining the dataset used
     train_dataset = "train_days_1"
     test_dataset = "val_days_3"
@@ -119,14 +119,14 @@ def main():
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
-    OP.setParameters(n_calls=100, n_random_starts=50, random_state=557)
+    OP.setParameters(n_calls=100, n_random_starts=35, random_state=557)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
     #OP.setParamsXGB(early_stopping_rounds=5, eval_metric="rmsle")
     res=OP.optimize()
 
-    
+    '''
     #Add this for complete routine check
     print(res.func_vals.shape)
     path = OP.saveModel()
