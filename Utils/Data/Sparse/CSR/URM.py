@@ -6,9 +6,11 @@ import numpy as np
 
 class URM(CSR_SparseMatrix):
 
-    def __init__(self, dataset_id: str):
+    def __init__(self, dataset_id: str, max_user_id, max_tweet_id):
         super().__init__("urm_csr_matrix")
         self.dataset_id = dataset_id
+        self.max_user_id = max_user_id
+        self.max_tweet_id = max_tweet_id
 
     def create_matrix(self):
         # creation of the urm
@@ -30,5 +32,7 @@ class URM(CSR_SparseMatrix):
         tweet_ids_arr = df['mapped_feature_tweet_id'].values
         interactions_arr = np.array([1] * len(df))
 
-        urm = sps.coo_matrix((interactions_arr, (engager_ids_arr, tweet_ids_arr))).tocsr()
+        urm = sps.coo_matrix((interactions_arr, (engager_ids_arr, tweet_ids_arr)),
+                             shape=(self.max_user_id+1, self.max_tweet_id+1)).tocsr()
+
         sps.save_npz('urm.npz', urm)
