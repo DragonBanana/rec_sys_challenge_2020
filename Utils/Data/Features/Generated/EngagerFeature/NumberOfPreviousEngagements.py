@@ -45,7 +45,7 @@ class EngagerFeatureNumberOfPreviousLikeEngagement(GeneratedFeaturePickle):
         ], axis=1)
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-        engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
+        engager_counter_array = np.zeros(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
@@ -114,7 +114,7 @@ class EngagerFeatureNumberOfPreviousReplyEngagement(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
+        engager_counter_array = np.zeros(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
@@ -186,7 +186,7 @@ class EngagerFeatureNumberOfPreviousRetweetEngagement(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
+        engager_counter_array = np.zeros(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
@@ -257,7 +257,7 @@ class EngagerFeatureNumberOfPreviousCommentEngagement(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
+        engager_counter_array = np.zeros(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
@@ -328,7 +328,7 @@ class EngagerFeatureNumberOfPreviousPositiveEngagement(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
+        engager_counter_array = np.zeros(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
@@ -399,7 +399,7 @@ class EngagerFeatureNumberOfPreviousNegativeEngagement(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
+        engager_counter_array = np.zeros(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(engager_id, engager_counter_array) if engagement else engager_counter_array[engager_id]
@@ -468,7 +468,7 @@ class EngagerFeatureNumberOfPreviousEngagement(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.empty(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
+        engager_counter_array = np.zeros(dataframe[engagers_feature.feature_name].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(engager_id, engager_counter_array) for engager_id in dataframe[eng_col]],
