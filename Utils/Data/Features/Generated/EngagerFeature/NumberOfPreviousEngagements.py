@@ -64,7 +64,6 @@ class EngagerFeatureNumberOfPreviousLikeEngagement(GeneratedFeaturePickle):
                 creation_timestamps_feature.load_or_create(),
                 engagers_feature.load_or_create(),
             ], axis=1)
-            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
@@ -75,7 +74,6 @@ class EngagerFeatureNumberOfPreviousLikeEngagement(GeneratedFeaturePickle):
                 )
             result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
                                   index=dataframe.index)
-            result.sort_index(inplace=True)
 
             EngagerFeatureNumberOfPreviousLikeEngagement(test_dataset_id).save_feature(result)
 
@@ -135,8 +133,6 @@ class EngagerFeatureNumberOfPreviousReplyEngagement(GeneratedFeaturePickle):
                 engagers_feature.load_or_create(),
             ], axis=1)
 
-            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
@@ -148,7 +144,6 @@ class EngagerFeatureNumberOfPreviousReplyEngagement(GeneratedFeaturePickle):
 
             result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
                                   index=dataframe.index)
-            result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousReplyEngagement(test_dataset_id).save_feature(result)
 
 
@@ -207,8 +202,6 @@ class EngagerFeatureNumberOfPreviousRetweetEngagement(GeneratedFeaturePickle):
                 engagers_feature.load_or_create(),
             ], axis=1)
 
-            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
@@ -219,7 +212,6 @@ class EngagerFeatureNumberOfPreviousRetweetEngagement(GeneratedFeaturePickle):
 
             result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
                                   index=dataframe.index)
-            result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousRetweetEngagement(test_dataset_id).save_feature(result)
 
 
@@ -278,8 +270,6 @@ class EngagerFeatureNumberOfPreviousCommentEngagement(GeneratedFeaturePickle):
                 engagers_feature.load_or_create(),
             ], axis=1)
 
-            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
@@ -290,7 +280,6 @@ class EngagerFeatureNumberOfPreviousCommentEngagement(GeneratedFeaturePickle):
 
             result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
                                   index=dataframe.index)
-            result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousCommentEngagement(test_dataset_id).save_feature(result)
 
 
@@ -349,8 +338,6 @@ class EngagerFeatureNumberOfPreviousPositiveEngagement(GeneratedFeaturePickle):
                 engagers_feature.load_or_create(),
             ], axis=1)
 
-            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
@@ -361,7 +348,6 @@ class EngagerFeatureNumberOfPreviousPositiveEngagement(GeneratedFeaturePickle):
 
             result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
                                   index=dataframe.index)
-            result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousPositiveEngagement(test_dataset_id).save_feature(result)
 
 
@@ -420,8 +406,6 @@ class EngagerFeatureNumberOfPreviousNegativeEngagement(GeneratedFeaturePickle):
                 engagers_feature.load_or_create(),
             ], axis=1)
 
-            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
@@ -432,7 +416,6 @@ class EngagerFeatureNumberOfPreviousNegativeEngagement(GeneratedFeaturePickle):
 
             result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
                                   index=dataframe.index)
-            result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousNegativeEngagement(test_dataset_id).save_feature(result)
 
 
@@ -488,8 +471,6 @@ class EngagerFeatureNumberOfPreviousEngagement(GeneratedFeaturePickle):
                 engagers_feature.load_or_create(),
             ], axis=1)
 
-            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             if dataframe[engagers_feature.feature_name].max() + 1 > engager_counter_array.size:
                 engager_counter_array = np.pad(
                     engager_counter_array,
@@ -500,5 +481,4 @@ class EngagerFeatureNumberOfPreviousEngagement(GeneratedFeaturePickle):
 
             result = pd.DataFrame(dataframe[eng_col].map(lambda x: engager_counter_array[x]),
                                   index=dataframe.index)
-            result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousEngagement(test_dataset_id).save_feature(result)
