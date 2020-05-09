@@ -1,5 +1,6 @@
 from Utils.Data.Dictionary.MappingDictionary import *
-from Utils.Data.Dictionary.TweetTextFeaturesDictArray import TweetTextEmbeddingsFeatureDictArray
+from Utils.Data.Dictionary.TweetTextFeaturesDictArray import TweetTextEmbeddingsFeatureDictArray, \
+    TweetTokenLengthFeatureDictArray, TweetTokenLengthUniqueFeatureDictArray
 from Utils.Data.Features.Feature import Feature
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
 import pandas as pd
@@ -117,3 +118,52 @@ class TweetFeatureTextEmbeddings(Feature):
         self.csv_path.parent.mkdir(parents=True, exist_ok=True)
         dataframe.to_csv(self.csv_path, compression='gzip')
 
+
+class TweetFeatureTokenLength(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_token_length", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
+
+    def create_feature(self):
+        # Load the tweet ids
+        tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
+        tweet_id_df = tweet_id_feature.load_or_create()
+
+        # load the length dictionary
+        tweet_length_dict = TweetTokenLengthFeatureDictArray().load_or_create()
+
+
+        # Compute for each engagement the tweet mentions
+        length_df = pd.DataFrame(tweet_id_df['mapped_feature_tweet_id'].map(lambda t_id: tweet_length_dict[t_id]))
+
+
+        # Save the dataframe
+        self.save_feature(length_df)
+
+
+class TweetFeatureTokenLengthUnique(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_token_length_unique", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
+
+    def create_feature(self):
+        # Load the tweet ids
+        tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
+        tweet_id_df = tweet_id_feature.load_or_create()
+
+        # load the length dictionary
+        tweet_length_unique_dict = TweetTokenLengthUniqueFeatureDictArray().load_or_create()
+
+        # Compute for each engagement the tweet mentions
+        length_df = pd.DataFrame(tweet_id_df['mapped_feature_tweet_id'].map(lambda t_id: tweet_length_unique_dict[t_id]))
+
+        # Save the dataframe
+        self.save_feature(length_df)

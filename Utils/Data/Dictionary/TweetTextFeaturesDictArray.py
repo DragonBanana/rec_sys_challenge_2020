@@ -3,6 +3,7 @@ import pathlib as pl
 import numpy as np
 import RootPath
 from abc import abstractmethod
+import os
 
 from Utils.Data.Features.MappedFeatures import *
 from Utils.Data.Dictionary.MappingDictionary import *
@@ -58,3 +59,53 @@ class TweetTextEmbeddingsFeatureDictArray(TweetTextFeatureDictArrayNumpy):
         arr = np.array(embeddings_feature_df.sort_values(by='tweet_features_tweet_id')[columns[1:]])
         
         self.save_dictionary(arr)
+
+
+class TweetTokenLengthFeatureDictArray(TweetTextFeatureDictArrayNumpy):
+
+    def __init__(self):
+        super().__init__("tweet_token_length_feature_dict_array")
+
+    def create_dictionary(self):
+        # TODO check the path
+        # path to the unique tweet tokens
+        dir_path = os.path.dirname(__file__)
+        tweet_tokens_csv_path = os.path.join(dir_path, '..', '..', '..', 'day_2_only_first_10000_unique.csv')
+
+
+        # load the tweet id, token_list dataframe
+        tokens_feature_df = pd.read_csv(tweet_tokens_csv_path)
+
+        # for every tweet, calculate the length (n of tokens)
+        length_df = tokens_feature_df['tweet_features_text_tokens'].map(lambda x: x.split('\t')).map(lambda x: len(x) - 2)
+
+        # convert to numpy
+        length_arr = np.array(length_df)
+
+        self.save_dictionary(length_arr)
+
+
+class TweetTokenLengthUniqueFeatureDictArray(TweetTextFeatureDictArrayNumpy):
+
+    def __init__(self):
+        super().__init__("tweet_token_length_unique_feature_dict_array")
+
+    def create_dictionary(self):
+        # TODO check the path
+        # path to the unique tweet tokens
+        dir_path = os.path.dirname(__file__)
+        tweet_tokens_csv_path = os.path.join(dir_path, '..', '..', '..', 'day_2_only_first_10000_unique.csv')
+
+        # load the tweet id, token_list dataframe
+        tokens_feature_df = pd.read_csv(tweet_tokens_csv_path)
+
+        # for every tweet, calculate the length (n of UNIQUE (conversion from list to set) tokens)
+        length_df = tokens_feature_df['tweet_features_text_tokens'] \
+                    .map(lambda x: x.split('\t')) \
+                    .map(lambda x: set(x)) \
+                    .map(lambda x: len(x) - 2)
+
+        # convert to numpy
+        length_arr = np.array(length_df)
+
+        self.save_dictionary(length_arr)
