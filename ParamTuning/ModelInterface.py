@@ -83,7 +83,6 @@ class ModelInterface(object):
                         process_type=self.process_type,
                         tree_method=self.tree_method,
                         objective=self.objective,
-                        num_parallel_tree=self.num_parallel_tree,
                         eval_metric=self.eval_metric,
                         early_stopping_rounds=self.early_stopping_rounds,
                         #In tuning dict
@@ -98,7 +97,8 @@ class ModelInterface(object):
                         gamma=            param[8],                        
                         subsample=        param[9],
                         base_score=       param[10],
-                        max_delta_step=   param[11])       
+                        max_delta_step=   param[11],
+                        num_parallel_tree=param[12])
         #Training on custom set
         if (self.train is None):
             print("No train set passed to the model.")
@@ -157,7 +157,6 @@ class ModelInterface(object):
                         process_type=self.process_type,
                         tree_method=self.tree_method,
                         objective=self.objective,
-                        num_parallel_tree=self.num_parallel_tree,
                         eval_metric=self.eval_metric,
                         early_stopping_rounds=self.early_stopping_rounds,
                         #In tuning dict
@@ -172,7 +171,8 @@ class ModelInterface(object):
                         gamma=             param[8],                        
                         subsample=         param[9],
                         base_score=        param[10],
-                        max_delta_step=    param[11])
+                        max_delta_step=    param[11],
+                        num_parallel_tree=param[12])
 
         best_iter = []
         #Batch train
@@ -291,7 +291,6 @@ class ModelInterface(object):
                         process_type=self.process_type,
                         tree_method=self.tree_method,
                         objective=self.objective,
-                        num_parallel_tree=self.num_parallel_tree,
                         eval_metric=self.eval_metric,
                         early_stopping_rounds=self.early_stopping_rounds,
                         #In tuning dict
@@ -306,7 +305,8 @@ class ModelInterface(object):
                         gamma=             param[8],                        
                         subsample=         param[9],
                         base_score=        param[10],
-                        max_delta_step=    param[11])
+                        max_delta_step=    param[11],
+                        num_parallel_tree=param[12])
 
         #Iterable returns pair of train - val sets
         id_pairs = zip(TRAIN_IDS, TEST_IDS)

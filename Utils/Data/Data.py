@@ -1,6 +1,9 @@
+import functools
+
 from Utils.Data.DataUtils import FEATURES, DICTIONARIES, DICT_ARRAYS, SPARSE_MATRIXES
 import pandas as pd
 import numpy as np
+import billiard as mp
 
 
 def get_dataset_xgb(dataset_id: str = "train", X_label: list = None, Y_label: list = None):
@@ -125,8 +128,10 @@ def get_dataset(features: list, dataset_id: str):
 def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split_n: int, sample: float):
     assert split_n < total_n_split, "split_n parameter should be less than total_n_split parameter"
     if sample < 1:
-        dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
-                                              total_n_split)[split_n] for feature_name in features], axis=1)
+        with mp.Pool(16) as p:
+            partial_create_features = functools.partial(get_feature_batch, dataset_id=dataset_id,
+                                                        total_n_split=total_n_split, split_n=split_n, sample=sample)
+            dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
     else:
         dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id),
                                               total_n_split)[split_n] for feature_name in features], axis=1)
@@ -142,6 +147,11 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
 def get_feature(feature_name: str, dataset_id: str):
     if (feature_name, dataset_id) in FEATURES.keys():
         return FEATURES[(feature_name, dataset_id)].load_or_create()
+
+def get_feature_batch(feature_name: str, dataset_id: str, total_n_split: int, split_n: int, sample: float):
+    if (feature_name, dataset_id) in FEATURES.keys():
+        return np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
+                                              total_n_split)[split_n]
 
 
 def get_dictionary(dictionary_name: str):

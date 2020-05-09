@@ -33,31 +33,34 @@ COMMENT = "commentCOMMENTComment"
 REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
-    param_range_dict = [Integer(500, 501),                 #num_rounds
-                        Integer(5, 40),                    #max_depth
+    param_range_dict = [Categorical([501]),                 #num_rounds
+                        Integer(3, 30),                    #max_depth
                         Integer(1, 10),                    #min_child_weight
                         Real(0.3, 1),                      #colsample_bytree
                         Real(0.005, 0.5, 'log-uniform'),      #learning rate
                         Real(0.0001, 1, 'log-uniform'),    #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),    #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
-                        Real(0.8, 1.2),                     #scale_pos_weight
+                        Real(0.7, 1.3),                     #scale_pos_weight
                         Real(0.1, 10, 'log-uniform'),                      #gamma
-                        Real(0.3, 1),                       #subsample
-                        Real(0.4,0.5),                        #base_score
-                        Real(0, 100)]                        #max_delta_step
-    
-    '''
+                        Real(0.15, 1),                       #subsample
+                        Real(0.3,0.5),                        #base_score
+                        Real(0, 200),                      #max_delta_step
+                        Integer(2, 20)]                        #num_parallel_tree
+
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:
-        param_range_dict[7] = Real(0.9, 1.1)
+        param_range_dict[7] = Real(0.7, 1)
+        param_range_dict[11] = Real(0, 5)                      #max_delta_step
     elif kind in RETWEET:
         param_range_dict[7] = Real(0.9, 1.1)
+        param_range_dict[11] = Real(0, 25)                      #max_delta_step
     elif kind in COMMENT:
         param_range_dict[7] = Real(0.9, 1.1)
+        param_range_dict[11] = Real(0, 100)                      #max_delta_step
     elif kind in REPLY:
         param_range_dict[7] = Real(0.9, 1.1)
-    '''
+        param_range_dict[11] = Real(0, 200)                      #max_delta_step
 
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
@@ -71,13 +74,14 @@ def xgbName():
                        "min_child_weight",
                        "colsample_bytree",
                        "learning_rate",
-                       "alpha_reg",
-                       "lambda_reg",
+                       "reg_alpha",
+                       "reg_lambda",
                        "scale_pos_weight",
                        "gamma",
                        "subsample",
                        "base_score",
-                       "max_delta_step"]
+                       "max_delta_step",
+                       "parallel_num_tree"]
     return param_name_dict
 
 
@@ -145,16 +149,16 @@ def lgbmName():
 
 
 def catRange(kind):
-    param_range_dict = [Integer(5,200),                     # iterations
+    param_range_dict = [Integer(600,601),                   # iterations
                         Integer(1,16),                      # depth
                         Real(0.0001, 1, 'log_uniform'),     # learning_rate
-                        Real(0.0001, 20, 'log_uniform'),    # l2_leaf_reg
+                        Real(0.0001, 10, 'log_uniform'),    # l2_leaf_reg
                         Real(0.1, 0.9),                     # subsample
-                        Real(0.001, 30),                    # random_strenght
-                        Real(0.01, 1, 'log_uniform'),       # colsample_bylevel
-                        Integer(1, 200),                    # leaf_estimation_iterations
-                        Real(1,300),                        # scale_pos_weight
-                        Real(0.0001,1, 'log_uniform')]      # model_shrink_rate
+                        Real(0.0001, 30, 'log_uniform'),    # random_strenght
+                        Real(0.1, 1),                       # colsample_bylevel
+                        Integer(10, 100),                   # leaf_estimation_iterations
+                        Real(1,5),                          # scale_pos_weight
+                        Real(0.001,1, 'log_uniform')]       # model_shrink_rate
 
     '''
     #PERSONALIZED SCALE_POS_WEIGHT---------------SET PROPER RANGE FOR EACH CLASS

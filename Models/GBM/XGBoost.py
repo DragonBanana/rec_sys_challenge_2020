@@ -248,3 +248,4 @@ class XGBoost(RecommenderGBM):
     def getBestIter(self):
         return self.model.best_iteration
 
+
