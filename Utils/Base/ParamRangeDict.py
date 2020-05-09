@@ -51,16 +51,16 @@ def xgbRange(kind):
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:
         param_range_dict[7] = Real(0.7, 1)
-        param_range_dict[12] = Real(0, 5)                      #max_delta_step
+        param_range_dict[11] = Real(0, 5)                      #max_delta_step
     elif kind in RETWEET:
         param_range_dict[7] = Real(0.9, 1.1)
-        param_range_dict[12] = Real(0, 25)                      #max_delta_step
+        param_range_dict[11] = Real(0, 25)                      #max_delta_step
     elif kind in COMMENT:
         param_range_dict[7] = Real(0.9, 1.1)
-        param_range_dict[12] = Real(0, 100)                      #max_delta_step
+        param_range_dict[11] = Real(0, 100)                      #max_delta_step
     elif kind in REPLY:
         param_range_dict[7] = Real(0.9, 1.1)
-        param_range_dict[12] = Real(0, 200)                      #max_delta_step
+        param_range_dict[11] = Real(0, 200)                      #max_delta_step
 
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
