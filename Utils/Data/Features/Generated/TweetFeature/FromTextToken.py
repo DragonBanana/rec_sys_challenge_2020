@@ -89,7 +89,7 @@ class TweetFeatureTextEmbeddings(GeneratedFeaturePickle):
         
         # for each column, map the embeddings dictionary to all the tweets
         for col in range(columns_num):
-            print("column :", col")
+            print("column :", col)
             embeddings_feature_df[f"embedding_{col}"] = tweet_id_df["mapped_feature_tweet_id"].map(lambda x: embeddings_array[x, col])
             
         #print(embeddings_feature_df)
