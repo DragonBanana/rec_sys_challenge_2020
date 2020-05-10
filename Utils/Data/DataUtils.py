@@ -237,7 +237,7 @@ DICT_ARRAYS = {
     "creation_timestamp_user_dict_array": CreationTimestampUserBasicFeatureDictArray(),
     "language_user_dict_array": LanguageUserBasicFeatureDictArray(),
     # TWEET TEXT FEATURE
-    "text_embeddings_PCA_32_feature_dict_array": TweetTextEmbeddingsFeatureDictArray("text_embeddings_PCA_32_feature_dict_array")
+    "text_embeddings_PCA_32_feature_dict_array": TweetTextEmbeddingsFeatureDictArray("text_embeddings_PCA_32_feature_dict_array"),
     "text_embeddings_PCA_10_feature_dict_array": TweetTextEmbeddingsFeatureDictArray("text_embeddings_PCA_10_feature_dict_array")
 
 }
