@@ -94,8 +94,8 @@ class Compute_Similarity:
                     from Utils.Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
                     self.compute_similarity_object = Compute_Similarity_Cython(dataMatrix, **args)
 
-                except ImportError:
-                    print("Unable to load Cython Compute_Similarity, reverting to Python")
+                except ImportError as e:
+                    print(f"Unable to load Cython Compute_Similarity, reverting to Python, error {e}")
                     self.compute_similarity_object = Compute_Similarity_Python(dataMatrix, **args)
 
 

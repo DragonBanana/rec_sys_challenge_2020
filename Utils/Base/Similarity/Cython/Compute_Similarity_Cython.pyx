@@ -40,7 +40,7 @@ from libc.math cimport sqrt
 
 
 import scipy.sparse as sps
-from Base.Recommender_utils import check_matrix
+from Utils.Base.Recommender_utils import check_matrix
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

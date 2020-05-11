@@ -12,6 +12,7 @@ from Utils.Base.IR_feature_weighting import okapi_BM_25, TF_IDF
 import numpy as np
 
 from Utils.Base.Similarity.Compute_Similarity import Compute_Similarity
+from Utils.Base.Similarity.CosineSimilarity import cosine_similarity
 
 
 class ItemKNNCBFRecommender(BaseItemSimilarityMatrixRecommender):
@@ -47,8 +48,14 @@ class ItemKNNCBFRecommender(BaseItemSimilarityMatrixRecommender):
             self.ICM_train = TF_IDF(self.ICM_train)
 
 
-        similarity = Compute_Similarity(self.ICM_train.T, shrink=shrink, topK=topK, normalize=normalize, similarity = similarity, **similarity_args)
+        # similarity = Compute_Similarity(self.ICM_train.T, shrink=shrink, topK=topK, normalize=normalize, similarity = similarity, **similarity_args)
 
-        self.W_sparse = similarity.compute_similarity()
+        # self.W_sparse = similarity.compute_similarity()
+        self.W_sparse = cosine_similarity(self.ICM_train, shrink=shrink, dense_output=False)
         self.W_sparse = check_matrix(self.W_sparse, format='csr')
 
+    def evaluate(self):
+        pass
+
+    def get_prediction(self):
+        pass
