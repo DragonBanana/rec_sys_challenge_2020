@@ -82,10 +82,10 @@ if __name__ == '__main__':
 
     # LGBM Training
     training_start_time = time.time()
-    train = Pool(X_train, Y_train)
-    val = Pool(X_val, Y_val)
+    train = Pool(X_train, label=Y_train, cat_features=set([7,8,9]))
+    val = Pool(X_val, label=Y_val, cat_features=set([7,8,9]))
     #X=X_train, Y=Y_train, X_val=X_val, Y_val=Y_val
-    CAT.fit(pool_train=train, pool_val=val, cat_feat=set([7,8,9]))
+    CAT.fit(pool_train=train, pool_val=val)
     print(f"Training time: {time.time() - training_start_time} seconds")
 
     
