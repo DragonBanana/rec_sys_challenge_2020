@@ -1,3 +1,4 @@
+from Utils.Data.DataStats import get_max_user_id, get_max_tweet_id
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import LinksTweetBasicFeatureDictArray
 from Utils.Data.Sparse.CSR_SparseMatrix import CSR_SparseMatrix
 import pandas as pd
@@ -16,6 +17,7 @@ class LinkMatrix(CSR_SparseMatrix):
 
     def __init__(self):
         super().__init__("tweet_link_csr_matrix")
+        self.max_tweet_id = get_max_tweet_id()
 
     def create_matrix(self):
         nthread = 8
@@ -40,7 +42,7 @@ class LinkMatrix(CSR_SparseMatrix):
 
         csr_matrix = sps.csr_matrix(
             (data_list, (tweet_list, hashtag_list)),
-            shape=(len(hashtag_dict), max(hashtag_list) + 1), dtype=np.uint32)
+            shape=(self.max_tweet_id, max(hashtag_list) + 1), dtype=np.uint32)
 
         self.save_matrix(csr_matrix)
 
