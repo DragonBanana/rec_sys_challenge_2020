@@ -1,4 +1,4 @@
-from Utils.Data.Data import get_dataset
+from Utils.Data.DataStats import get_max_user_id, get_max_tweet_id
 from Utils.Data.Sparse.CSR_SparseMatrix import CSR_SparseMatrix
 import numpy as np
 import scipy.sparse as sps
@@ -6,7 +6,7 @@ import pandas as pd
 
 class CreatorTweetMatrix(CSR_SparseMatrix):
 
-    def __init__(self, df: pd.DataFrame, max_user_id, max_tweet_id):
+    def __init__(self, df: pd.DataFrame):
         super().__init__("creator_tweet_csr_matrix")
 
         assert df.columns.shape[0] == 2, "The dataframe must have exactly two columns"
@@ -14,8 +14,8 @@ class CreatorTweetMatrix(CSR_SparseMatrix):
         assert 'mapped_feature_tweet_id' in df.columns, "The dataframe must have mapped_feature_tweet_id column"
 
         self.df = df
-        self.max_user_id = max_user_id
-        self.max_tweet_id = max_tweet_id
+        self.max_user_id = get_max_user_id()
+        self.max_tweet_id = get_max_tweet_id()
 
 
     def create_matrix(self):

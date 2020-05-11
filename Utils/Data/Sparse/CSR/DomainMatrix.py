@@ -1,3 +1,4 @@
+from Utils.Data.DataStats import get_max_user_id, get_max_tweet_id
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import DomainsTweetBasicFeatureDictArray
 from Utils.Data.Sparse.CSR_SparseMatrix import CSR_SparseMatrix
 import pandas as pd
@@ -16,6 +17,7 @@ class DomainMatrix(CSR_SparseMatrix):
 
     def __init__(self):
         super().__init__("tweet_domains_csr_matrix")
+        self.max_tweet_id = get_max_tweet_id()
 
     def create_matrix(self):
         nthread = 8
@@ -38,9 +40,10 @@ class DomainMatrix(CSR_SparseMatrix):
         hashtag_list = np.concatenate([r[1] for r in results])
         data_list = np.concatenate([r[2] for r in results])
 
+
         csr_matrix = sps.csr_matrix(
             (data_list, (tweet_list, hashtag_list)),
-            shape=(len(hashtag_dict), max(hashtag_list) + 1), dtype=np.uint32)
+            shape=(self.max_tweet_id, max(hashtag_list) + 1), dtype=np.uint32)
 
         self.save_matrix(csr_matrix)
 
