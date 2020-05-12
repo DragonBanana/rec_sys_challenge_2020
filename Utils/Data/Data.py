@@ -114,7 +114,14 @@ def get_dataset_xgb_default_test():
 
 
 def get_dataset(features: list, dataset_id: str):
-    dataframe = pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
+    dataframe = pd.DataFrame()
+    for feature_name in features:
+        if (feature_name, dataset_id) in FEATURES.keys():
+            f = FEATURES[(feature_name, dataset_id)]
+            dataframe[f.feature_name] = f.load_or_create()[feature_name]
+        else:
+            raise Exception("Feature not found")
+    # dataframe = pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
@@ -126,14 +133,22 @@ def get_dataset(features: list, dataset_id: str):
 
 def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split_n: int, sample: float):
     assert split_n < total_n_split, "split_n parameter should be less than total_n_split parameter"
+
     if sample < 1:
         with mp.Pool(16) as p:
             partial_create_features = functools.partial(get_feature_batch, dataset_id=dataset_id,
                                                         total_n_split=total_n_split, split_n=split_n, sample=sample)
             dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
     else:
-        dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id),
-                                              total_n_split)[split_n] for feature_name in features], axis=1)
+        dataframe = pd.DataFrame()
+        for feature_name in features:
+            if (feature_name, dataset_id) in FEATURES.keys():
+                f = FEATURES[(feature_name, dataset_id)]
+                dataframe[f.feature_name] = f.load_or_create()[feature_name]
+            else:
+                raise Exception("Feature not found")
+        # dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id),
+        #                                       total_n_split)[split_n] for feature_name in features], axis=1)
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
