@@ -30,7 +30,7 @@ class LightGBM(RecommenderGBM):
                  #Not in tuning dict
                  objective= 'binary',
                  metric='binary',
-                 num_threads= 32,       
+                 num_threads= 48,       
                  #In tuning dict
                  num_iterations = 100,
                  num_leaves= 31,
