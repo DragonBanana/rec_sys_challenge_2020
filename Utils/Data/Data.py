@@ -1,5 +1,7 @@
 import functools
 
+from tqdm import tqdm
+
 from Utils.Data.DataUtils import FEATURES, DICTIONARIES, DICT_ARRAYS, SPARSE_MATRIXES
 import pandas as pd
 import numpy as np
@@ -115,7 +117,7 @@ def get_dataset_xgb_default_test():
 
 def get_dataset(features: list, dataset_id: str):
     dataframe = pd.DataFrame()
-    for feature_name in features:
+    for feature_name in tqdm(features):
         if (feature_name, dataset_id) in FEATURES.keys():
             f = FEATURES[(feature_name, dataset_id)]
             dataframe[f.feature_name] = f.load_or_create()[feature_name]
@@ -141,7 +143,7 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
             dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
     else:
         dataframe = pd.DataFrame()
-        for feature_name in features:
+        for feature_name in tqdm(features):
             if (feature_name, dataset_id) in FEATURES.keys():
                 f = FEATURES[(feature_name, dataset_id)]
                 dataframe[f.feature_name] = f.load_or_create()[feature_name]
