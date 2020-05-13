@@ -101,6 +101,8 @@ if __name__ == '__main__':
     max_bin=            1663
 
     '''
+    '''
+    FORTS HOLDOUT SUBMISSION LIKE
     #Initialize Model
     LGBM = LightGBM(
         objective         =     'binary',
@@ -119,7 +121,24 @@ if __name__ == '__main__':
         max_bin           =     1663,
         early_stopping_rounds=15
         )
-
+    '''
+    LGBM = LightGBM(
+        objective         =     'binary',
+        num_threads       =     48,
+        num_iterations    =     800,
+        num_leaves        =     53,
+        learning_rate     =     0.005541683018767009,
+        max_depth         =     73,
+        lambda_l1         =     0.30641363688845635,
+        lambda_l2         =     0.17263658197687987,
+        colsample_bynode  =     0.6501118468487803,
+        colsample_bytree  =     0.2937864508043685,
+        pos_subsample     =     0.3652876654528795,
+        neg_subsample     =     0.48557990647814264,
+        bagging_freq      =     48,
+        max_bin           =     4197,
+        early_stopping_rounds=15
+        )
 
     # LGBM Training
     training_start_time = time.time()
