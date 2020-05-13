@@ -162,12 +162,16 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
 
 def get_feature(feature_name: str, dataset_id: str):
     if (feature_name, dataset_id) in FEATURES.keys():
-        return FEATURES[(feature_name, dataset_id)].load_or_create()
+        df = FEATURES[(feature_name, dataset_id)].load_or_create()
+        df.columns = feature_name
+        return df
 
 def get_feature_batch(feature_name: str, dataset_id: str, total_n_split: int, split_n: int, sample: float):
     if (feature_name, dataset_id) in FEATURES.keys():
-        return np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
+        df = np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
                                               total_n_split)[split_n]
+        df.columns = feature_name
+        return df
 
 
 def get_dictionary(dictionary_name: str):

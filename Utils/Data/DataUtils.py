@@ -154,6 +154,13 @@ def populate_features():
         result[("engager_feature_number_of_previous_comment_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementRatio(dataset_id)
         result[("engager_feature_number_of_previous_positive_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementRatio(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementRatio(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS RATIO WITH -1 FOR COLD USERS
+        result[("engager_feature_number_of_previous_like_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementRatio1(dataset_id)
+        result[("engager_feature_number_of_previous_reply_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementRatio1(dataset_id)
+        result[("engager_feature_number_of_previous_retweet_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagementRatio1(dataset_id)
+        result[("engager_feature_number_of_previous_comment_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementRatio1(dataset_id)
+        result[("engager_feature_number_of_previous_positive_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementRatio1(dataset_id)
+        result[("engager_feature_number_of_previous_negative_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementRatio1(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS BETWEEN CREATOR AND ENGAGER BY CREATIR
         result[("engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
