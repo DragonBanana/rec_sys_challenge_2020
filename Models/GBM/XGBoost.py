@@ -196,8 +196,7 @@ class XGBoost(RecommenderGBM):
     # path: path to the model
     # -------------------------
     def load_model(self, path):
-        self.model = xgb.Booster()
-        self.model.load_model(path)
+        self.model = pickle.load(path, "rb")
 
 
     #--------------------------------------------------

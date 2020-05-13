@@ -84,19 +84,19 @@ class RecommenderGBM(RecommenderBase):
             date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
             if (self.batch is False):
                 model_name = date+"_sround"+self.ext
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             else:
                 model_name = date+"_batch"+self.ext
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             print("Model {0} saved successfully in working fodler.".format(model_name))
 
         #Saving model with given name in working folder
         elif (path is None) and (filename is not None):
             model_name = filename+self.ext
             if (self.batch is False):
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             else:
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             print("Model {0} saved successfully in working fodler.".format(model_name))
 
         #Saving model with given path but no name
@@ -104,10 +104,10 @@ class RecommenderGBM(RecommenderBase):
             date = str(dt.datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
             if (self.batch is False):
                 model_name = path+"/"+date+"_sround"+self.ext
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             else:
                 model_name = path+"/"+date+"_sround"+self.ext
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             print("Model {0} saved successfully.".format(model_name))
         
         #Save with given path and filename
@@ -115,9 +115,9 @@ class RecommenderGBM(RecommenderBase):
             model_name = path+"/"+filename+self.ext
             print(model_name)
             if (self.batch is False):
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             else:
-                self.model.save_model(model_name)
+                pickle.dump(self.model, open(model_name, "wb"))
             print("Model {0} saved successfully.".format(model_name))
             
         return model_name
