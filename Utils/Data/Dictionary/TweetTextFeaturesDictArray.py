@@ -59,6 +59,24 @@ class TweetTextEmbeddingsFeatureDictArray(TweetTextFeatureDictArrayNumpy):
         arr = np.array(embeddings_feature_df.sort_values(by='tweet_features_tweet_id')[columns[1:]])
         
         self.save_dictionary(arr)
+        
+        
+class TweetTextEmbeddingsPCA10FeatureDictArray(TweetTextEmbeddingsFeatureDictArray):
+
+    def __init__(self):
+        super().__init__("text_embeddings_PCA_10_feature_dict_array")
+        
+        
+class TweetTextEmbeddingsPCA32FeatureDictArray(TweetTextEmbeddingsFeatureDictArray):
+
+    def __init__(self):
+        super().__init__("text_embeddings_PCA_32_feature_dict_array")
+        
+
+class TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray(TweetTextEmbeddingsFeatureDictArray):
+
+    def __init__(self):
+        super().__init__("text_embeddings_hashtags_mentions_LDA_15_feature_dict_array")
 
 
 class TweetTokenLengthFeatureDictArray(TweetTextFeatureDictArrayNumpy):

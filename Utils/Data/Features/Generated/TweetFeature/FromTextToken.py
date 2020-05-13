@@ -1,8 +1,8 @@
 from Utils.Data.Dictionary.MappingDictionary import *
-from Utils.Data.Dictionary.TweetTextFeaturesDictArray import TweetTextEmbeddingsFeatureDictArray, \
-    TweetTokenLengthFeatureDictArray, TweetTokenLengthUniqueFeatureDictArray
+from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
 from Utils.Data.Features.Feature import Feature
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
+from abc import abstractmethod
 import pandas as pd
 import numpy as np
 import gzip
@@ -70,6 +70,11 @@ class TweetFeatureTextEmbeddings(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
+        self.embeddings_array = None
+        
+    @abstractmethod
+    def load_embeddings_dictionary(self):
+        pass
 
     def create_feature(self):
         # Load tweet ids
@@ -79,10 +84,9 @@ class TweetFeatureTextEmbeddings(GeneratedFeaturePickle):
         #tweet_id_df = tweet_id_df.head(25)
         #print(tweet_id_df)
         
-        tweet_text_embeddings_dict_array = TweetTextEmbeddingsFeatureDictArray(self.feature_name)
-        embeddings_array = tweet_text_embeddings_dict_array.load_or_create()
+        self.embeddings_array = self.load_embeddings_dictionary()
         
-        columns_num = embeddings_array.shape[1]
+        columns_num = self.embeddings_array.shape[1]
         
         # this will be the final dataframe
         embeddings_feature_df = pd.DataFrame()
@@ -90,13 +94,78 @@ class TweetFeatureTextEmbeddings(GeneratedFeaturePickle):
         # for each column, map the embeddings dictionary to all the tweets
         for col in range(columns_num):
             print("column :", col)
-            embeddings_feature_df[f"embedding_{col}"] = tweet_id_df["mapped_feature_tweet_id"].map(lambda x: embeddings_array[x, col])
+            embeddings_feature_df[f"embedding_{col}"] = tweet_id_df["mapped_feature_tweet_id"].map(lambda x: self.embeddings_array[x, col])
             
         #print(embeddings_feature_df)
         
         # Save the dataframe
         self.save_feature(embeddings_feature_df)
+        
+        
+class TweetFeatureTextEmbeddingsPCA32(TweetFeatureTextEmbeddings):
 
+    def __init__(self, dataset_id: str):
+        super().__init__("text_embeddings_clean_PCA_32", dataset_id)
+        
+    def load_embeddings_dictionary(self):
+        self.embeddings_array = TweetTextEmbeddingsPCA32FeatureDictArray().load_or_create()
+        
+
+class TweetFeatureTextEmbeddingsPCA10(TweetFeatureTextEmbeddings):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("text_embeddings_clean_PCA_10", dataset_id)
+        
+    def load_embeddings_dictionary(self):
+        self.embeddings_array = TweetTextEmbeddingsPCA10FeatureDictArray().load_or_create()
+        
+
+class TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(TweetFeatureTextEmbeddings):
+        
+    def __init__(self, dataset_id: str):
+        super().__init__("text_embeddings_hashtags_mentions_LDA_15", dataset_id)
+        
+    def load_embeddings_dictionary(self):
+        self.embeddings_array = TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray().load_or_create()
+        
+    
+class TweetFeatureDominantTopic(GeneratedFeaturePickle):
+
+    def __init__(self, feature_name : str, dataset_id: str):
+        super().__init__(feature_name, dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
+        self.dictionary_array = None
+        
+    @abstractmethod
+    def load_dictionary(self):
+        pass
+
+    def create_feature(self):
+        # Load the tweet ids
+        tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
+        tweet_id_df = tweet_id_feature.load_or_create()
+        
+        self.dictionary_array = self.load_dictionary()
+        
+        df = pd.DataFrame()
+        df["dominant_topic"] = tweet_id_df["mapped_feature_tweet_id"].map(lambda x: np.argmax(self.dictionary_array[x]))
+
+        # Save the dataframe
+        self.save_feature(df)
+        
+
+class TweetFeatureDominantTopicLDA15(TweetFeatureDominantTopic):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_dominant_topic_LDA_15", dataset_id)
+        
+    @abstractmethod
+    def load_dictionary(self):
+        self.dictionary_array = TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray().load_or_create()
+        
 
 class TweetFeatureTokenLength(GeneratedFeaturePickle):
 

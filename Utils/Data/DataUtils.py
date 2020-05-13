@@ -137,8 +137,10 @@ def populate_features():
         # FROM TEXT TOKEN FEATURES
         result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
         result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
-        result[("text_embeddings_clean_PCA_32", dataset_id)] = TweetFeatureTextEmbeddings("text_embeddings_clean_PCA_32", dataset_id)
-        result[("text_embeddings_clean_PCA_10", dataset_id)] = TweetFeatureTextEmbeddings("text_embeddings_clean_PCA_10", dataset_id)
+        #result[("text_embeddings_clean_PCA_32", dataset_id)] = TweetFeatureTextEmbeddingsPCA32(dataset_id)
+        #result[("text_embeddings_clean_PCA_10", dataset_id)] = TweetFeatureTextEmbeddingsPCA10(dataset_id)
+        #result[("text_embeddings_hashtags_mentions_LDA_15", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(dataset_id)
+        #result[("tweet_feature_dominant_topic_LDA_15", dataset_id)] = TweetFeatureDominantTopicLDA15(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS
         result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagement(dataset_id)
@@ -244,8 +246,9 @@ DICT_ARRAYS = {
     "creation_timestamp_user_dict_array": CreationTimestampUserBasicFeatureDictArray(),
     "language_user_dict_array": LanguageUserBasicFeatureDictArray(),
     # TWEET TEXT FEATURE
-    "text_embeddings_PCA_32_feature_dict_array": TweetTextEmbeddingsFeatureDictArray("text_embeddings_PCA_32_feature_dict_array"),
-    "text_embeddings_PCA_10_feature_dict_array": TweetTextEmbeddingsFeatureDictArray("text_embeddings_PCA_10_feature_dict_array")
+    #"text_embeddings_PCA_10_feature_dict_array": TweetTextEmbeddingsPCA10FeatureDictArray(),
+    #"text_embeddings_PCA_32_feature_dict_array": TweetTextEmbeddingsPCA32FeatureDictArray(),
+    #"text_embeddings_hashtags_mentions_LDA_15_feature_dict_array": TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray()
 
 }
 
