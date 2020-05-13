@@ -104,7 +104,7 @@ if __name__ == '__main__':
     #Initialize Model
     LGBM = LightGBM(
         objective         =     'binary',
-        num_threads       =     32,
+        num_threads       =     48,
         num_iterations    =     800,
         num_leaves        =     53,
         learning_rate     =     0.012686254848518414,
