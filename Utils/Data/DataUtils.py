@@ -1,4 +1,5 @@
 import functools
+import pathlib
 
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
@@ -23,9 +24,10 @@ from Utils.Data.Sparse.CSR.HashtagMatrix import *
 from Utils.Data.Sparse.CSR.DomainMatrix import *
 from Utils.Data.Sparse.CSR.Language.LanguageMatrixOnlyPositive import LanguageMatrixOnlyPositive
 from Utils.Data.Sparse.CSR.LinkMatrix import *
+import xgboost as xgb
+import sklearn.datasets as skd
 import billiard as mp
-
-import billiard as mp
+import os
 
 DATASET_IDS = [
     "train",
@@ -315,3 +317,25 @@ def consistency_check_all():
     for dataset_id in DATASET_IDS:
         consistency_check(dataset_id)
 
+def cache_dataset_as_svm(filename, X_train, Y_train):
+    if pathlib.Path(f"{filename}.svm").exists():
+        raise Exception("file already exists, be careful to overwrite it")
+    X_chunks = np.array_split(X_train, 100)
+    Y_chunks = np.array_split(Y_train, 100)
+
+    def to_svm(arg):
+        i = arg[0]
+        data = arg[1]
+        pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
+        skd.dump_svmlight_file(
+            X=data[0],
+            y=data[1][data[1].columns[0]].array,
+            f=f"temp/i_{filename}.svm"
+        )
+
+
+    with mp.Pool(48) as p:
+        p.map(to_svm, enumerate(zip(X_chunks, Y_chunks)))
+
+    cmd = f'cat *{filename}.svm > {filename}.svm'
+    os.system(cmd)
