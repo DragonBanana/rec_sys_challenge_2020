@@ -120,7 +120,14 @@ def get_dataset(features: list, dataset_id: str):
     for feature_name in tqdm(features):
         if (feature_name, dataset_id) in FEATURES.keys():
             f = FEATURES[(feature_name, dataset_id)]
-            dataframe[feature_name] = f.load_or_create()[f.feature_name]
+            df = f.load_or_create()
+            if df.columns == 1:
+                dataframe[feature_name] = df[f.feature_name]
+            else:
+                if len(dataframe) > 0:
+                    dataframe = pd.concat([dataframe, df])
+                else:
+                    dataframe = df
         else:
             raise Exception("Feature not found")
     # dataframe = pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
@@ -146,7 +153,14 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
         for feature_name in tqdm(features):
             if (feature_name, dataset_id) in FEATURES.keys():
                 f = FEATURES[(feature_name, dataset_id)]
-                dataframe[feature_name] = f.load_or_create()[f.feature_name]
+                df = f.load_or_create()
+                if df.columns == 1:
+                    dataframe[feature_name] = df[f.feature_name]
+                else:
+                    if len(dataframe) > 0:
+                        dataframe = pd.concat([dataframe, df])
+                    else:
+                        dataframe = df
             else:
                 raise Exception("Feature not found")
         # dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id),
