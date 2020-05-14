@@ -11,7 +11,6 @@ import pandas as pd
 
 class XGBEnsembling(EnsemblingFeatureAbstract):
     path = "xgb_ensembling"
-    feature_name = "xgb_ensembling"
 
     def __init__(self,
                  dataset_id: str,
@@ -21,6 +20,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
                  param_dict: dict
                  ):
         self.dataset_id = dataset_id
+        self.feature_name = f"xgb_ensembling"
         super().__init__(df_train, df_train_label, df_to_predict, param_dict)
 
     def _get_dataset_id(self):
