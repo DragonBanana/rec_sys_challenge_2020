@@ -121,7 +121,7 @@ def get_dataset(features: list, dataset_id: str):
         if (feature_name, dataset_id) in FEATURES.keys():
             f = FEATURES[(feature_name, dataset_id)]
             df = f.load_or_create()
-            if df.columns == 1:
+            if len(df.columns) == 1:
                 dataframe[feature_name] = df[f.feature_name]
             else:
                 if len(dataframe) > 0:
@@ -154,7 +154,7 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
             if (feature_name, dataset_id) in FEATURES.keys():
                 f = FEATURES[(feature_name, dataset_id)]
                 df = f.load_or_create()
-                if df.columns == 1:
+                if len(df.columns) == 1:
                     dataframe[feature_name] = df[f.feature_name]
                 else:
                     if len(dataframe) > 0:
