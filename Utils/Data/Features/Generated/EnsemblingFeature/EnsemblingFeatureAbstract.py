@@ -26,12 +26,12 @@ class EnsemblingFeatureAbstract(GeneratedFeaturePickle, ABC):
         self.df_train_label = df_train_label
         self.df_to_predict = df_to_predict
         self.model_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/ensembling/{path}/{self.feature_name}_model")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/ensembling/{path}/{self.feature_name}_model.model")
         self.param_dict = param_dict
 
     def _get_model(self, **params):
         if not pl.Path(self.model_path).exists():
-            self._train_and_save(**params)
+            self._train_and_save()
         return self._load_model()
 
     @abstractmethod
@@ -51,16 +51,11 @@ class EnsemblingFeatureAbstract(GeneratedFeaturePickle, ABC):
         pass
 
     @abstractmethod
-    def _train_and_save(self, **params):
+    def _train_and_save(self):
         pass
 
+    @abstractmethod
     def create_feature(self):
-        # TODO
-
-        # the index is fundamental for saving the predictions in the right order
-        result = pd.DataFrame(predictions, index=self.df_to_predict.index)
-
-        self.save_feature(result)
-
+        pass
 
 
