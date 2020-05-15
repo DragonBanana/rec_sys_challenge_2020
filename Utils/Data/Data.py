@@ -180,6 +180,8 @@ def get_feature(feature_name: str, dataset_id: str):
         if len(df.columns) == 1:
             df.columns = [feature_name]
         return df
+    else:
+        raise Exception(f"Feature {feature_name} not found ")
 
 def get_feature_batch(feature_name: str, dataset_id: str, total_n_split: int, split_n: int, sample: float):
     if (feature_name, dataset_id) in FEATURES.keys():
@@ -188,6 +190,8 @@ def get_feature_batch(feature_name: str, dataset_id: str, total_n_split: int, sp
         if len(df.columns) == 1:
             df.columns = [feature_name]
         return df
+    else:
+        raise Exception(f"Feature {feature_name} not found ")
 
 
 def get_dictionary(dictionary_name: str):
