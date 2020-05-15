@@ -8,7 +8,6 @@ from Utils.Submission.Submission import create_submission_file
 if __name__ == '__main__':
     train_dataset = "holdout/train"
     val_dataset = "holdout/test"
-    local_test_set = "holdout/test"
     test_dataset="test"
 
     # Define the X label
@@ -75,10 +74,10 @@ if __name__ == '__main__':
     X_train, Y_train = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
 
     # Load val data
-    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
+    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, val_dataset, X_label, Y_label, 1)
 
     # Load local_test data
-    X_local, Y_local = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
+    X_local, Y_local = Data.get_dataset_xgb_batch(2, 1, val_dataset, X_label, Y_label, 1)
 
     # Load test data
     X_test = Data.get_dataset(X_label, test_dataset)
