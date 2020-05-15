@@ -75,10 +75,10 @@ if __name__ == '__main__':
     X_train, Y_train = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
 
     # Load val data
-    X_val, Y_val= Data.get_dataset_xgb(val_dataset, X_label, Y_label)
+    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
 
     # Load local_test data
-    X_local, Y_local= Data.get_dataset_xgb(local_test_set, X_label, Y_label)
+    X_local, Y_local = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
 
     # Load test data
     X_test = Data.get_dataset(X_label, test_dataset)
@@ -121,22 +121,37 @@ if __name__ == '__main__':
         max_bin           =     1663,
         early_stopping_rounds=15
         )
+
+    LOCALE
+
+    PRAUC = 0.7194653274153581
+    RCE   = 11.310120979228556
+
+    ONLINE
+
+    PRAUC   RCE
+ 	0.6349 	5.9093
+    
+
+
     '''
+
     LGBM = LightGBM(
         objective         =     'binary',
         num_threads       =     48,
         num_iterations    =     800,
-        num_leaves        =     53,
-        learning_rate     =     0.005541683018767009,
-        max_depth         =     73,
-        lambda_l1         =     0.30641363688845635,
-        lambda_l2         =     0.17263658197687987,
-        colsample_bynode  =     0.6501118468487803,
-        colsample_bytree  =     0.2937864508043685,
-        pos_subsample     =     0.3652876654528795,
-        neg_subsample     =     0.48557990647814264,
-        bagging_freq      =     48,
-        max_bin           =     4197,
+        num_leaves        =     1366,
+        learning_rate     =     0.012213193609590826,
+        max_depth         =     13,
+        lambda_l1         =     0.21052274719305814,
+        lambda_l2         =     0.972229194811426,
+        colsample_bynode  =     0.821823940475557,
+        colsample_bytree  =     0.6948637552375507,
+        pos_subsample     =     0.7028563858482733,
+        neg_subsample     =     0.7609270443313841,
+        bagging_freq      =     3,
+        max_bin           =     3926,
+        min_data_in_leaf  =     1775,
         early_stopping_rounds=15
         )
 
