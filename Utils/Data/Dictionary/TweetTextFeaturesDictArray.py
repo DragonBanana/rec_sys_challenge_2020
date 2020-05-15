@@ -94,7 +94,7 @@ class TweetTokenLengthFeatureDictArray(TweetTextFeatureDictArrayNumpy):
         # TODO check the path
         # path to the unique tweet tokens
         dir_path = os.path.dirname(__file__)
-        tweet_tokens_csv_path = os.path.join(dir_path, '..', '..', '..', 'day_2_only_first_10000_unique.csv')
+        tweet_tokens_csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/from_text_token/tweet_tokens_all_unique.csv")
 
 
         # load the tweet id, token_list dataframe
@@ -118,7 +118,7 @@ class TweetTokenLengthUniqueFeatureDictArray(TweetTextFeatureDictArrayNumpy):
         # TODO check the path
         # path to the unique tweet tokens
         dir_path = os.path.dirname(__file__)
-        tweet_tokens_csv_path = os.path.join(dir_path, '..', '..', '..', 'day_2_only_first_10000_unique.csv')
+        tweet_tokens_csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/from_text_token/tweet_tokens_all_unique.csv")
 
         # load the tweet id, token_list dataframe
         tokens_feature_df = pd.read_csv(tweet_tokens_csv_path)
