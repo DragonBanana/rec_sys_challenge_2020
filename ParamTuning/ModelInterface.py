@@ -451,6 +451,7 @@ class ModelInterface(object):
                         #scale_pos_weight= param[11],        #Remember that scale_pos_wiight and is_unbalance are mutually exclusive
                         bagging_freq=     param[9],
                         max_bin =         param[10],
+                        min_data_in_leaf= param[11],
                         #Early stopping
                         early_stopping_rounds=self.early_stopping_rounds,
                         is_unbalance=self.is_unbalance

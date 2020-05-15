@@ -46,6 +46,7 @@ class LightGBM(RecommenderGBM):
                  is_unbalance= False,                       #let LightGBM deal with the unbalance problem on its own (worsen RCE 100x in local if used alone)
                  bagging_freq= 5,                           #Default 0 perform bagging every k iterations
                  bagging_fraction= 1,                       #Rnadomly selects specified fraciton of the data without resampling
+                 min_data_in_leaf = 20,
                  max_bin = 255,
                  #For early stopping
                  early_stopping_rounds = None):
@@ -79,7 +80,9 @@ class LightGBM(RecommenderGBM):
                 'boost_from_average': True,             #default: True
                 #'boosting': "dart"                     #default: gbdt, it is said that dart provides more acurate predictions, while risking overfitting tho
                 'early_stopping_round': early_stopping_rounds,
-                'is_unbalance':is_unbalance
+                'is_unbalance':is_unbalance,
+                'min_data_in_leaf':min_data_in_leaf,
+                'bagging_seed': 92492
         }
 
         if scale_pos_weight is None and is_unbalance is None:

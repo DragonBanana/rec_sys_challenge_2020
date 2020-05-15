@@ -69,7 +69,8 @@ def main():
         "is_tweet_in_creator_main_language",                                                                #46 CATEGORICAL                
         "is_tweet_in_engager_main_language",                                                                #47 CATEGORICAL                
         "statistical_probability_main_language_of_engager_engage_tweet_language_1",                         #48                                                    
-        "statistical_probability_main_language_of_engager_engage_tweet_language_2"                          #49                                                    
+        "statistical_probability_main_language_of_engager_engage_tweet_language_2",                         #49                                                    
+        "tweet_feature_dominant_topic_LDA_15"                                                               #50 CATEGORICAL                             
     ]                                                                           
     # Define the Y label
     Y_label = [
@@ -93,7 +94,7 @@ def main():
                    kind,
                    mode=0,
                    path="like",
-                   path_log="lgbm-like-test-overfit-STAVOLTA-GIUSTO",
+                   path_log="lgbm-holdout-like-new-params",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
@@ -103,7 +104,7 @@ def main():
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
     OP.setParamsLGB(objective='binary',early_stopping_rounds=15, eval_metric="binary",is_unbalance=False)
-    OP.setCategoricalFeatures(set([4,5,6,11,12,13,43,44,45,46,47]))
+    OP.setCategoricalFeatures(set([4,5,6,11,12,13,43,44,45,46,47,50]))
     #OP.loadModelHardCoded()
     res=OP.optimize()
 

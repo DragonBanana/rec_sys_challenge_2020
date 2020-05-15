@@ -110,19 +110,20 @@ def xgbName():
 #
 #---------------------------------------------------------------
 def lgbmRange(kind):
-    param_range_dict = [Integer(31, 70),                        #num_leaves
+    param_range_dict = [Integer(70, 4095),                      #num_leaves
                         Real(0.005, 1, 'log-uniform'),          #learning rate
-                        Integer(5, 100),                        #max_depth
+                        Integer(2, 70),                         #max_depth
                         Real(0.1, 1, 'log-uniform'),            #lambda_l1
                         Real(0.1, 1, 'log-uniform'),            #lambda_l2
-                        Real(0.1, 1),                           #colsample_bynode
-                        Real(0.1, 1),                           #colsample_bytree
+                        Real(0.4, 1),                           #colsample_bynode
+                        Real(0.4, 1),                           #colsample_bytree
                         Real(0.1, 1),                           #pos_subsample
                         Real(0.1, 1),                           #neg_subsample
-                        #Real(0.1, 1),                           #bagging_positive_over_total_ratio
-                        #Real(0.1, 1),                           #dominant_bagging
-                        Integer(0, 50),                         #bagging_freq
-                        Integer(255, 5000)                      #max_bin
+                        #Real(0.1, 1),                          #bagging_positive_over_total_ratio
+                        #Real(0.1, 1),                          #dominant_bagging
+                        Integer(0, 10),                         #bagging_freq
+                        Integer(255, 5000),                     #max_bin
+                        Integer(400, 2000),                     #min_data_in_leaf
     ]
     return param_range_dict
 
@@ -142,7 +143,8 @@ def lgbmName():
                        #"bagging_positive_over_total_ratio",
                        #"dominant_bagging",
                        "bagging_freq",
-                       "max_bin"
+                       "max_bin",
+                       "min_data_in_leaf"
                        ]
     return param_name_dict
 
