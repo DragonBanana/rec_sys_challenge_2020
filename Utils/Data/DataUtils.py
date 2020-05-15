@@ -9,6 +9,8 @@ from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
+from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike1, \
+    XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1
 from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
 from Utils.Data.Features.Generated.TweetFeature.FromTextToken import *
@@ -191,6 +193,11 @@ def populate_features():
         result[("is_tweet_in_engager_main_language", dataset_id)] = IsTweetInEngagerMainLanguage(dataset_id)
         result[("statistical_probability_main_language_of_engager_engage_tweet_language_1", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage1(dataset_id)
         result[("statistical_probability_main_language_of_engager_engage_tweet_language_2", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage2(dataset_id)
+        # FOLD ENSEMBLING
+        result[("xgb_fold_ensembling_like_1", dataset_id)] = XGBFoldEnsemblingLike1(dataset_id)
+        result[("xgb_fold_ensembling_retweet_1", dataset_id)] = XGBFoldEnsemblingRetweet1(dataset_id)
+        result[("xgb_fold_ensembling_reply_1", dataset_id)] = XGBFoldEnsemblingReply1(dataset_id)
+        result[("xgb_fold_ensembling_comment_1", dataset_id)] = XGBFoldEnsemblingComment1(dataset_id)
 
 
         # IS ENGAGEMENT TYPE
@@ -254,7 +261,7 @@ DICT_ARRAYS = {
     # TWEET TEXT FEATURE
     #"text_embeddings_PCA_10_feature_dict_array": TweetTextEmbeddingsPCA10FeatureDictArray(),
     #"text_embeddings_PCA_32_feature_dict_array": TweetTextEmbeddingsPCA32FeatureDictArray(),
-    "text_embeddings_hashtags_mentions_LDA_15_feature_dict_array": TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray()
+    "text_embeddings_hashtags_mentions_LDA_15_feature_dict_array": TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray(),
     #"text_embeddings_hashtags_mentions_LDA_20_feature_dict_array": TweetTextEmbeddingsHashtagsMentionsLDA20FeatureDictArray()
     "tweet_token_length_feature_dict_array": TweetTokenLengthFeatureDictArray(),
     "tweet_token_length_unique_feature_dict_array": TweetTokenLengthUniqueFeatureDictArray(),

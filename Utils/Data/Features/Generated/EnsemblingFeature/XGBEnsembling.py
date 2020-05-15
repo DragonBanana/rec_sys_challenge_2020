@@ -1,8 +1,7 @@
 import pathlib
 
-from Models.GBM.XGBoost import XGBoost
-from Utils.Data.Data import get_dataset_xgb_batch, get_dataset
-from Utils.Data.DataUtils import cache_dataset_as_svm
+import Models.GBM as wrapper
+import Utils.Data as data
 from Utils.Data.Features.Generated.EnsemblingFeature.EnsemblingFeatureAbstract import EnsemblingFeatureAbstract
 import xgboost as xgb
 import random
@@ -33,7 +32,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         return self.path
 
     def _load_model(self):
-        model = XGBoost()
+        model = wrapper.XGBoost.XGBoost()
         model.load_model(self.model_path)
         return model
 
@@ -41,7 +40,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         # Generate a random number
         random_n = random.random()
         # Initiate XGBoost wrapper
-        xgb_wrapper = XGBoost(
+        xgb_wrapper = wrapper.XGBoost.XGBoost(
             num_rounds=self.param_dict['num_rounds'],
             max_depth=self.param_dict['max_depth'],
             min_child_weight=self.param_dict['min_child_weight'],
@@ -57,7 +56,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
             num_parallel_tree=self.param_dict['num_parallel_tree']
         )
         # Cache the train matrix as libsvm
-        cache_dataset_as_svm(f"temp_ensembling_{random_n}", self.df_train, self.df_train_label)
+        data.DataUtils.cache_dataset_as_svm(f"temp_ensembling_{random_n}", self.df_train, self.df_train_label)
         # Load the train matrix + external memory
         train = xgb.DMatrix(f"temp_ensembling_{random_n}.svm#temp_ensembling_{random_n}.cache")
         # Overwrite the feature names for consistency
@@ -82,33 +81,3 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         result.sort_index(inplace=True)
         # Save the result
         self.save_feature(result)
-
-
-# Example
-if __name__ == '__main__':
-    label = "like"
-    dataset_id = "test_xgb_ensemble_train_dataset"
-    train_dataset_id = "train"
-    test_dataset_id = "test"
-    X_label = ["raw_feature_creator_follower_count"]
-    Y_label = [f"tweet_feature_engagement_is_{label}"]
-    X_train = get_dataset(X_label, train_dataset_id)
-    Y_train = get_dataset(Y_label, train_dataset_id)
-    X_test = get_dataset(X_label, test_dataset_id)
-    xgb_parameters = {
-        'num_rounds': 1000,
-        'max_depth': 15,
-        'min_child_weight': 6,
-        'colsample_bytree': 0.33818954844496046,
-        'learning_rate': 0.130817833734442,
-        'reg_alpha': 0.0005311830218970207,
-        'reg_lambda': 0.00018776522886741493,
-        'scale_pos_weight': 0.7170586642475405,
-        'gamma': 0.38859834472037047,
-        'subsample': 0.3071905565109999,
-        'base_score': 0.40486498623622924,
-        'max_delta_step': 0.0653504311420456,
-        'num_parallel_tree': 4
-    }
-    feature = XGBEnsembling(dataset_id, X_train, Y_train, X_test, xgb_parameters)
-    feature.create_feature()
