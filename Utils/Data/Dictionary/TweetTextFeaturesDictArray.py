@@ -77,6 +77,12 @@ class TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray(TweetTextEmbeddin
 
     def __init__(self):
         super().__init__("text_embeddings_hashtags_mentions_LDA_15_feature_dict_array")
+        
+
+class TweetTextEmbeddingsHashtagsMentionsLDA20FeatureDictArray(TweetTextEmbeddingsFeatureDictArray):
+
+    def __init__(self):
+        super().__init__("text_embeddings_hashtags_mentions_LDA_20_feature_dict_array")
 
 
 class TweetTokenLengthFeatureDictArray(TweetTextFeatureDictArrayNumpy):

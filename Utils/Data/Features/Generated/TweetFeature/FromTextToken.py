@@ -128,6 +128,15 @@ class TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(TweetFeatureTextEmbeddings
     def load_embeddings_dictionary(self):
         self.embeddings_array = TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray().load_or_create()
         
+
+class TweetFeatureTextEmbeddingsHashtagsMentionsLDA20(TweetFeatureTextEmbeddings):
+        
+    def __init__(self, dataset_id: str):
+        super().__init__("text_embeddings_hashtags_mentions_LDA_20", dataset_id)
+        
+    def load_embeddings_dictionary(self):
+        self.embeddings_array = TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray().load_or_create()
+        
     
 class TweetFeatureDominantTopic(GeneratedFeaturePickle):
 
@@ -151,7 +160,7 @@ class TweetFeatureDominantTopic(GeneratedFeaturePickle):
         self.dictionary_array = self.load_dictionary()
         
         df = pd.DataFrame()
-        df["dominant_topic"] = tweet_id_df["mapped_feature_tweet_id"].map(lambda x: np.argmax(self.dictionary_array[x]))
+        df["dominant_topic"] = tweet_id_df["mapped_feature_tweet_id"].map(lambda x: np.argmax(self.dictionary_array[x]) if np.max(self.dictionary_array[x]) == np.min(self.dictionary_array[x]) else -1)
 
         # Save the dataframe
         self.save_feature(df)
@@ -165,6 +174,16 @@ class TweetFeatureDominantTopicLDA15(TweetFeatureDominantTopic):
     @abstractmethod
     def load_dictionary(self):
         self.dictionary_array = TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray().load_or_create()
+        
+        
+class TweetFeatureDominantTopicLDA20(TweetFeatureDominantTopic):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_dominant_topic_LDA_20", dataset_id)
+        
+    @abstractmethod
+    def load_dictionary(self):
+        self.dictionary_array = TweetTextEmbeddingsHashtagsMentionsLDA20FeatureDictArray().load_or_create()
         
 
 class TweetFeatureTokenLength(GeneratedFeaturePickle):
