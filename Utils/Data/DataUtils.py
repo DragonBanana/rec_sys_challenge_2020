@@ -4,6 +4,7 @@ import pathlib
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
+from Utils.Data.Features.Generated.CreatorFeature.CreatorFrequencyUniqueTokens import CreatorFrequencyUniqueTokens
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
@@ -200,6 +201,8 @@ def populate_features():
         result[("xgb_fold_ensembling_comment_1", dataset_id)] = XGBFoldEnsemblingComment1(dataset_id)
 
 
+
+
         # IS ENGAGEMENT TYPE
         if dataset_id != "test":
             result[("tweet_feature_engagement_is_like", dataset_id)] = TweetFeatureEngagementIsLike(dataset_id)
@@ -209,6 +212,7 @@ def populate_features():
             result[("tweet_feature_engagement_is_positive", dataset_id)] = TweetFeatureEngagementIsPositive(dataset_id)
             result[("tweet_feature_engagement_is_negative", dataset_id)] = TweetFeatureEngagementIsNegative(dataset_id)
         # CREATOR FEATURE
+        result[("creator_feature_frequency_of_unique_tokens", dataset_id)] = CreatorFrequencyUniqueTokens(dataset_id)
         # KNOWN COUNT OF ENGAGEMENT
         # BAD IMPLEMENTATION - DOES NOT RESPECT TIME
         # result[("engager_feature_known_number_of_like_engagement", dataset_id)] = EngagerFeatureKnowNumberOfLikeEngagement(dataset_id)
