@@ -129,7 +129,7 @@ def get_dataset(features: list, dataset_id: str):
                 else:
                     dataframe = df
         else:
-            raise Exception("Feature not found")
+            raise Exception(f"Feature {feature_name} not found ")
     # dataframe = pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
     for column in dataframe.columns:
@@ -162,7 +162,7 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
                     else:
                         dataframe = df
             else:
-                raise Exception("Feature not found")
+                raise Exception(f"Feature {feature_name} not found ")
         # dataframe = pd.concat([np.array_split(get_feature(feature_name, dataset_id),
         #                                       total_n_split)[split_n] for feature_name in features], axis=1)
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
@@ -177,15 +177,21 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
 def get_feature(feature_name: str, dataset_id: str):
     if (feature_name, dataset_id) in FEATURES.keys():
         df = FEATURES[(feature_name, dataset_id)].load_or_create()
-        df.columns = [feature_name]
+        if len(df.columns) == 1:
+            df.columns = [feature_name]
         return df
+    else:
+        raise Exception(f"Feature {feature_name} not found ")
 
 def get_feature_batch(feature_name: str, dataset_id: str, total_n_split: int, split_n: int, sample: float):
     if (feature_name, dataset_id) in FEATURES.keys():
         df = np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
                                               total_n_split)[split_n]
-        df.columns = [feature_name]
+        if len(df.columns) == 1:
+            df.columns = [feature_name]
         return df
+    else:
+        raise Exception(f"Feature {feature_name} not found ")
 
 
 def get_dictionary(dictionary_name: str):
