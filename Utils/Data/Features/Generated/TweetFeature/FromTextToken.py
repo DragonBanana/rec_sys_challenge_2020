@@ -171,7 +171,6 @@ class TweetFeatureDominantTopicLDA15(TweetFeatureDominantTopic):
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_dominant_topic_LDA_15", dataset_id)
         
-    @abstractmethod
     def load_dictionary(self):
         self.dictionary_array = TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray().load_or_create()
         
@@ -181,7 +180,6 @@ class TweetFeatureDominantTopicLDA20(TweetFeatureDominantTopic):
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_dominant_topic_LDA_20", dataset_id)
         
-    @abstractmethod
     def load_dictionary(self):
         self.dictionary_array = TweetTextEmbeddingsHashtagsMentionsLDA20FeatureDictArray().load_or_create()
         
