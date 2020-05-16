@@ -29,7 +29,7 @@ class EnsemblingFeatureAbstract(GeneratedFeaturePickle, ABC):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/ensembling/{path}/{self.feature_name}_model.model")
         self.param_dict = param_dict
 
-    def _get_model(self, **params):
+    def _get_model(self):
         if not pl.Path(self.model_path).exists():
             self._train_and_save()
         return self._load_model()
@@ -53,9 +53,4 @@ class EnsemblingFeatureAbstract(GeneratedFeaturePickle, ABC):
     @abstractmethod
     def _train_and_save(self):
         pass
-
-    @abstractmethod
-    def create_feature(self):
-        pass
-
 
