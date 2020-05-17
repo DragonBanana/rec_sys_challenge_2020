@@ -14,10 +14,10 @@ if __name__ == '__main__':
 
     # Define the X label
     X_label = [
-        "raw_feature_creator_follower_count",                                       # 0                                                    
-        "raw_feature_creator_following_count",                                      # 1               
-        "raw_feature_engager_follower_count",                                       # 2               
-        "raw_feature_engager_following_count",                                      # 3               
+        "raw_feature_creator_follower_count",                                       # 0
+        "raw_feature_creator_following_count",                                      # 1
+        "raw_feature_engager_follower_count",                                       # 2
+        "raw_feature_engager_following_count",                                      # 3
         "tweet_feature_number_of_photo",                                            # 4           
         "tweet_feature_number_of_video",                                            # 5           
         "tweet_feature_number_of_gif",                                              # 6       
@@ -25,21 +25,21 @@ if __name__ == '__main__':
         "tweet_feature_is_quote",                                                   # 8(categorical   
         "tweet_feature_is_top_level",                                               # 9(categorical      
         "tweet_feature_number_of_hashtags",                                         # 10          
-        "tweet_feature_creation_timestamp_hour",                                    # 11                 
-        "tweet_feature_creation_timestamp_week_day",                                # 12                       
+        "tweet_feature_creation_timestamp_hour",                                    # 11
+        "tweet_feature_creation_timestamp_week_day",                                # 12
         "tweet_feature_number_of_mentions",                                         # 13           
-        "engager_feature_number_of_previous_like_engagement",                       # 14                               
-        "engager_feature_number_of_previous_reply_engagement",                      # 15                               
-        "engager_feature_number_of_previous_retweet_engagement",                    # 16                                   
-        "engager_feature_number_of_previous_comment_engagement",                    # 17                                  
-        "engager_feature_number_of_previous_positive_engagement",                   # 18                                   
-        "engager_feature_number_of_previous_negative_engagement",                   # 19                                   
-        "engager_feature_number_of_previous_engagement",                            # 20                           
-        "engager_feature_number_of_previous_like_engagement_ratio",                 # 21                                   
-        "engager_feature_number_of_previous_reply_engagement_ratio",                # 22                                       
-        "engager_feature_number_of_previous_retweet_engagement_ratio",              # 23                                       
-        "engager_feature_number_of_previous_comment_engagement_ratio",              # 24                                       
-        "engager_feature_number_of_previous_positive_engagement_ratio",             # 25                                       
+        "engager_feature_number_of_previous_like_engagement",                       # 14
+        "engager_feature_number_of_previous_reply_engagement",                      # 15
+        "engager_feature_number_of_previous_retweet_engagement",                    # 16
+        "engager_feature_number_of_previous_comment_engagement",                    # 17
+        "engager_feature_number_of_previous_positive_engagement",                   # 18
+        "engager_feature_number_of_previous_negative_engagement",                   # 19
+        "engager_feature_number_of_previous_engagement",                            # 20
+        "engager_feature_number_of_previous_like_engagement_ratio",                 # 21
+        "engager_feature_number_of_previous_reply_engagement_ratio",                # 22
+        "engager_feature_number_of_previous_retweet_engagement_ratio",              # 23
+        "engager_feature_number_of_previous_comment_engagement_ratio",              # 24
+        "engager_feature_number_of_previous_positive_engagement_ratio",             # 25
         "engager_feature_number_of_previous_negative_engagement_ratio"              # 26 
     ]
     # Define the Y label
@@ -63,8 +63,6 @@ if __name__ == '__main__':
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
-
-
     #Initialize Model
     CAT = CatBoost(iterations=600,
                    depth=16,
@@ -82,16 +80,16 @@ if __name__ == '__main__':
 
     # LGBM Training
     training_start_time = time.time()
-    train = Pool(X_train, label=Y_train, cat_features=set([7,8,9]))
-    val = Pool(X_val, label=Y_val, cat_features=set([7,8,9]))
+    train = Pool(X_train.to_numpy(), label=Y_train.to_numpy(), cat_features=[7,8,9])
+    val = Pool(X_val.to_numpy(), label=Y_val.to_numpy(), cat_features=[7,8,9])
     #X=X_train, Y=Y_train, X_val=X_val, Y_val=Y_val
     CAT.fit(pool_train=train, pool_val=val)
     print(f"Training time: {time.time() - training_start_time} seconds")
 
-    
     # LGBM Evaluation
     evaluation_start_time = time.time()
-    prauc, rce, conf, max_pred, min_pred, avg = CAT.evaluate(X_local.to_numpy(), Y_local.to_numpy())
+    evals = Pool(X_local.to_numpy(), Y_local.to_numpy().astype(np.int32), cat_features=[7,8,9])
+    prauc, rce, conf, max_pred, min_pred, avg = CAT.evaluate(evals)
     print(f"PRAUC:\t{prauc}")
     print(f"RCE:\t{rce}")
     print(f"TN:\t{conf[0,0]}")
@@ -116,63 +114,6 @@ if __name__ == '__main__':
     #LGBM.plot_fimportance()
 
     create_submission_file(tweets, users, predictions, "cat_like_first_submission.csv")
-
-
-
-
-    #Initialize Model
-    CAT = CatBoost(iterations=600,
-                   depth=12,
-                   learning_rate=0.2032390715790451,
-                   l2_leaf_reg=10.0,
-                   subsample=0.9,
-                   random_strenght=20.816707472109698,
-                   colsample_bylevel=0.8645906447696082,
-                   leaf_estimation_iterations=52,
-                   scale_pos_weight=1.0,
-                   model_shrink_rate=0.002086451762532185,
-                   #ES
-                   early_stopping_rounds = 15
-                )
-
-    # CAT Training
-    training_start_time = time.time()
-    train = Pool(X_train, Y_train)
-    val = Pool(X_val, Y_val)
-    #X=X_train, Y=Y_train, X_val=X_val, Y_val=Y_val
-    CAT.fit(pool_train=train, pool_val=val, cat_feat=set([7,8,9]))
-    print(f"Training time: {time.time() - training_start_time} seconds")
-
-    
-    # CAT Evaluation
-    evaluation_start_time = time.time()
-    prauc, rce, conf, max_pred, min_pred, avg = CAT.evaluate(X_local.to_numpy(), Y_local.to_numpy())
-    print(f"PRAUC:\t{prauc}")
-    print(f"RCE:\t{rce}")
-    print(f"TN:\t{conf[0,0]}")
-    print(f"FP:\t{conf[0,1]}")
-    print(f"FN:\t{conf[1,0]}")
-    print(f"TP:\t{conf[1,1]}")
-    print(f"MAX_PRED:\t{max_pred}")
-    print(f"MIN_PRED:\t{min_pred}")
-    print(f"AVG:\t{avg}")
-    print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
-    
-
-    tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
-
-    # CAT Prediction
-    prediction_start_time = time.time()
-    predictions = CAT.get_prediction(X_test.to_numpy())
-    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
-
-    #Uncomment to plot feature importance at the end of training
-    #LGBM.plot_fimportance()
-
-    create_submission_file(tweets, users, predictions, "cat_like_second_submission.csv")
-
-
 
 
 '''
