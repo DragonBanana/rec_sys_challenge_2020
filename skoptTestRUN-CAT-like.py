@@ -70,7 +70,7 @@ def main():
         "is_tweet_in_engager_main_language",                                                                #47 CATEGORICAL                
         "statistical_probability_main_language_of_engager_engage_tweet_language_1",                         #48                                                    
         "statistical_probability_main_language_of_engager_engage_tweet_language_2",                         #49                                                    
-        "tweet_feature_dominant_topic_LDA_15"                                                               #50 CATEGORICAL                             
+        #"tweet_feature_dominant_topic_LDA_15"                                                               #50 CATEGORICAL                             
     ]                                                                           
     # Define the Y label
     Y_label = [
