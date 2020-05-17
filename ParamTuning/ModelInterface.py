@@ -1191,7 +1191,7 @@ class ModelInterface(object):
 #--------------------------------------------------
     def getTrainPool(self, X, Y=None):
         #l = np.array(Y).astype(np.int32)
-        return cat.Pool(X, label=Y, , cat_features=self.categorical_features)
+        return cat.Pool(X, label=Y, cat_features=self.categorical_features)
 #--------------------------------------------------
 
 #--------------------------------------------------
