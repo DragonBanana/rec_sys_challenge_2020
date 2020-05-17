@@ -77,7 +77,7 @@ def main():
         "tweet_feature_engagement_is_like"
     ]
 
-    model_name = "lightgbm_classifier"
+    model_name = "catboost_classifier"
     kind = "like"
 
     # Load train data
