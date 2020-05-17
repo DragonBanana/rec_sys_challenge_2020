@@ -1191,7 +1191,7 @@ class ModelInterface(object):
 #--------------------------------------------------
     def getTrainPool(self, X, Y=None):
         #l = np.array(Y).astype(np.int32)
-        return cat.Pool(X, label=l)
+        return cat.Pool(X, label=Y)
 #--------------------------------------------------
 
 #--------------------------------------------------
@@ -1200,7 +1200,10 @@ class ModelInterface(object):
 #              Used in CatBoost
 #--------------------------------------------------
     def getPool(self, X, Y=None):
-        l = np.array(Y).astype(np.int32)
+        if Y is not None:
+            l = np.array(Y).astype(np.int32)
+        else:
+            l = Y # which is None
         return cat.Pool(X, label=l)
 #--------------------------------------------------
 
