@@ -536,7 +536,7 @@ class ModelInterface(object):
             print("No train set passed to the model.")
         else:
             #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
-            model.fit(self.train, self.val, self.categorical_features)            
+            model.fit(self.train, self.val)            
             if self.val is not None:
                 best_iter = model.getBestIter()
             else:
@@ -1191,7 +1191,7 @@ class ModelInterface(object):
 #--------------------------------------------------
     def getTrainPool(self, X, Y=None):
         #l = np.array(Y).astype(np.int32)
-        return cat.Pool(X, label=Y)
+        return cat.Pool(X, label=Y, , cat_features=self.categorical_features)
 #--------------------------------------------------
 
 #--------------------------------------------------
@@ -1204,7 +1204,7 @@ class ModelInterface(object):
             l = np.array(Y).astype(np.int32)
         else:
             l = Y # which is None
-        return cat.Pool(X, label=l)
+        return cat.Pool(X, label=l, cat_features=self.categorical_features)
 #--------------------------------------------------
 
 #----------------------------------------------------------
