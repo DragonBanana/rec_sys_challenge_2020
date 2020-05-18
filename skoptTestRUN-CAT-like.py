@@ -108,7 +108,7 @@ def main():
                           model_shrink_mode= "Constant",
                           leaf_estimation_method= "Newton",
                           bootstrap_type= "Bernoulli",
-                          early_stopping_rounds= 15):
+                          early_stopping_rounds= 15)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
