@@ -536,6 +536,7 @@ class ModelInterface(object):
             print("No train set passed to the model.")
         else:
             #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
+            print("Training the model:")
             model.fit(self.train, self.val)            
             if self.val is not None:
                 best_iter = model.getBestIter()
@@ -547,6 +548,7 @@ class ModelInterface(object):
             print("No test set provided.")
         else:
             #dmat_test = self.getDMat(self.X_test, self.Y_test) #------------------------------------- DMATRIX GENERATOR
+            print("Evaluating the model:")
             prauc, rce, confmat, max_pred, min_pred, avg = model.evaluate(self.test)
         del model
 
