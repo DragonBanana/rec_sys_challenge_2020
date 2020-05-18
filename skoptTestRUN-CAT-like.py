@@ -91,28 +91,36 @@ def main():
     X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
+    print("checkpoint 1")
     OP = Optimizer(model_name, 
                    kind,
                    mode=0,
-                   path="CatBoostHoldout1",
+                   path="CatBoostHoldout",
                    path_log="CatBoostHoldout1",
                    make_log=True, 
                    make_save=False, 
-                   auto_save=False)
+                   auto_save=True)
 
+    print("checkpoint 2")
     OP.setParameters(n_calls=90, n_random_starts=35)
+    print("checkpoint 3")
     #Before introducing datasets put the categorical features otherwise they will be ignored.
     OP.setCategoricalFeatures([4,5,6,11,12,13,43,44,45,46,47])
+    print("checkpoint 4")
     OP.setParamsCAT(verbosity= 2,
                     boosting_type= "Plain",
                     model_shrink_mode= "Constant",
                     leaf_estimation_method= "Newton",
                     bootstrap_type= "Bernoulli",
                     early_stopping_rounds= 15)
+    print("checkpoint 5")
     OP.loadTrainData(X_train, Y_train)
+    print("checkpoint 6")
     OP.loadTestData(X_test, Y_test)
+    print("checkpoint 7")
     OP.loadValData(X_val, Y_val)
-    OP.setParamsCAT(early_stopping_rounds=15)
+    print("checkpoint 8")
+    #OP.setParamsCAT(early_stopping_rounds=15)
     res=OP.optimize()
 
 
