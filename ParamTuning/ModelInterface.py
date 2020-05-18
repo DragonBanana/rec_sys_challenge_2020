@@ -921,7 +921,7 @@ class ModelInterface(object):
                 self.train = self.getDMat(X_train, Y_train)
 
             elif self.model_name in "catboost_classifier":
-                self.train = self.getTrainPool(X_train, Y_train)
+                self.train = self.getPool(X_train, Y_train)
             '''
             #ADD IF WANT TO USE Dataset FROM LIGHTGBM
             elif self.model_name in "lightgbm_classifier":
@@ -1186,6 +1186,7 @@ class ModelInterface(object):
         return xgb.DMatrix(X, label=Y)
 #--------------------------------------------------
 
+'''
 #--------------------------------------------------
 #             Generator of Train Pool
 #--------------------------------------------------
@@ -1199,7 +1200,7 @@ class ModelInterface(object):
         return cat.Pool(X, label=Y, cat_features=self.categorical_features)
         print("Pool created.")
 #--------------------------------------------------
-
+'''
 #--------------------------------------------------
 #             Generator of Eval Pool
 #--------------------------------------------------
