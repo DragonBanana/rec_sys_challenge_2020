@@ -103,12 +103,12 @@ def main():
     OP.setParameters(n_calls=90, n_random_starts=35)
     #Before introducing datasets put the categorical features otherwise they will be ignored.
     OP.setCategoricalFeatures([4,5,6,11,12,13,43,44,45,46,47])
-    OP.setParamsCAT(self, verbosity= 2,
-                          boosting_type= "Plain",
-                          model_shrink_mode= "Constant",
-                          leaf_estimation_method= "Newton",
-                          bootstrap_type= "Bernoulli",
-                          early_stopping_rounds= 15)
+    OP.setParamsCAT(verbosity= 2,
+                    boosting_type= "Plain",
+                    model_shrink_mode= "Constant",
+                    leaf_estimation_method= "Newton",
+                    bootstrap_type= "Bernoulli",
+                    early_stopping_rounds= 15)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)

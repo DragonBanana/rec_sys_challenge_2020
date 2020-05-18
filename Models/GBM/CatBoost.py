@@ -63,6 +63,7 @@ class CatBoost(RecommenderGBM):
     def __init__(self,
                  kind="NO_NAME_GIVEN",
                  #Not in tuning dict
+                 thread_count=48,
                  verbose=True,
                  loss_function="Logloss",
                  eval_metric="Logloss",
@@ -125,7 +126,7 @@ class CatBoost(RecommenderGBM):
         self.early_stopping_rounds = early_stopping_rounds
         self.od_type = od_type
         # Number of threads
-        self.thread_count = -1
+        self.thread_count = thread_count
 
 
     def init_model(self):
