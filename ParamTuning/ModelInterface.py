@@ -1186,21 +1186,21 @@ class ModelInterface(object):
         return xgb.DMatrix(X, label=Y)
 #--------------------------------------------------
 
-'''
+
 #--------------------------------------------------
 #             Generator of Train Pool
 #--------------------------------------------------
 #              Used in CatBoost
 #--------------------------------------------------
-    def getTrainPool(self, X, Y=None):
-        #l = np.array(Y).astype(np.int32)
-        X = np.array(X)
-        Y = np.array(Y)
-        print("Creating Pool:")
-        return cat.Pool(X, label=Y, cat_features=self.categorical_features)
-        print("Pool created.")
+#    def getTrainPool(self, X, Y=None):
+#        #l = np.array(Y).astype(np.int32)
+#        X = np.array(X)
+#        Y = np.array(Y)
+#        print("Creating Pool:")
+#        return cat.Pool(X, label=Y, cat_features=self.categorical_features)
+#        print("Pool created.")
 #--------------------------------------------------
-'''
+
 #--------------------------------------------------
 #             Generator of Eval Pool
 #--------------------------------------------------
