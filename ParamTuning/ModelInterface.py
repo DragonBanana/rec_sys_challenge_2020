@@ -916,11 +916,13 @@ class ModelInterface(object):
     def loadTrainData(self, X_train=None, Y_train=None, holder_train=None):
         self.X_train=X_train
         self.Y_train=Y_train
+        print("flag1")
         if holder_train is None:
             if self.model_name in "xgboost_classifier":
                 self.train = self.getDMat(X_train, Y_train)
 
             elif self.model_name in "catboost_classifier":
+                print("flag2")
                 self.train = self.getTrainPool(X_train, Y_train)
             '''
             #ADD IF WANT TO USE Dataset FROM LIGHTGBM
@@ -1193,6 +1195,7 @@ class ModelInterface(object):
 #--------------------------------------------------
     def getTrainPool(self, X, Y=None):
         #l = np.array(Y).astype(np.int32)
+        print("Creating Pool:")
         return cat.Pool(X, label=Y, cat_features=self.categorical_features)
 #--------------------------------------------------
 

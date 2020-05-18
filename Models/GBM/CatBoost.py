@@ -63,7 +63,7 @@ class CatBoost(RecommenderGBM):
     def __init__(self,
                  kind="NO_NAME_GIVEN",
                  #Not in tuning dict
-                 thread_count=48,
+                 thread_count=-1,
                  verbose=True,
                  loss_function="Logloss",
                  eval_metric="Logloss",
