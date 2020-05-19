@@ -536,7 +536,8 @@ class ModelInterface(object):
             print("No train set passed to the model.")
         else:
             #dmat_train = self.getDMat(self.X_train, self.Y_train) #------------------------------------- DMATRIX GENERATOR
-            model.fit(self.train, self.val, self.categorical_features)            
+            print("Training the model:")
+            model.fit(self.train, self.val)            
             if self.val is not None:
                 best_iter = model.getBestIter()
             else:
@@ -547,6 +548,7 @@ class ModelInterface(object):
             print("No test set provided.")
         else:
             #dmat_test = self.getDMat(self.X_test, self.Y_test) #------------------------------------- DMATRIX GENERATOR
+            print("Evaluating the model:")
             prauc, rce, confmat, max_pred, min_pred, avg = model.evaluate(self.test)
         del model
 
@@ -1184,14 +1186,34 @@ class ModelInterface(object):
         return xgb.DMatrix(X, label=Y)
 #--------------------------------------------------
 
+
 #--------------------------------------------------
-#             Generator of Pool
+#             Generator of Train Pool
+#--------------------------------------------------
+#              Used in CatBoost
+#--------------------------------------------------
+#    def getTrainPool(self, X, Y=None):
+#        #l = np.array(Y).astype(np.int32)
+#        X = np.array(X)
+#        Y = np.array(Y)
+#        print("Creating Pool:")
+#        return cat.Pool(X, label=Y, cat_features=self.categorical_features)
+#        print("Pool created.")
+#--------------------------------------------------
+
+#--------------------------------------------------
+#             Generator of Eval Pool
 #--------------------------------------------------
 #              Used in CatBoost
 #--------------------------------------------------
     def getPool(self, X, Y=None):
-        l = np.array(Y).astype(np.int32)
-        return cat.Pool(X, label=l)
+        X = np.array(X)
+        Y = np.array(Y)
+        if Y is not None:
+            l = np.array(Y).astype(np.int32)
+        else:
+            l = Y # which is None
+        return cat.Pool(X, label=l, cat_features=self.categorical_features)
 #--------------------------------------------------
 
 #----------------------------------------------------------

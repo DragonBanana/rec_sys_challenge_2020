@@ -362,4 +362,6 @@ class Optimizer(object):
 
 
     def setCategoricalFeatures(self,categorical_features=None):
+        if self.MI is None:
+            self.defineMI()
         self.MI.setCategoricalFeatures(categorical_features)

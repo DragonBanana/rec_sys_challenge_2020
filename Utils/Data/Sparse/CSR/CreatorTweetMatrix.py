@@ -28,6 +28,20 @@ class CreatorTweetMatrix(CSR_SparseMatrix):
         creations_arr = np.array([1] * len(self.df))
 
         ctm = sps.coo_matrix((creations_arr, (creator_ids_arr, tweet_ids_arr)),
-                             shape=(self.max_user_id+1, self.max_tweet_id+1)).tocsr()
+                             shape=(self.max_user_id, self.max_tweet_id)).tocsr()
         
         sps.save_npz('ctm.npz', ctm)
+
+    def get_as_urm(self):
+
+        # creation of the creator - tweet matrix
+        self.df = self.df.drop_duplicates()
+        # the matrix will be User X Tweet
+        creator_ids_arr = self.df['mapped_feature_creator_id'].values
+        tweet_ids_arr = self.df['mapped_feature_tweet_id'].values
+        creations_arr = np.array([1] * len(self.df))
+
+        ctm = sps.coo_matrix((creations_arr, (creator_ids_arr, tweet_ids_arr)),
+                             shape=(self.max_user_id, self.max_tweet_id)).tocsr()
+
+        return ctm

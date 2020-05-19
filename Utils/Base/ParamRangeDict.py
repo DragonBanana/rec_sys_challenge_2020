@@ -149,30 +149,51 @@ def lgbmName():
     return param_name_dict
 
 
-
+#----------------------------------------------------------------
+#                   ABOUT CAT PARAMETERS
+#----------------------------------------------------------------
+# interations:     Maximum number of trees that can be built.
+# depth:           Depth of the trees (model set max to 16).
+# learning_rate:   Learning rate, reduces the gradient step.
+# l2_leaf_reg:     L2 regularization.
+# subsample:       Sample rate for begging.
+# random_strenght: The amount of randomness to use for scoring 
+#                   splits when the tree structure is selected. 
+#                   Use this parameter to avoid overfitting the 
+#                   model.
+# leaf_estimation_iterations: The number of gradient steps when 
+#                              calculating the values in leaves.
+# scale_pos_weight:           The weight for class 1 in binary 
+#                              classification. The value is used 
+#                              as a multiplier for the weights of 
+#                              objects from class 1.      
+# model_shrink_rate:          The constant used to calculate the 
+#                              coefficient for multiplying the 
+#                              model on each iteration.
+#----------------------------------------------------------------
 def catRange(kind):
     param_range_dict = [Integer(600,601),                   # iterations
                         Integer(1,16),                      # depth
                         Real(0.0001, 1, 'log_uniform'),     # learning_rate
-                        Real(0.0001, 30, 'log_uniform'),    # l2_leaf_reg
+                        Real(0.0001, 40, 'log_uniform'),    # l2_leaf_reg
                         Real(0.1, 0.9),                     # subsample
-                        Real(0.0001, 30, 'log_uniform'),    # random_strenght
+                        Real(0.0001, 60),                   # random_strenght
                         Real(0.1, 1),                       # colsample_bylevel
-                        Integer(10, 100),                   # leaf_estimation_iterations
+                        Integer(5,300),                     # leaf_estimation_iterations
                         Real(1,5),                          # scale_pos_weight
-                        Real(0.001,1, 'log_uniform')]       # model_shrink_rate
+                        Real(0.0001,2, 'log_uniform')]      # model_shrink_rate
 
-    '''
-    #PERSONALIZED SCALE_POS_WEIGHT---------------SET PROPER RANGE FOR EACH CLASS
+    
+    # PERSONALIZED SCALE_POS_WEIGHT
+    # From documentation put it to neg_samples/pos_samples 
     if kind in LIKE:
-        param_range_dict[9] = Real(0.9, 1.1)
+        param_range_dict[8] = Real(0.5, 5)
     elif kind in RETWEET:
-        param_range_dict[9] = Real(0.9, 1.1)
-    elif kind in COMMENT:
-        param_range_dict[9] = Real(0.9, 1.1)
+        param_range_dict[8] = Real(1, 15)
     elif kind in REPLY:
-        param_range_dict[9] = Real(0.9, 1.1)
-    '''
+        param_range_dict[8] = Real(15, 55)
+    elif kind in COMMENT:
+        param_range_dict[8] = Real(80, 170)
 
     return param_range_dict
 
