@@ -6,6 +6,7 @@ from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
 from Utils.Data.Features.Generated.CreatorFeature.CreatorFrequencyUniqueTokens import CreatorFrequencyUniqueTokens
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
+from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowsHashtag import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
@@ -152,6 +153,14 @@ def populate_features():
         #result[("tweet_feature_dominant_topic_LDA_20", dataset_id)] = TweetFeatureDominantTopicLDA20(dataset_id)
         result[("tweet_feature_token_length", dataset_id)] = TweetFeatureTokenLength(dataset_id)
         result[("tweet_feature_token_length_unique", dataset_id)] = TweetFeatureTokenLengthUnique(dataset_id)
+
+        result[("engager_feature_knows_hashtag_positive", dataset_id)] = EngagerKnowsHashtagPositive(dataset_id)
+        result[("engager_feature_knows_hashtag_negative", dataset_id)] = EngagerKnowsHashtagNegative(dataset_id)
+        result[("engager_feature_knows_hashtag_like", dataset_id)] = EngagerKnowsHashtagLike(dataset_id)
+        result[("engager_feature_knows_hashtag_reply", dataset_id)] = EngagerKnowsHashtagReply(dataset_id)
+        result[("engager_feature_knows_hashtag_rt", dataset_id)] = EngagerKnowsHashtagRetweet(dataset_id)
+        result[("engager_feature_knows_hashtag_comment", dataset_id)] = EngagerKnowsHashtagComment(dataset_id)
+
         # NUMBER OF PREVIOUS ENGAGEMENTS
         result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagement(dataset_id)
