@@ -148,7 +148,7 @@ def populate_features():
         #result[("text_embeddings_clean_PCA_10", dataset_id)] = TweetFeatureTextEmbeddingsPCA10(dataset_id)
         result[("text_embeddings_hashtags_mentions_LDA_15", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(dataset_id)
         #result[("text_embeddings_hashtags_mentions_LDA_20", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA20(dataset_id)
-        result[("tweet_feature_dominant_topic_LDA_15", dataset_id)] = TweetFeatureDominantTopicLDA15(dataset_id)
+        #result[("tweet_feature_dominant_topic_LDA_15", dataset_id)] = TweetFeatureDominantTopicLDA15(dataset_id)
         #result[("tweet_feature_dominant_topic_LDA_20", dataset_id)] = TweetFeatureDominantTopicLDA20(dataset_id)
         result[("tweet_feature_token_length", dataset_id)] = TweetFeatureTokenLength(dataset_id)
         result[("tweet_feature_token_length_unique", dataset_id)] = TweetFeatureTokenLengthUnique(dataset_id)
