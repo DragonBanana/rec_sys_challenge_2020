@@ -11,6 +11,7 @@ class CSR_SparseMatrix(ABC):
     def __init__(self, matrix_name: str):
         self.matrix_name = matrix_name
         self.path = pl.Path(f"{CSR_SparseMatrix.ROOT_PATH}/sparse/{self.matrix_name}.npz")
+        self.sim_path = pl.Path(f"{CSR_SparseMatrix.ROOT_PATH}/sparse/{self.matrix_name}_sim.npz")
 
     def has_matrix(self):
         return self.path.is_file()
@@ -32,3 +33,14 @@ class CSR_SparseMatrix(ABC):
     def save_matrix(self, matrix):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         sps.save_npz(self.path, matrix)
+
+    def load_similarity(self):
+        if self.path.is_file():
+            matrix = sps.load_npz(self.sim_path)
+            return matrix
+        else:
+            raise Exception("File not found. Generate the similarity first")
+
+    def save_similarity(self, sim_matrix):
+        self.sim_path.parent.mkdir(parents=True, exist_ok=True)
+        sps.save_npz(self.sim_path, sim_matrix)

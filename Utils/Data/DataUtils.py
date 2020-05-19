@@ -9,7 +9,9 @@ from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage impor
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementWithLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
+from Utils.Data.Features.Generated.EnsemblingFeature.SimilarityFoldEnsembling import HashtagSimilarityFoldEnsembling
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike1, \
     XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1
 from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
@@ -158,6 +160,13 @@ def populate_features():
         result[("engager_feature_number_of_previous_positive_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagement(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousEngagement(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS
+        result[("engager_feature_number_of_previous_like_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(dataset_id)
+        result[("engager_feature_number_of_previous_reply_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(dataset_id)
+        result[("engager_feature_number_of_previous_retweet_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagementWithLanguage(dataset_id)
+        result[("engager_feature_number_of_previous_comment_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementWithLanguage(dataset_id)
+        result[("engager_feature_number_of_previous_positive_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementWithLanguage(dataset_id)
+        result[("engager_feature_number_of_previous_negative_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementWithLanguage(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS RATIO
         result[("engager_feature_number_of_previous_like_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementRatio(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementRatio(dataset_id)
@@ -199,7 +208,10 @@ def populate_features():
         result[("xgb_fold_ensembling_retweet_1", dataset_id)] = XGBFoldEnsemblingRetweet1(dataset_id)
         result[("xgb_fold_ensembling_reply_1", dataset_id)] = XGBFoldEnsemblingReply1(dataset_id)
         result[("xgb_fold_ensembling_comment_1", dataset_id)] = XGBFoldEnsemblingComment1(dataset_id)
-
+        # SIMILARITY FOLD ENSEMBLING
+        result[("hashtag_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
+        result[("link_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
+        result[("domain_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
 
 
 

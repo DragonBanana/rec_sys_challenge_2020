@@ -208,3 +208,23 @@ def get_dictionary_array(dictionary_name: str):
 def get_csr_matrix(matrix_name: str):
     if matrix_name in SPARSE_MATRIXES.keys():
         return SPARSE_MATRIXES[matrix_name].load_or_create()
+
+def oversample(dataframe: pd.DataFrame, column_name: str, value, desired_percentage: float):
+    assert desired_percentage <= 1 and desired_percentage >= 0, "The desired percentage should be between 0 and 1"
+
+    current_size = len(dataframe)
+
+    sample = dataframe[dataframe[column_name] == value]
+    current_selected_row_size = len(sample)
+
+    current_percentage = current_selected_row_size / current_size
+    delta_percentage = desired_percentage - current_percentage
+
+    assert delta_percentage > 0, "Something went wrong with oversampling, is the desired percentage high enough?"
+
+    n_new_rows = int(delta_percentage * current_size)
+
+    sample = sample.sample(n_new_rows, replace=True)
+    dataframe = pd.concat([dataframe, sample])
+    dataframe.reset_index(drop=True, inplace=True)
+    return dataframe
