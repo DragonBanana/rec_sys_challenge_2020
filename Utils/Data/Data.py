@@ -187,7 +187,7 @@ def get_feature(feature_name: str, dataset_id: str):
 
 def get_feature_reader(feature_name: str, dataset_id: str, chunksize: int = 1000):
     if (feature_name, dataset_id) in FEATURES.keys():
-        reader = FEATURES[(feature_name, dataset_id)].load_feature_reader()
+        reader = FEATURES[(feature_name, dataset_id)].load_feature_reader(chunksize=chunksize)
         return reader
     else:
         raise Exception(f"Feature {feature_name} not found ")
