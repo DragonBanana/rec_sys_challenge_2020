@@ -1,6 +1,6 @@
 import pathlib
 
-import Models.GBM as wrapper
+import Models.GBM.XGBoost as wrapper
 import Utils.Data as data
 from Utils.Data.Features.Generated.EnsemblingFeature.EnsemblingFeatureAbstract import EnsemblingFeatureAbstract
 import xgboost as xgb
@@ -32,7 +32,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         return self.path
 
     def _load_model(self):
-        model = wrapper.XGBoost.XGBoost()
+        model = wrapper.XGBoost()
         model.load_model(self.model_path)
         return model
 
@@ -40,7 +40,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         # Generate a random number
         random_n = random.random()
         # Initiate XGBoost wrapper
-        xgb_wrapper = wrapper.XGBoost.XGBoost(
+        xgb_wrapper = wrapper.XGBoost(
             num_rounds=self.param_dict['num_rounds'],
             max_depth=self.param_dict['max_depth'],
             min_child_weight=self.param_dict['min_child_weight'],
