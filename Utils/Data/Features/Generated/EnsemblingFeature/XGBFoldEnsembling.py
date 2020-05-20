@@ -58,7 +58,7 @@ class XGBFoldEnsemblingLike1(XGBFoldEnsemblingAbstract):
         ]
         Y_label = [f"tweet_feature_engagement_is_{label}"]
         xgb_parameters = {
-            'num_rounds': 500,
+            'num_rounds': 420,
             'max_depth': 14,
             'min_child_weight': 5,
             'colsample_bytree': 0.883987395961288,
