@@ -17,13 +17,13 @@ def find_and_increase_engager(eng_id, cre_id, lang, dictionary):
 
 def find_and_increase_creator(eng_id, cre_id, lang, dictionary):
     # Number of time the user_1 has interacted with user_2
+    print(f"{eng_id} {cre_id} {lang}")
     current_count = dictionary.get((eng_id, lang), 0)
     dictionary[(cre_id, lang)] = dictionary.get((cre_id, lang), 0) + 1
     return current_count
 
 
 class EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(GeneratedFeaturePickle):
-
     # Has the creator ever liked a tweet of the engager? If yes, how many times?
     def __init__(self, dataset_id: str):
         super().__init__("engager_feature_number_of_previous_like_engagement_with_language",
@@ -32,7 +32,6 @@ class EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(GeneratedFeatureP
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/number_of_previous_engagement_with_language/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/number_of_previous_engagement_with_language/{self.feature_name}.csv.gz")
-
     def create_feature(self):
         # Check if the dataset id is train or test
         if is_test_or_val_set(self.dataset_id):
@@ -41,14 +40,12 @@ class EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(GeneratedFeatureP
         else:
             train_dataset_id = self.dataset_id
             test_dataset_id = get_test_or_val_set_id_from_train(train_dataset_id)
-
         # Load features
         creation_timestamps_feature = RawFeatureTweetTimestamp(train_dataset_id)
         engagers_feature = MappedFeatureEngagerId(train_dataset_id)
         creators_feature = MappedFeatureCreatorId(train_dataset_id)
         language_feature = MappedFeatureTweetLanguage(train_dataset_id)
         engagement_feature = TweetFeatureEngagementIsLike(train_dataset_id)
-
         dataframe = pd.concat([
             creation_timestamps_feature.load_or_create(),
             engagers_feature.load_or_create(),
@@ -56,14 +53,11 @@ class EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(GeneratedFeatureP
             creators_feature.load_or_create(),
             language_feature.load_or_create()
         ], axis=1)
-
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
         # KEY: a tuple (creator, engager)
         # VALUE: the number of time the engager has engaged with the creator
         # If key does not exists -> 0 times.
         engagement_dict = {}
-
         result = pd.DataFrame(
             [find_and_increase_engager(eng_id, cre_id, lang, engagement_dict)
              if engagement
@@ -75,28 +69,22 @@ class EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(GeneratedFeatureP
                     dataframe[engagement_feature.feature_name])],
             index=dataframe.index
         )
-
-        if not EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(
-                train_dataset_id).has_feature():
+        if not EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(train_dataset_id).has_feature():
             result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(train_dataset_id).save_feature(result)
-        if not EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(
-                test_dataset_id).has_feature():
+        if not EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(test_dataset_id).has_feature():
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
             engagers_feature = MappedFeatureEngagerId(test_dataset_id)
-            language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
             creators_feature = MappedFeatureCreatorId(test_dataset_id)
-
             dataframe = pd.concat([
                 creation_timestamps_feature.load_or_create(),
                 engagers_feature.load_or_create(),
                 creators_feature.load_or_create(),
                 language_feature.load_or_create()
             ], axis=1)
-
             dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             result = pd.DataFrame(
                 [find_and_increase_creator(eng_id, cre_id, lang, engagement_dict)
                  for eng_id, cre_id, lang
@@ -106,7 +94,6 @@ class EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(GeneratedFeatureP
                 index=dataframe.index
             )
             dataframe.sort_index(inplace=True)
-
             EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(test_dataset_id).save_feature(result)
 
 class EngagerFeatureNumberOfPreviousRetweetEngagementWithLanguage(GeneratedFeaturePickle):
@@ -172,7 +159,7 @@ class EngagerFeatureNumberOfPreviousRetweetEngagementWithLanguage(GeneratedFeatu
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
             engagers_feature = MappedFeatureEngagerId(test_dataset_id)
-            language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
             creators_feature = MappedFeatureCreatorId(test_dataset_id)
 
             dataframe = pd.concat([
@@ -259,7 +246,7 @@ class EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(GeneratedFeature
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
             engagers_feature = MappedFeatureEngagerId(test_dataset_id)
-            language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
             creators_feature = MappedFeatureCreatorId(test_dataset_id)
 
             dataframe = pd.concat([
@@ -347,7 +334,7 @@ class EngagerFeatureNumberOfPreviousCommentEngagementWithLanguage(GeneratedFeatu
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
             engagers_feature = MappedFeatureEngagerId(test_dataset_id)
-            language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
             creators_feature = MappedFeatureCreatorId(test_dataset_id)
 
             dataframe = pd.concat([
@@ -434,7 +421,7 @@ class EngagerFeatureNumberOfPreviousPositiveEngagementWithLanguage(GeneratedFeat
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
             engagers_feature = MappedFeatureEngagerId(test_dataset_id)
-            language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
             creators_feature = MappedFeatureCreatorId(test_dataset_id)
 
             dataframe = pd.concat([
@@ -521,7 +508,7 @@ class EngagerFeatureNumberOfPreviousNegativeEngagementWithLanguage(GeneratedFeat
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
             engagers_feature = MappedFeatureEngagerId(test_dataset_id)
-            language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
             creators_feature = MappedFeatureCreatorId(test_dataset_id)
 
             dataframe = pd.concat([

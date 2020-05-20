@@ -11,7 +11,7 @@ from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetw
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementWithLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
-from Utils.Data.Features.Generated.EnsemblingFeature.SimilarityFoldEnsembling import HashtagSimilarityFoldEnsembling
+from Utils.Data.Features.Generated.EnsemblingFeature.SimilarityFoldEnsembling import *
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike1, \
     XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1
 from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
@@ -36,18 +36,20 @@ import os
 
 DATASET_IDS = [
     "train",
-    "train_days_1",
-    "train_days_12",
-    "train_days_123",
-    "train_days_1234",
-    "train_days_12345",
+    # Removing those datasets to speed up the generation of features
+    # "train_days_1",
+    # "train_days_12",
+    # "train_days_123",
+    # "train_days_1234",
+    # "train_days_12345",
     "train_days_123456",
     "test",
-    "val_days_2",
-    "val_days_3",
-    "val_days_4",
-    "val_days_5",
-    "val_days_6",
+    # Removing those datasets to speed up the generation of features
+    # "val_days_2",
+    # "val_days_3",
+    # "val_days_4",
+    # "val_days_5",
+    # "val_days_6",
     "val_days_7",
     "holdout/train",
     "holdout/test"
@@ -160,7 +162,7 @@ def populate_features():
         result[("engager_feature_number_of_previous_positive_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagement(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousEngagement(dataset_id)
-        # NUMBER OF PREVIOUS ENGAGEMENTS
+        # NUMBER OF PREVIOUS ENGAGEMENTS WITH LANGUAGE
         result[("engager_feature_number_of_previous_like_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(dataset_id)
         result[("engager_feature_number_of_previous_retweet_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagementWithLanguage(dataset_id)

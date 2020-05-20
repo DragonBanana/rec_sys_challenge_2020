@@ -25,7 +25,7 @@ class HashtagSimilarityFoldEnsembling(GeneratedFeaturePickle):
         feature_name = f"hashtag_similarity_fold_ensembling_{label}"
         super().__init__(feature_name, dataset_id)
         self.pck_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/similarity_ensembling/{self.feature_name}.pck.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/similarity_ensembling/{self.feature_name}.pck.gz")
         # self.csv_path = pl.Path(
         #     f"{Feature.ROOT_PATH}/{self.dataset_id}/similarity_ensembling/{self.feature_name}.csv.gz")
         # self.number_of_folds = number_of_folds
@@ -137,3 +137,35 @@ class HashtagSimilarityFoldEnsembling(GeneratedFeaturePickle):
         #
         #     # Save it as a feature
         #     self.save_feature(result)
+
+class DomainSimilarityFoldEnsembling(GeneratedFeaturePickle):
+
+    def __init__(self,
+                 dataset_id: str,
+                 label: str,
+                 number_of_folds: int = 5
+                 ):
+        feature_name = f"domain_similarity_fold_ensembling_{label}"
+        super().__init__(feature_name, dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/similarity_ensembling/{self.feature_name}.pck.gz")
+
+
+    def create_feature(self):
+        raise Exception("This feature is created externally. See gen_hashtag_similarity...py")
+
+class LinkSimilarityFoldEnsembling(GeneratedFeaturePickle):
+
+    def __init__(self,
+                 dataset_id: str,
+                 label: str,
+                 number_of_folds: int = 5
+                 ):
+        feature_name = f"link_similarity_fold_ensembling_{label}"
+        super().__init__(feature_name, dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/similarity_ensembling/{self.feature_name}.pck.gz")
+
+
+    def create_feature(self):
+        raise Exception("This feature is created externally. See gen_hashtag_similarity...py")
