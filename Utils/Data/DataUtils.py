@@ -149,7 +149,7 @@ def populate_features():
         result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
         #result[("text_embeddings_clean_PCA_32", dataset_id)] = TweetFeatureTextEmbeddingsPCA32(dataset_id)
         #result[("text_embeddings_clean_PCA_10", dataset_id)] = TweetFeatureTextEmbeddingsPCA10(dataset_id)
-        result[("text_embeddings_hashtags_mentions_LDA_15", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(dataset_id)
+        #result[("text_embeddings_hashtags_mentions_LDA_15", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(dataset_id)
         #result[("text_embeddings_hashtags_mentions_LDA_20", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA20(dataset_id)
         #result[("tweet_feature_dominant_topic_LDA_15", dataset_id)] = TweetFeatureDominantTopicLDA15(dataset_id)
         #result[("tweet_feature_dominant_topic_LDA_20", dataset_id)] = TweetFeatureDominantTopicLDA20(dataset_id)
@@ -371,13 +371,13 @@ def cache_dataset_as_svm(filename, X_train, Y_train):
     if pathlib.Path(f"{filename}.svm").exists():
         raise Exception("file already exists, be careful to overwrite it")
 
-    X_chunks = np.array_split(X_train, 10)
-    Y_chunks = np.array_split(Y_train, 10)
+    X_chunks = np.array_split(X_train, 100)
+    Y_chunks = np.array_split(Y_train, 100)
 
     pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
 
     partial_to_svm = functools.partial(to_svm, filename=filename)
-    with mp.Pool(8) as p:
+    with mp.Pool(30) as p:
         p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
 
     cmd = f'cat temp/*{filename}.svm > {filename}.svm'
