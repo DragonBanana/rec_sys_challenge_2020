@@ -1,20 +1,14 @@
-import xgboost as xgb
+import math
+import pickle
+
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_curve, auc, log_loss
-import time
-import pickle
-import os.path
-import os
-import datetime as dt
-import sys
-import math
+import xgboost as xgb
+
 from Utils.Base.RecommenderGBM import RecommenderGBM
-from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.Data import Data
-from Utils.Submission.Submission import create_submission_file
 from Utils.Eval.ConfMatrix import confMatrix
+from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
 
 class XGBoost(RecommenderGBM):

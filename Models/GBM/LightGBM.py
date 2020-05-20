@@ -1,16 +1,11 @@
+import os.path
+
 import lightgbm as lgb
 import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_curve, auc, log_loss
-import time
-import pickle
-import os.path
-import datetime as dt
-import sys
+
 from Utils.Base.RecommenderGBM import RecommenderGBM
-from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.Eval.ConfMatrix import confMatrix
+from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
 
 #TODO: The categorical features must be imported from load_data() method

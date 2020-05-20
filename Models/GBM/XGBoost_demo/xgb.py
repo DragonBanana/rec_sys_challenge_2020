@@ -1,13 +1,12 @@
-import xgboost as xgb
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_curve, auc, log_loss
-import time
 import pickle
-import os.path
-import sys
+import time
+
+import pandas as pd
+import xgboost as xgb
+from sklearn.model_selection import train_test_split
+
 from Utils.Eval.Metrics import ComputeMetrics as cm
+
 
 def main():
     '''
