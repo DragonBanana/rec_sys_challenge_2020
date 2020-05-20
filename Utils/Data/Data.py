@@ -184,6 +184,14 @@ def get_feature(feature_name: str, dataset_id: str):
     else:
         raise Exception(f"Feature {feature_name} not found ")
 
+
+def get_feature_reader(feature_name: str, dataset_id: str, chunksize: int = 1000):
+    if (feature_name, dataset_id) in FEATURES.keys():
+        reader = FEATURES[(feature_name, dataset_id)].load_feature_reader()
+        return reader
+    else:
+        raise Exception(f"Feature {feature_name} not found ")
+
 def get_feature_batch(feature_name: str, dataset_id: str, total_n_split: int, split_n: int, sample: float):
     if (feature_name, dataset_id) in FEATURES.keys():
         df = np.array_split(get_feature(feature_name, dataset_id).sample(frac=sample, random_state=0),
