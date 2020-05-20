@@ -40,9 +40,6 @@ class EngagerKnowsHashtagAbstract(GeneratedFeaturePickle, ABC):
     def _save_test_result(cls, result, test_dataset_id):
         cls(test_dataset_id).save_feature(result)
 
-    def similarity(self, prev_tweets_mat, curr_tweet_embedding):
-        return np.dot(prev_tweets_mat,curr_tweet_embedding).mean()
-
     def find_similarity_and_update(self, engager_id, hashtag_arr, prev_hashtags_dictionary: dict,
                                    already_seen_users_set: set, is_positive_engagement: bool):
         # if there is no hashtag in the current tweet

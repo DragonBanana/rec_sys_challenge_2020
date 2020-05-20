@@ -3,7 +3,7 @@ import Models.GBM as wrapper
 from Utils.Data.Features.Generated.EnsemblingFeature.EnsemblingFeatureAbstract import EnsemblingFeatureAbstract
 import pandas as pd
 import time
-
+import hashlib
 
 class LGBMEnsemblingFeature(EnsemblingFeatureAbstract):
     path = "lgbm_ensembling"
@@ -17,9 +17,15 @@ class LGBMEnsemblingFeature(EnsemblingFeatureAbstract):
                  categorical_features_set: set,
                  ):
 
+        features = list(df_train.columns)
+        label = list(df_train_label.columns)
+        hash_features = hashlib.md5(repr(features).encode('utf-8')).hexdigest()
+        hash_label = hashlib.md5(repr(label).encode('utf-8')).hexdigest()
+        hash_param_dict = hashlib.md5(repr(param_dict.items()).encode('utf-8')).hexdigest()
+        hashcode = f"{hash_features}_{hash_label}_{hash_param_dict}"
+        self.feature_name = f"lgbm_blending_{hashcode}"
         self.dataset_id = dataset_id
         self.categorical_features_set = categorical_features_set
-        self.feature_name = f"lgbm_ensembling"
         super().__init__(df_train, df_train_label, df_to_predict, param_dict)
 
     def _get_dataset_id(self):
@@ -53,7 +59,6 @@ class LGBMEnsemblingFeature(EnsemblingFeatureAbstract):
     def create_feature(self):
         # Load the model
         model = self._get_model()
-
         # Predict the labels
         predictions = model.get_prediction(self.df_to_predict)
         # Encapsulate the labels
