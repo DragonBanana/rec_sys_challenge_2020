@@ -13,7 +13,7 @@ from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 
 
-def main():  
+def main(): 
     # Defining the dataset used
     train_dataset = "holdout/train"
     test_dataset = "holdout/test"
@@ -226,12 +226,13 @@ def main():
                    path_log="CatBoostHoldout1",
                    make_log=True, 
                    make_save=False, 
-                   auto_save=True,
-                   x0=x,
-                   y0=y)
+                   auto_save=True)
 
     print("checkpoint 2")
-    OP.setParameters(n_calls=50, n_random_starts=20)
+    OP.setParameters(n_calls=50, 
+                     n_random_starts=20,
+                     x0=x,
+                     y0=y)
     print("checkpoint 3")
     #Before introducing datasets put the categorical features otherwise they will be ignored.
     OP.setCategoricalFeatures([4,5,6,11,12,13,43,44,45,46,47])
