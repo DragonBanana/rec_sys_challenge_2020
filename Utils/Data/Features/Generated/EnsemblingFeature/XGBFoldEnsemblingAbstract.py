@@ -55,7 +55,7 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             # Train multiple models with 1-fold out strategy
             for i in range(self.number_of_folds):
                 # Compute the train set
-                X_train = pd.concat([X_train_folds[x] for x in range(self.number_of_folds) if x is not i])
+                X_train = pd.concat([X_train_folds[x] for x in range(self.number_of_folds) if x is not i]).sample(frac=0.2)
                 Y_train = pd.concat([Y_train_folds[x] for x in range(self.number_of_folds) if x is not i])
 
                 # Compute the test set
@@ -82,7 +82,7 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             train_dataset_id = get_train_set_id_from_test_or_val_set(test_dataset_id)
 
             # Load the train dataset
-            X_train = data.Data.get_dataset(features=self.features, dataset_id=train_dataset_id)
+            X_train = data.Data.get_dataset(features=self.features, dataset_id=train_dataset_id).sample(frac=0.2)
             Y_train = data.Data.get_dataset(features=self.label, dataset_id=train_dataset_id)
 
             # Load the test dataset

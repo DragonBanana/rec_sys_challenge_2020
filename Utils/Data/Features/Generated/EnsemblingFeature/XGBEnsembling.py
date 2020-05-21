@@ -26,10 +26,10 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         return self.dataset_id
 
     def _get_path(self):
-        return self.dataset_id
+        return self.path
 
     def _get_feature_name(self):
-        return self.path
+        return self.feature_name
 
     def _load_model(self):
         model = wrapper.XGBoost()
