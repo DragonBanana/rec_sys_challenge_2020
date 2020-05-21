@@ -74,6 +74,8 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXGB(self, param):
+        #Log time
+        start_log_time = time.time()
         if self.make_log is True:
             self.saveParam(param)
         #Initializing the model it it wasn't already
@@ -126,7 +128,8 @@ class ModelInterface(object):
                          confmat, 
                          max_pred, 
                          min_pred, 
-                         avg)
+                         avg,
+                         start_log_time)
         
         #Returning the dumbly combined scores
         if max_pred != min_pred:
@@ -147,6 +150,8 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXgbBatch(self, param):
+        #Log time
+        start_log_time = time.time()
         #Saving parameters
         if self.make_log is True:
             self.saveParam(param)
@@ -262,7 +267,8 @@ class ModelInterface(object):
                          tot_confmat, 
                          max_pred, 
                          min_pred, 
-                         avg)
+                         avg,
+                         start_log_time)
         
         #Returning the dumbly combined scores
         return self.metriComb(tot_prauc, tot_rce)
@@ -280,6 +286,8 @@ class ModelInterface(object):
 #------------------------------------------------------
     #Score function for the XGBoost model
     def blackBoxXgbNCV(self, param):
+        #Log time
+        start_log_time = time.time()
         #print(param)
         #Saving parameters
         if self.make_log is True:
@@ -402,7 +410,8 @@ class ModelInterface(object):
                          tot_confmat, 
                          max_pred, 
                          min_pred, 
-                         avg)
+                         avg,
+                         start_log_time)
         
         #Returning the dumbly combined scores
         return self.metriComb(tot_prauc, tot_rce)
@@ -432,6 +441,8 @@ class ModelInterface(object):
 #-----------------------------------------
     # Score function for the lightGBM model
     def blackBoxLGB(self, param):
+        #Log time
+        start_log_time = time.time()
         if self.make_log is True:
             self.saveParam(param)
         #Initializing the model it it wasn't already
@@ -482,7 +493,8 @@ class ModelInterface(object):
                          confmat, 
                          max_pred, 
                          min_pred, 
-                         avg)
+                         avg,
+                         start_log_time)
         
         #Returning the dumbly combined scores
         return self.metriComb(prauc, rce)
@@ -507,6 +519,8 @@ class ModelInterface(object):
     #-------------------------------------- 
     # Score function for the CatBoost model
     def blackBoxCAT(self, param):
+        #Log time
+        start_log_time = time.time()
         if self.make_log is True:
             self.saveParam(param)
         #Initializing the model it it wasn't already
@@ -560,7 +574,8 @@ class ModelInterface(object):
                          confmat, 
                          max_pred, 
                          min_pred, 
-                         avg)
+                         avg,
+                         start_log_time)
         
         #Returning the scores
         return self.metriComb(prauc, rce)
@@ -569,6 +584,8 @@ class ModelInterface(object):
     
     # Score function for the CatBoost model
     def blackBoxCatBatch(self, param):
+        #Log time
+        start_log_time = time.time()
         #Saving parameters
         if self.make_log is True:
             self.saveParam(param)
@@ -682,7 +699,8 @@ class ModelInterface(object):
                          tot_confmat, 
                          max_pred, 
                          min_pred, 
-                         avg)
+                         avg,
+                         start_log_time)
         
         #Returning the dumbly combined scores
         return self.metriComb(tot_prauc, tot_rce)
@@ -690,6 +708,8 @@ class ModelInterface(object):
     
     # Score function for the CatBoost model
     def blackBoxCatNCV(self, param):
+        #Log time
+        start_log_time = time.time()
         #print(param)
         #Saving parameters
         if self.make_log is True:
@@ -810,7 +830,8 @@ class ModelInterface(object):
                          tot_confmat, 
                          max_pred, 
                          min_pred, 
-                         avg)
+                         avg,
+                         start_log_time)
         
         #Returning the dumbly combined scores
         return self.metriComb(tot_prauc, tot_rce)
@@ -1020,7 +1041,7 @@ class ModelInterface(object):
         telegram_bot_send_update(self.path+"\n"+telegram_message)
 
 
-    def saveRes(self, best_iter, prauc, rce, confmat, max_arr, min_arr, avg):
+    def saveRes(self, best_iter, prauc, rce, confmat, max_arr, min_arr, avg, log_time):
         if self.path is None:
             # Taking the path provided
             self.path = str(dt.datetime.now().strftime("%m_%d_%H_%M_%S")) + ".log"
@@ -1035,6 +1056,8 @@ class ModelInterface(object):
 
             obj = self.metriComb(prauc, rce)
             to_write = "-------\n"
+            to_write += "EXECUTION TIME: " + str(time.time()log_time) + "\n"
+            to_write += "-------\n"
 
             to_write += "best_es_iteration: " + str(best_iter) + "\n"
 

@@ -70,7 +70,7 @@ if __name__ == '__main__':
         "tweet_feature_engagement_is_like"
     ]
     kind="like"
-    cat = [4,5,6,11,12,13,43,44,45,46,47,50]
+    cat = [4,5,6,11,12,13,43,44,45,46,47]
 
     '''
     # Load train data
