@@ -222,8 +222,8 @@ def main():
     OP = Optimizer(model_name, 
                    kind,
                    mode=0,
-                   path="CatBoostHoldout",
-                   path_log="CatBoostHoldout1",
+                   path="CatBoostHoldoutGLHF",
+                   path_log="CatBoostHoldoutGLHF",
                    make_log=True, 
                    make_save=False, 
                    auto_save=True)
