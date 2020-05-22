@@ -126,7 +126,7 @@ def get_dataset(features: list, dataset_id: str):
                 dataframe[feature_name] = df[f.feature_name]
             else:
                 if len(dataframe) > 0:
-                    dataframe = pd.concat([dataframe, df])
+                    dataframe = pd.concat([dataframe, df], axis=1)
                 else:
                     dataframe = df
         else:
@@ -159,7 +159,7 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
                     dataframe[feature_name] = df[f.feature_name]
                 else:
                     if len(dataframe) > 0:
-                        dataframe = pd.concat([dataframe, df])
+                        dataframe = pd.concat([dataframe, df], axis=1)
                     else:
                         dataframe = df
             else:
