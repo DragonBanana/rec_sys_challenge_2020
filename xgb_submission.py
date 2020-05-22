@@ -32,7 +32,7 @@ test_dataset_id = "test"
 
 # Oversample the cold users
 use_oversample = True
-os_column_name = "engager_feature_number_of_previous_positive_engagement_ratio"
+os_column_name = "engager_feature_number_of_previous_positive_engagement_ratio_1"
 os_value = -1
 os_percentage = 0.15
 
@@ -87,12 +87,12 @@ X_label = [
     "engager_feature_number_of_previous_positive_engagement",
     "engager_feature_number_of_previous_negative_engagement",
     "engager_feature_number_of_previous_engagement",
-    "engager_feature_number_of_previous_like_engagement_ratio",
-    "engager_feature_number_of_previous_reply_engagement_ratio",
-    "engager_feature_number_of_previous_retweet_engagement_ratio",
-    "engager_feature_number_of_previous_comment_engagement_ratio",
-    "engager_feature_number_of_previous_positive_engagement_ratio",
-    "engager_feature_number_of_previous_negative_engagement_ratio",
+    "engager_feature_number_of_previous_like_engagement_ratio_1",
+    "engager_feature_number_of_previous_reply_engagement_ratio_1",
+    "engager_feature_number_of_previous_retweet_engagement_ratio_1",
+    "engager_feature_number_of_previous_comment_engagement_ratio_1",
+    "engager_feature_number_of_previous_positive_engagement_ratio_1",
+    "engager_feature_number_of_previous_negative_engagement_ratio_1",
     "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator",
     "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator",
     "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator",
