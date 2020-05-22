@@ -73,7 +73,7 @@ def main():
     # 91
     param_dict_1 = {"num_iterations": 385,
                   "num_leaves": 49,
-                  "learningrate": 0.019538269336244873,
+                  "learning_rate": 0.019538269336244873,
                   "max_depth": 74, "lambda_l1": 0.1,
                   "lambda_l2": 0.19052504682453342,
                   "colsample_bynode": 0.7231061657217172,
@@ -86,7 +86,7 @@ def main():
     # 92
     param_dict_2 ={"num_iterations": 268,
                    "num_leaves": 48,
-                   "learningrate": 0.01925807472939145,
+                   "learning_rate": 0.01925807472939145,
                    "max_depth": 54,
                    "lambda_l1": 0.15294583081165222,
                    "lambda_l2": 0.19607203711205476,
@@ -100,7 +100,7 @@ def main():
     # 85
     param_dict_3 = {"num_iterations": 363,
                     "num_leaves": 48,
-                    "learningrate": 0.018928042409241633,
+                    "learning_rate": 0.018928042409241633,
                     "max_depth": 63,
                     "lambda_l1": 0.18997647965029454,
                     "lambda_l2": 0.20810484898050355,
@@ -112,11 +112,13 @@ def main():
                     "bagging_freq": 33,
                     "max_bin": 1949}
 
-    categorical_features_set = {4, 5, 6, 11, 12, 13, 43, 44, 45, 46, 47}
+    # categorical_features_set = {4, 5, 6, 11, 12, 13, 43, 44, 45, 46, 47}
+    categorical_features_set = set([])
 
     # Load train data
     loading_data_start_time = time.time()
     df_train, df_train_label = Data.get_dataset_xgb(train_dataset, features, label)
+    print(f"Loading train data time: {loading_data_start_time - time.time()} seconds")
 
     # Load val data
     df_val, df_val_label = Data.get_dataset_xgb(val_dataset, features, label)
