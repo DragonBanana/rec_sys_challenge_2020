@@ -33,16 +33,16 @@ COMMENT = "commentCOMMENTComment"
 REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
-    param_range_dict = [Categorical([501]),                 #num_rounds
-                        Integer(2, 30),                    #max_depth
+    param_range_dict = [Categorical([251]),                 #num_rounds
+                        Integer(2, 40),                    #max_depth
                         Integer(1, 20),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree
-                        Real(0.001, 0.1, 'log-uniform'),      #learning rate
+                        Real(0.005, 0.1, 'log-uniform'),      #learning rate
                         Real(0.0001, 1, 'log-uniform'),    #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),    #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
                         Real(0.7, 1.3),                     #scale_pos_weight
-                        Real(0.1, 10, 'log-uniform'),                      #gamma
+                        Real(0.1, 20, 'log-uniform'),                      #gamma
                         Real(0.1, 1),                       #subsample
                         Categorical([0.5]),                        #base_score
                         Real(0, 200),                      #max_delta_step
@@ -51,16 +51,16 @@ def xgbRange(kind):
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:
         param_range_dict[7] = Real(0.7, 1.2)
-        param_range_dict[11] = Real(0, 5)                      #max_delta_step
+        param_range_dict[11] = Real(0, 20)                      #max_delta_step
     elif kind in RETWEET:
         param_range_dict[7] = Real(0.8, 1.3)
-        param_range_dict[11] = Real(0, 25)                      #max_delta_step
-    elif kind in COMMENT:
-        param_range_dict[7] = Real(0.9, 1.4)
-        param_range_dict[11] = Real(0, 100)                      #max_delta_step
+        param_range_dict[11] = Real(0, 50)                      #max_delta_step
     elif kind in REPLY:
-        param_range_dict[7] = Real(1, 1.5)
+        param_range_dict[7] = Real(0.9, 1.4)
         param_range_dict[11] = Real(0, 200)                      #max_delta_step
+    elif kind in COMMENT:
+        param_range_dict[7] = Real(1, 1.5)
+        param_range_dict[11] = Real(0, 400)                      #max_delta_step
 
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,
