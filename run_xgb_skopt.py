@@ -2,7 +2,8 @@ from ParamTuning.Optimizer import Optimizer
 import pathlib as pl
 import xgboost as xgb
 
-from Utils.Data.Data import get_dataset_xgb_batch
+from Utils.Data.Data import get_dataset_xgb_batch, get_dataset
+from Utils.Data.DataUtils import cache_dataset_as_svm
 
 labels = [
     "like",
@@ -12,6 +13,9 @@ labels = [
 ]
 
 folder = f"skopt_result"
+
+# Cached svm filename
+svm_filename = "skopt_svm_file"
 
 train_dataset_id = "train_days_123456"
 val_dataset_id = "val_days_7"
@@ -110,13 +114,23 @@ def run(label: str):
     # if pl.Path(f"{label}.save.npz").is_file():
     #     OP.loadModel(f"{label}.save.npz")
 
-    X_train, Y_train = get_dataset_xgb_batch(1, 0, train_dataset_id, X_label, Y_label, 0.5)
-    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 1)
-    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 1)
+    # Load the training dataset
+    X_train = get_dataset(X_label, train_dataset_id)
+    Y_train = get_dataset(Y_label, train_dataset_id)
+    # Cache the training dataset
+    cache_dataset_as_svm(svm_filename, X_train, Y_train)
+    train = xgb.DMatrix(f"{svm_filename}.svm#~/{svm_filename}.cache")
+    train.feature_names = X_train.columns
+    # Delete the data structure that are not useful anymore
+    del X_train, Y_train
 
-    train = xgb.DMatrix(X_train, Y_train)
+    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 1)
     val = xgb.DMatrix(X_val, Y_val)
+    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 1)
     test = xgb.DMatrix(X_test, Y_test)
+
+
+
 
     del X_train, Y_train, X_val, Y_val, X_test, Y_test
 
