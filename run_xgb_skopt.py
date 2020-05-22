@@ -2,7 +2,7 @@ from ParamTuning.Optimizer import Optimizer
 import pathlib as pl
 import xgboost as xgb
 
-from Utils.Data.Data import get_dataset_xgb_batch, get_dataset
+from Utils.Data.Data import get_dataset_xgb_batch, get_dataset, get_dataset_batch
 from Utils.Data.DataUtils import cache_dataset_as_svm
 
 labels = [
@@ -115,8 +115,8 @@ def run(label: str):
     #     OP.loadModel(f"{label}.save.npz")
 
     # Load the training dataset
-    X_train = get_dataset(X_label, train_dataset_id)
-    Y_train = get_dataset(Y_label, train_dataset_id)
+    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.5)
+    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.5)
     # Cache the training dataset
     cache_dataset_as_svm(svm_filename, X_train, Y_train)
     train = xgb.DMatrix(f"{svm_filename}.svm#~/{svm_filename}.cache")
