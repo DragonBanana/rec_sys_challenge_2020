@@ -147,6 +147,7 @@ def run_xgb():
 
     # Save the model
     xgboost.save_model(xgb_model_filename)
+    del train, local_val
 
     # Load the remote validation dataset for testing
     X_remote_val = get_dataset_batch(X_label, train_dataset_id, 2, 1, 1)
@@ -168,9 +169,10 @@ def run_xgb():
     print(f"max: {max_v}")
     print(f"min: {min_v}")
     print(f"avg: {avg_v}")
+    del remote_val
 
     # Load the remote validation dataset for testing
-    X_test = get_dataset(X_label, train_dataset_id)
+    X_test = get_dataset(X_label, test_dataset_id)
     test = xgb.DMatrix(X_test)
     del X_test
 
