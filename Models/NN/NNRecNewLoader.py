@@ -15,6 +15,7 @@ import time
 from tqdm import tqdm
 import pandas as pd
 import gc
+from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
 from Utils.Base.RecommenderBase import RecommenderBase
 
@@ -89,9 +90,20 @@ class BertClassifierDoubleInput(nn.Module):
         if labels is not None:
             loss_fct = BCEWithLogitsLoss()
             loss = loss_fct(logits.view(-1), labels.view(-1).float())
-            outputs = (loss,) + outputs
+            # Declaring the class containing the metrics
+            preds = torch.sigmoid(logits)
+            cm = CoMe(preds.detach().cpu().numpy(), labels.detach().cpu().numpy())
+            # Evaluating
+            prauc = cm.compute_prauc()
+            rce = cm.compute_rce()
+            # Confusion matrix
+            conf = cm.confMatrix()
+            # Prediction stats
+            max_pred, min_pred, avg = cm.computeStatistics()
 
-        return outputs  # (loss), logits, (hidden_states), (attentions)
+            outputs = (loss,) + outputs + (prauc, rce, conf, max_pred, min_pred, avg)
+
+        return outputs  # (loss), logits, (hidden_states), (attentions), prauc, rce, conf, max_pred, min_pred, avg
 
 
 class CustomDataset(Dataset):
@@ -195,7 +207,8 @@ class CustomDatasetCap(Dataset):
 
             df_tokens_cache = self.df_tokens_reader.get_chunk()
             df_tokens_cache.columns = ['tokens']
-            start = index * self.df_tokens_reader.chunksize
+
+            start = index
             end = start + self.df_tokens_reader.chunksize
             df_features_cache = self.df_features.iloc[start:end]
             df_label_cache = self.df_label.iloc[start:end]
@@ -230,8 +243,8 @@ class CustomDatasetCap(Dataset):
                         text_series[i_shifted] += [0] * miss
                         for j in range(initial_len, max_len):
                             attention_masks[i][j] = 0
-                    print(
-                        f"iteration {i}, debug_first_branch {debug_first_branch} ,debug_second_branch {debug_second_branch}, len: {len(text_series[i_shifted])}")
+                    # print(
+                    #    f"iteration {i}, debug_first_branch {debug_first_branch} ,debug_second_branch {debug_second_branch}, len: {len(text_series[i_shifted])}")
                     # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
                     # print(f"type of the array: {text_series[i_shifted].dtype}")
 
@@ -246,7 +259,7 @@ class CustomDatasetCap(Dataset):
                     for j in range(initial_len, max_len):
                         attention_masks[i][j] = 0
                     # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
-                    print(f"iteration {i}, is capped {is_capped}, len: {len(text_series[i_shifted])}")
+
             # todo we need to optimize this
             list_arr = []
             for feat in df_features_cache.columns:
@@ -273,6 +286,7 @@ class CustomDatasetCap(Dataset):
             print(f"text_np_mat 0 dtype : {text_np_mat[0].dtype}")
             text_tensor = torch.tensor(text_np_mat, dtype=torch.int64)
             attention_masks = torch.tensor(attention_masks, dtype=torch.int8)
+            print(df_label_cache['tweet_feature_engagement_is_like'])
             labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
                                   .map(lambda x: 1 if x else 0).values, dtype=torch.int8)
             features = torch.tensor(feature_mat.T)
@@ -314,6 +328,34 @@ class NNRecNewLoader(RecommenderBase):
             device = torch.device("cpu")
 
         return device
+
+    def evaluate(self, preds, labels=None):
+        # Tries to load X and Y if not directly passed
+        if (labels is None):
+            print("No labels passed, cannot perform evaluation.")
+
+        if (self.model is None):
+            print("No model trained, cannot to perform evaluation.")
+
+        else:
+            # Declaring the class containing the metrics
+            cm = CoMe(preds, labels)
+
+            # Evaluating
+            prauc = cm.compute_prauc()
+            rce = cm.compute_rce()
+            # Confusion matrix
+            conf = cm.confMatrix()
+            # Prediction stats
+            max_pred, min_pred, avg = cm.computeStatistics()
+
+            return prauc, rce, conf, max_pred, min_pred, avg
+
+    def get_prediction(self):
+        pass
+
+    def load_model(self):
+        pass
 
     # TODO add support for cat features
     def fit(self,
@@ -427,15 +469,6 @@ class NNRecNewLoader(RecommenderBase):
 
         return training_stats
 
-    def evaluate(self):
-        pass
-
-    def get_prediction(self):
-        pass
-
-    def load_model(self):
-        pass
-
     def train(self, model, train_dataloader, optimizer, scheduler):
 
         # Measure how long the training epoch takes.
@@ -443,6 +476,8 @@ class NNRecNewLoader(RecommenderBase):
 
         # Reset the total loss for this epoch.
         total_train_loss = 0
+        total_train_prauc = 0
+        total_train_rce = 0
 
         # Put the model into training mode. Don't be mislead--the call to
         # `train` just changes the *mode*, it doesn't *perform* the training.
@@ -489,17 +524,22 @@ class NNRecNewLoader(RecommenderBase):
             # arge given and what flags are set. For our useage here, it returns
             # the loss (because we provided labels) and the "logits"--the model
             # outputs prior to activation.
-            loss, logits = model(input_ids=b_input_ids,
-                                 input_features=b_features,
-                                 token_type_ids=None,
-                                 attention_mask=b_input_mask,
-                                 labels=b_labels)
+            loss, logits, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
+                                                                            input_features=b_features,
+                                                                            token_type_ids=None,
+                                                                            attention_mask=b_input_mask,
+                                                                            labels=b_labels)
 
             # Accumulate the training loss over all of the batches so that we can
             # calculate the average loss at the end. `loss` is a Tensor containing a
             # single value; the `.item()` function just returns the Python value
             # from the tensor.
             total_train_loss += loss.item()
+            total_train_prauc += prauc
+            total_train_rce += rce
+
+            print(f"batch {step} RCE: {rce}")
+            print(f"batch {step} PRAUC: {prauc}")
 
             # Perform a backward pass to calculate the gradients.
             loss.backward()
@@ -518,12 +558,17 @@ class NNRecNewLoader(RecommenderBase):
 
         # Calculate the average loss over all of the batches.
         avg_train_loss = total_train_loss / len(train_dataloader)
+        avg_train_prauc = total_train_prauc / len(train_dataloader)
+        avg_train_rce = total_train_rce / len(train_dataloader)
 
         # Measure how long this epoch took.
         training_time = format_time(time.time() - t0)
 
         print("")
         print("  Average training loss: {0:.2f}".format(avg_train_loss))
+        print("  Average training PRAUC: {0:.5f}".format(avg_train_prauc))
+        print("  Average training RCE: {0:.5f}".format(avg_train_rce))
+
         print("  Training epoch took: {:}".format(training_time))
 
         return avg_train_loss, training_time
@@ -538,6 +583,9 @@ class NNRecNewLoader(RecommenderBase):
         # Tracking variables
         total_eval_accuracy = 0
         total_eval_loss = 0
+        total_eval_prauc = 0
+        total_eval_rce = 0
+
         nb_eval_steps = 0
 
         # Evaluate data for one epoch
@@ -567,14 +615,20 @@ class NNRecNewLoader(RecommenderBase):
                 # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
                 # Get the "logits" output by the model. The "logits" are the output
                 # values prior to applying an activation function like the softmax.
-                (loss, logits) = model(input_ids=b_input_ids,
-                                       input_features=b_features,
-                                       token_type_ids=None,
-                                       attention_mask=b_input_mask,
-                                       labels=b_labels)
+                loss, logits, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
+                                                                                input_features=b_features,
+                                                                                token_type_ids=None,
+                                                                                attention_mask=b_input_mask,
+                                                                                labels=b_labels)
 
             # Accumulate the validation loss.
             total_eval_loss += loss.item()
+
+            total_eval_prauc += prauc
+            total_eval_rce += rce
+
+            print(f"current batch RCE: {rce}")
+            print(f"current batch PRAUC: {prauc}")
 
             # Move logits and labels to CPU
             logits = logits.detach().cpu().numpy()
@@ -590,11 +644,16 @@ class NNRecNewLoader(RecommenderBase):
 
         # Calculate the average loss over all of the batches.
         avg_val_loss = total_eval_loss / len(validation_dataloader)
+        avg_val_prauc = total_eval_prauc / len(validation_dataloader)
+        avg_val_rce = total_eval_rce / len(validation_dataloader)
 
         # Measure how long the validation run took.
         validation_time = format_time(time.time() - t0)
 
         print("  Validation Loss: {0:.2f}".format(avg_val_loss))
+        print("  Validation PRAUC: {0:.5f}".format(avg_val_prauc))
+        print("  Validation RCE: {0:.5f}".format(avg_val_rce))
+
         print("  Validation took: {:}".format(validation_time))
 
         return avg_val_accuracy, avg_val_loss, validation_time
@@ -673,4 +732,5 @@ def format_time(elapsed):
 
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=elapsed_rounded))
+
 
