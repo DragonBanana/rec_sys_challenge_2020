@@ -83,12 +83,12 @@ def main():
     print("checkpoint 1")
     # Load train data
     loading_data_start_time = time.time()
-    X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.50)
+    X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.25)
     print("checkpoint 2")
     # Load test data
-    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
+    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 0.5)
     print("checkpoint 3")
-    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
+    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 0.5)
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
     #Defining prior knowledge like a n44hb
