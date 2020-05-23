@@ -142,8 +142,10 @@ def populate_features():
         # result[("tweet_is_language_x", dataset_id)] = TweetFeatureIsLanguage(dataset_id, top_popular_language(dataset_id, top_n=10))
         # CREATION TIMESTAMP
         result[("tweet_feature_creation_timestamp_hour", dataset_id)] = TweetFeatureCreationTimestampHour(dataset_id)
-        result[("tweet_feature_creation_timestamp_week_day", dataset_id)] = TweetFeatureCreationTimestampWeekDay(
-            dataset_id)
+        result[("tweet_feature_creation_timestamp_week_day", dataset_id)] = TweetFeatureCreationTimestampWeekDay(dataset_id)
+        result[("tweet_feature_creation_timestamp_hour_shifted", dataset_id)] = TweetFeatureCreationTimestampHour_Shifted(dataset_id)
+        result[("tweet_feature_creation_timestamp_day_phase", dataset_id)] = TweetFeatureCreationTimestampDayPhase(dataset_id)
+        result[("tweet_feature_creation_timestamp_day_phase_shifted", dataset_id)] = TweetFeatureCreationTimestampDayPhase_Shifted(dataset_id)
         # FROM TEXT TOKEN FEATURES
         result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
         result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
