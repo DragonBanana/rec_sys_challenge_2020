@@ -80,12 +80,7 @@ X_label = [
     "engager_feature_knows_hashtag_rt",
     "hashtag_similarity_fold_ensembling_positive",
     "link_similarity_fold_ensembling_positive",
-    "domain_similarity_fold_ensembling_positive",
-    "engager_feature_knows_hashtag_comment",
-    "engager_feature_knows_hashtag_comment",
-    "engager_feature_knows_hashtag_comment",
-    "engager_feature_knows_hashtag_comment",
-    "engager_feature_knows_hashtag_comment",
+    "domain_similarity_fold_ensembling_positive"
 ]
 
 
