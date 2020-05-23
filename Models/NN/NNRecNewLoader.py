@@ -15,6 +15,7 @@ import time
 from tqdm import tqdm
 import pandas as pd
 import gc
+from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
 from Utils.Base.RecommenderBase import RecommenderBase
 
@@ -45,7 +46,7 @@ class FFNN(nn.Module):
 
 class BertClassifierDoubleInput(nn.Module):
 
-    def __init__(self, input_size_2, hidden_size_2, hidden_dropout_prob=0.1,):
+    def __init__(self, input_size_2, hidden_size_2, hidden_dropout_prob=0.1, ):
         super().__init__()
 
         self.bert = BertModel.from_pretrained("bert-base-multilingual-cased")
@@ -66,8 +67,7 @@ class BertClassifierDoubleInput(nn.Module):
             position_ids=None,
             head_mask=None,
             inputs_embeds=None,
-            labels=None,):
-
+            labels=None, ):
         bert_outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
@@ -90,97 +90,215 @@ class BertClassifierDoubleInput(nn.Module):
         if labels is not None:
             loss_fct = BCEWithLogitsLoss()
             loss = loss_fct(logits.view(-1), labels.view(-1).float())
-            outputs = (loss,) + outputs
+            # Declaring the class containing the metrics
+            preds = torch.sigmoid(logits)
+            cm = CoMe(preds.detach().cpu().numpy(), labels.detach().cpu().numpy())
+            # Evaluating
+            prauc = cm.compute_prauc()
+            rce = cm.compute_rce()
+            # Confusion matrix
+            conf = cm.confMatrix()
+            # Prediction stats
+            max_pred, min_pred, avg = cm.computeStatistics()
 
-        return outputs  # (loss), logits, (hidden_states), (attentions)
+            outputs = (loss,) + outputs + (prauc, rce, conf, max_pred, min_pred, avg)
+
+        return outputs  # (loss), logits, (hidden_states), (attentions), prauc, rce, conf, max_pred, min_pred, avg
 
 
-class CustomDataset(object):
-    def __init__(self, df_features:  pd.DataFrame,
+class CustomDataset(Dataset):
+    def __init__(self, df_features: pd.DataFrame,
                  df_tokens_reader: pd.io.parsers.TextFileReader,
                  df_label: pd.DataFrame):
 
         self.df_features = df_features
         self.df_tokens_reader = df_tokens_reader
         self.df_label = df_label
+        self.count = -1
 
     def __len__(self):
         # TODO DEBUG
-        print(f"debug len of custom dataset:{int(len(self.df_features) / self.df_tokens_reader.chunksize)+1}")
-        return int(len(self.df_features) / self.df_tokens_reader.chunksize)+1
+        print(f"debug len of custom dataset:{len(self.df_features)}")
+        return len(self.df_features)
 
     def __getitem__(self, index):
 
         # debug
         print(f"debug-> index is:{index}")
 
+        # if true, update the caches, i.e. self.tensors
+        if index % self.df_tokens_reader.chunksize == 0:
+            self.count += 1
 
-        df_tokens_cache = self.df_tokens_reader.get_chunk()
-        df_tokens_cache.columns = ['tokens']
+            df_tokens_cache = self.df_tokens_reader.get_chunk()
+            df_tokens_cache.columns = ['tokens']
+            start = index * self.df_tokens_reader.chunksize
+            end = start + self.df_tokens_reader.chunksize
+            df_features_cache = self.df_features.iloc[start:end]
+            df_label_cache = self.df_label.iloc[start:end]
 
-        start = index * self.df_tokens_reader.chunksize
-        end = start + self.df_tokens_reader.chunksize
-        df_features_cache = self.df_features.iloc[start:end]
-        df_label_cache = self.df_label.iloc[start:end]
+            text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
+            print(f"first text_series: {text_series}")
+            max_len = get_max_len(text_series)
+            attention_masks = np.ones((len(text_series), max_len), dtype=np.int8)
+            # padding
+            for i in range(len(text_series)):
+                i_shifted = i + index  # * self.df_tokens_reader.chunksize
+                initial_len = len(text_series[i_shifted])
+                miss = max_len - initial_len
+                text_series[i_shifted] += [0] * miss
+                for j in range(initial_len, max_len):
+                    attention_masks[i][j] = 0
 
-        text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
-        print(f"first text_series: {text_series}")
-        max_len = get_max_len(text_series)
-        attention_masks = np.ones((len(text_series), max_len), dtype=np.int)
-        # padding
-        for i in range(len(text_series)):
-            i_shifted = i + index*self.df_tokens_reader.chunksize
-            initial_len = len(text_series[i_shifted])
-            miss = max_len - initial_len
-            text_series[i_shifted] += [0] * miss
-            for j in range(initial_len, max_len):
-                attention_masks[i][j] = 0
+            # todo we need to optimize this
+            list_arr = []
+            for feat in df_features_cache.columns:
+                list_arr.append(df_features_cache[feat].values)
+            feature_mat = np.array(list_arr)
+            del list_arr
+            gc.collect()
 
-        # todo we need to optimize this
-        list_arr = []
-        for feat in df_features_cache.columns:
-            list_arr.append(df_features_cache[feat].values)
-        feature_mat = np.array(list_arr)
-        del list_arr
-        gc.collect()
+            text_series = text_series.map(lambda l: [int(elem) for elem in l]).map(lambda x: np.array(x))
+            print(f"text_series : {text_series}")
 
-        text_series = text_series.map(lambda l: [int(elem) for elem in l]).map(lambda x: np.array(x))
-        print(f"text_series : {text_series}")
+            text_np_mat = np.array(list(text_series))
+            # print(f"text_np_mat :\n {text_np_mat}")
+            # print(f"text_np_mat type : {type(text_np_mat)}")
+            # print(f"text_np_mat 0 type : {type(text_np_mat[0])}")
 
-        text_np_mat = np.array(list(text_series))
+            print(f"text_np_mat 0 : {text_np_mat[0]}")
+            text_tensor = torch.tensor(text_np_mat)
+            attention_masks = torch.tensor(attention_masks)
+            labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
+                                  .map(lambda x: 1 if x else 0).values)
+            features = torch.tensor(feature_mat.T)
+            self.tensors = [text_tensor, attention_masks, features, labels]
 
-        print(f"text_np_mat 0 : {text_np_mat[0]}")
-        text_tensor = torch.tensor(text_np_mat)
-        attention_masks = torch.tensor(attention_masks)
-        labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
-                              .map(lambda x: 1 if x else 0).values)
-        features = torch.tensor(feature_mat.T)
-        self.tensors = [text_tensor, attention_masks, features, labels]
+        return tuple(tensor[index - self.count * self.df_tokens_reader.chunksize] for tensor in self.tensors)
 
+
+class CustomDatasetCap(Dataset):
+    def __init__(self, df_features: pd.DataFrame,
+                 df_tokens_reader: pd.io.parsers.TextFileReader,
+                 df_label: pd.DataFrame,
+                 cap: int = 128):
+
+        self.df_features = df_features
+        self.df_tokens_reader = df_tokens_reader
+        self.df_label = df_label
+        self.count = -1
+        self.cap = cap
+
+    def __len__(self):
         # TODO DEBUG
-        # print(f"returned value from the iterator:{self.tensors}")
-        print(f"shape of tensor 0:{self.tensors[0].shape}")
-        print(f"shape of tensor 1:{self.tensors[1].shape}")
-        print(f"shape of tensor 2:{self.tensors[2].shape}")
-        print(f"shape of tensor 3:{self.tensors[3].shape}")
-        #
-        # print(f"shape of tensor 0 of index {index}:{self.tensors[0][index].shape}")
-        # print(f"shape of tensor 1 of index {index}:{self.tensors[1][index].shape}")
-        # print(f"shape of tensor 2 of index {index}:{self.tensors[2][index].shape}")
-        # print(f"shape of tensor 3 of index {index}:{self.tensors[3][index].shape}")
-        #
-        # print(f"tensor 0 of index {index}:{self.tensors[0][index]}")
-        # print(f"tensor 1 of index {index}:{self.tensors[1][index]}")
-        # print(f"tensor 2 of index {index}:{self.tensors[2][index]}")
-        # print(f"tensor 3 of index {index}:{self.tensors[3][index]}")
+        print(f"debug len of custom dataset:{len(self.df_features)}")
+        return len(self.df_features)
 
-        return self.tensors
+    def __getitem__(self, index):
+
+        # debug
+        print(f"debug-> index is:{index}")
+
+        # if true, update the caches, i.e. self.tensors
+        if index % self.df_tokens_reader.chunksize == 0:
+            sep_tok_id = 102
+
+            self.count += 1
+
+            df_tokens_cache = self.df_tokens_reader.get_chunk()
+            df_tokens_cache.columns = ['tokens']
+
+            start = index
+            end = start + self.df_tokens_reader.chunksize
+            df_features_cache = self.df_features.iloc[start:end]
+            df_label_cache = self.df_label.iloc[start:end]
+
+            text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
+            print(f"first text_series: {text_series}")
+            max_len, is_capped = get_max_len_cap(text_series, self.cap)
+            attention_masks = np.ones((len(text_series), max_len), dtype=np.int8)
+            if is_capped:
+                debug_first_branch = False
+                debug_second_branch = False
+
+                # remove the additional tokens if exceeds max_len,
+                # else: pad
+                for i in range(len(text_series)):
+                    debug_first_branch = False
+                    debug_second_branch = False
+
+                    i_shifted = i + index
+                    if len(text_series[i_shifted]) > max_len:
+                        debug_first_branch = True
+                        # remove the additional tokens
+                        while len(text_series[i_shifted]) >= (max_len):
+                            text_series[i_shifted].pop()
+                        # append the SEP token
+                        text_series[i_shifted].append(sep_tok_id)
+
+                    elif len(text_series[i_shifted]) < max_len:  # padding
+                        debug_second_branch = True
+                        initial_len = len(text_series[i_shifted])
+                        miss = max_len - initial_len
+                        text_series[i_shifted] += [0] * miss
+                        for j in range(initial_len, max_len):
+                            attention_masks[i][j] = 0
+                    # print(
+                    #    f"iteration {i}, debug_first_branch {debug_first_branch} ,debug_second_branch {debug_second_branch}, len: {len(text_series[i_shifted])}")
+                    # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
+                    # print(f"type of the array: {text_series[i_shifted].dtype}")
+
+            else:  # if the series is not capped, normal padding
+
+                # padding
+                for i in range(len(text_series)):
+                    i_shifted = i + index  # * self.df_tokens_reader.chunksize
+                    initial_len = len(text_series[i_shifted])
+                    miss = max_len - initial_len
+                    text_series[i_shifted] += [0] * miss
+                    for j in range(initial_len, max_len):
+                        attention_masks[i][j] = 0
+                    # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
+
+            # todo we need to optimize this
+            list_arr = []
+            for feat in df_features_cache.columns:
+                list_arr.append(df_features_cache[feat].values)
+            feature_mat = np.array(list_arr)
+            del list_arr
+            gc.collect()
+
+            text_series = text_series.map(lambda l: [int(elem) for elem in l]).map(
+                lambda x: np.array(x, dtype=np.int32))
+
+            # print(f"text_series : {text_series}")
+            # print(f"text_series type: {type(text_series)}")
+            # print(f"text_series to numpy: {text_series.to_numpy()}")
+
+            text_np_mat = np.stack(text_series)
+            print(f"text_np_mat :\n {text_np_mat}")
+            print(f"text_np_mat shape :\n {text_np_mat.shape}")
+            print(f"text_np_mat type : {type(text_np_mat)}")
+            print(f"text_np_mat dtype : {text_np_mat.dtype}")
+            print(f"text_np_mat 0 type : {type(text_np_mat[0])}")
+
+            print(f"text_np_mat 0 : {text_np_mat[0]}")
+            print(f"text_np_mat 0 dtype : {text_np_mat[0].dtype}")
+            text_tensor = torch.tensor(text_np_mat, dtype=torch.int64)
+            attention_masks = torch.tensor(attention_masks, dtype=torch.int8)
+            print(df_label_cache['tweet_feature_engagement_is_like'])
+            labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
+                                  .map(lambda x: 1 if x else 0).values, dtype=torch.int8)
+            features = torch.tensor(feature_mat.T)
+            self.tensors = [text_tensor, attention_masks, features, labels]
+
+        return tuple(tensor[index - self.count * self.df_tokens_reader.chunksize] for tensor in self.tensors)
 
 
 class NNRecNewLoader(RecommenderBase):
 
     # TODO ES
-    def __init__(self, hidden_dropout_prob=0.1,weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4,):
+    def __init__(self, hidden_dropout_prob=0.1, weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4, ):
         super().__init__()
         self.device = None
         self.device = self._find_device()
@@ -211,6 +329,33 @@ class NNRecNewLoader(RecommenderBase):
 
         return device
 
+    def evaluate(self, preds, labels=None):
+        # Tries to load X and Y if not directly passed
+        if (labels is None):
+            print("No labels passed, cannot perform evaluation.")
+
+        if (self.model is None):
+            print("No model trained, cannot to perform evaluation.")
+
+        else:
+            # Declaring the class containing the metrics
+            cm = CoMe(preds, labels)
+
+            # Evaluating
+            prauc = cm.compute_prauc()
+            rce = cm.compute_rce()
+            # Confusion matrix
+            conf = cm.confMatrix()
+            # Prediction stats
+            max_pred, min_pred, avg = cm.computeStatistics()
+
+            return prauc, rce, conf, max_pred, min_pred, avg
+
+    def get_prediction(self):
+        pass
+
+    def load_model(self):
+        pass
 
     # TODO add support for cat features
     def fit(self,
@@ -232,18 +377,20 @@ class NNRecNewLoader(RecommenderBase):
             torch.cuda.manual_seed_all(seed_val)
 
         self.model = BertClassifierDoubleInput(input_size_2=df_train_features.shape[1], hidden_size_2=4)
+        self.model.cuda()
 
         # freeze all bert layers
         # for param in self.model.bert.parameters():
         #     param.requires_grad = False
 
         # Combine the training inputs into a TensorDataset.
-        train_dataset = CustomDataset(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
-                                      df_label=df_train_label)
-        val_dataset = CustomDataset(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
-                                    df_label=df_train_label)
+        train_dataset = CustomDatasetCap(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+                                         df_label=df_train_label)
+        val_dataset = CustomDatasetCap(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+                                       df_label=df_train_label)
 
-        train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset)
+        train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
+                                                                      batch_size=df_train_tokens_reader.chunksize)
 
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']
@@ -313,6 +460,7 @@ class NNRecNewLoader(RecommenderBase):
                     'Validation Time': validation_time
                 }
             )
+        torch.save(self.model.state_dict(), f"./saved_model_epoch{epoch_i + 1}")
 
         print("")
         print("Training complete!")
@@ -321,16 +469,6 @@ class NNRecNewLoader(RecommenderBase):
 
         return training_stats
 
-
-    def evaluate(self):
-        pass
-
-    def get_prediction(self):
-        pass
-
-    def load_model(self):
-        pass
-
     def train(self, model, train_dataloader, optimizer, scheduler):
 
         # Measure how long the training epoch takes.
@@ -338,6 +476,8 @@ class NNRecNewLoader(RecommenderBase):
 
         # Reset the total loss for this epoch.
         total_train_loss = 0
+        total_train_prauc = 0
+        total_train_rce = 0
 
         # Put the model into training mode. Don't be mislead--the call to
         # `train` just changes the *mode*, it doesn't *perform* the training.
@@ -384,17 +524,22 @@ class NNRecNewLoader(RecommenderBase):
             # arge given and what flags are set. For our useage here, it returns
             # the loss (because we provided labels) and the "logits"--the model
             # outputs prior to activation.
-            loss, logits = model(input_ids=b_input_ids,
-                                 input_features=b_features,
-                                 token_type_ids=None,
-                                 attention_mask=b_input_mask,
-                                 labels=b_labels)
+            loss, logits, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
+                                                                            input_features=b_features,
+                                                                            token_type_ids=None,
+                                                                            attention_mask=b_input_mask,
+                                                                            labels=b_labels)
 
             # Accumulate the training loss over all of the batches so that we can
             # calculate the average loss at the end. `loss` is a Tensor containing a
             # single value; the `.item()` function just returns the Python value
             # from the tensor.
             total_train_loss += loss.item()
+            total_train_prauc += prauc
+            total_train_rce += rce
+
+            print(f"batch {step} RCE: {rce}")
+            print(f"batch {step} PRAUC: {prauc}")
 
             # Perform a backward pass to calculate the gradients.
             loss.backward()
@@ -413,12 +558,17 @@ class NNRecNewLoader(RecommenderBase):
 
         # Calculate the average loss over all of the batches.
         avg_train_loss = total_train_loss / len(train_dataloader)
+        avg_train_prauc = total_train_prauc / len(train_dataloader)
+        avg_train_rce = total_train_rce / len(train_dataloader)
 
         # Measure how long this epoch took.
         training_time = format_time(time.time() - t0)
 
         print("")
         print("  Average training loss: {0:.2f}".format(avg_train_loss))
+        print("  Average training PRAUC: {0:.5f}".format(avg_train_prauc))
+        print("  Average training RCE: {0:.5f}".format(avg_train_rce))
+
         print("  Training epoch took: {:}".format(training_time))
 
         return avg_train_loss, training_time
@@ -433,6 +583,9 @@ class NNRecNewLoader(RecommenderBase):
         # Tracking variables
         total_eval_accuracy = 0
         total_eval_loss = 0
+        total_eval_prauc = 0
+        total_eval_rce = 0
+
         nb_eval_steps = 0
 
         # Evaluate data for one epoch
@@ -462,14 +615,20 @@ class NNRecNewLoader(RecommenderBase):
                 # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
                 # Get the "logits" output by the model. The "logits" are the output
                 # values prior to applying an activation function like the softmax.
-                (loss, logits) = model(input_ids=b_input_ids,
-                                       input_features=b_features,
-                                       token_type_ids=None,
-                                       attention_mask=b_input_mask,
-                                       labels=b_labels)
+                loss, logits, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
+                                                                                input_features=b_features,
+                                                                                token_type_ids=None,
+                                                                                attention_mask=b_input_mask,
+                                                                                labels=b_labels)
 
             # Accumulate the validation loss.
             total_eval_loss += loss.item()
+
+            total_eval_prauc += prauc
+            total_eval_rce += rce
+
+            print(f"current batch RCE: {rce}")
+            print(f"current batch PRAUC: {prauc}")
 
             # Move logits and labels to CPU
             logits = logits.detach().cpu().numpy()
@@ -485,11 +644,16 @@ class NNRecNewLoader(RecommenderBase):
 
         # Calculate the average loss over all of the batches.
         avg_val_loss = total_eval_loss / len(validation_dataloader)
+        avg_val_prauc = total_eval_prauc / len(validation_dataloader)
+        avg_val_rce = total_eval_rce / len(validation_dataloader)
 
         # Measure how long the validation run took.
         validation_time = format_time(time.time() - t0)
 
         print("  Validation Loss: {0:.2f}".format(avg_val_loss))
+        print("  Validation PRAUC: {0:.5f}".format(avg_val_prauc))
+        print("  Validation RCE: {0:.5f}".format(avg_val_rce))
+
         print("  Validation took: {:}".format(validation_time))
 
         return avg_val_accuracy, avg_val_loss, validation_time
@@ -513,9 +677,29 @@ def get_max_len(sentences):
 
     print('Max sentence length: ', max_len)
     return max_len
+    # return 322
 
 
-def create_data_loaders(train_dataset, val_dataset, batch_size=1):
+def get_max_len_cap(sentences, cap: int = 128) -> (int, bool):
+    is_capped = False
+
+    max_len = 0
+    # For every sentence...
+    for sent in sentences:
+        # Update the maximum sentence length.
+        max_len = max(max_len, len(sent))
+        # check if the value is higher than the cap
+        if max_len >= cap:
+            is_capped = True
+            max_len = cap
+            break
+
+    print('Max sentence length: ', max_len)
+    print('Is capped: ', is_capped)
+    return max_len, is_capped
+
+
+def create_data_loaders(train_dataset, val_dataset, batch_size=3):
     # The DataLoader needs to know our batch size for training, so we specify it
     # here. For fine-tuning BERT on a specific task, the authors recommend a batch
     # size of 16 or 32.
@@ -525,14 +709,14 @@ def create_data_loaders(train_dataset, val_dataset, batch_size=1):
     train_dataloader = DataLoader(
         train_dataset,  # The training samples.
         sampler=SequentialSampler(train_dataset),  # Select batches sequentially
-        # batch_size=batch_size  # Trains with this batch size.
+        batch_size=batch_size  # Trains with this batch size.
     )
 
     # For validation the order doesn't matter, so we'll just read them sequentially.
     validation_dataloader = DataLoader(
         val_dataset,  # The validation samples.
         sampler=SequentialSampler(val_dataset),  # Pull out batches sequentially.
-        # batch_size=batch_size  # Evaluate with this batch size.
+        batch_size=batch_size  # Evaluate with this batch size.
     )
 
     return train_dataloader, validation_dataloader
@@ -548,3 +732,5 @@ def format_time(elapsed):
 
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=elapsed_rounded))
+
+

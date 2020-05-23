@@ -59,7 +59,7 @@ class LightGBM(RecommenderGBM):
                 #Parameters
                 'objective':objective,
                 'metric':metric,
-                'num_iterations':800,
+                'num_iterations':num_iterations,
                 'num_leaves':num_leaves,
                 'learning_rate':learning_rate,
                 'num_threads':num_threads,
@@ -94,8 +94,7 @@ class LightGBM(RecommenderGBM):
         
         #CLASS VARIABLES
         #Models
-        self.sround_model = None    #No need to differentiate, but it's
-        self.batch_model = None     #way more readable.
+        self.model = None
         # Default for categorical features
         self.categorical_feature = 'auto'
         
@@ -163,41 +162,39 @@ class LightGBM(RecommenderGBM):
         if (categorical_feature is None):
             categorical_feature = self.categorical_feature
 
+        # Declaring LightGBM Dataset
+        train = lgb.Dataset(data=X,
+                            label=Y,
+                            categorical_feature=categorical_feature)
+        del X, Y
+
         #Learning in a single round
-        if self.batch is False:
+        if self.model is None:
             if X_val is None:
-                #Declaring LightGBM Dataset
-                train = lgb.Dataset(data=X,
-                                    label=Y,
-                                    categorical_feature=categorical_feature) 
+
                 #Defining and fitting the model
-                self.sround_model = lgb.train(self.get_param_dict(),  
+                self.model = lgb.train(self.get_param_dict(),
                                             train_set=train,
                                             categorical_feature=categorical_feature)
             else:
-                #Declaring LightGBM Train Dataset
-                train = lgb.Dataset(data=X,
-                    label=Y,
-                    categorical_feature=categorical_feature) 
+
                 validation = lgb.Dataset(data=X_val, label=Y_val,categorical_feature=categorical_feature)
+                del X_val, Y_val
+
                 #Defining and fitting the model
-                self.sround_model = lgb.train(self.get_param_dict(),  
+                self.model = lgb.train(self.get_param_dict(),
                                             train_set=train,       
                                             valid_sets=validation,
                                             categorical_feature=categorical_feature)
 
         #Learning by consecutive batches
         else:
-            #Declaring LightGBM Dataset
-            train = lgb.Dataset(data=X,
-                                label=Y,
-                                categorical_feature=self.categorical_feature)
-
             #Defining and training the models
-            self.batch_model = lgb.train(self.param,  
-                                         train_set=train,      
-                                         num_boost_rounds=self.params['num_rounds'],
-                                         init_model=self.batch_model)
+            # self.model = lgb.train(self.get_param_dict(),
+            #                              train_set=train,
+            #                              init_model=self.model,
+            #                              categorical_feature=categorical_feature)
+            raise NotImplementedError("Batch training is not implemented in lgbm yet.")
 
 
     # Returns the predictions and evaluates them
@@ -218,12 +215,12 @@ class LightGBM(RecommenderGBM):
             print("Test set loaded from file.")
         #Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
         
-        if (self.sround_model is None) and (not os.path.exists(self.previous_model_path)):
+        if self.model is None:
             print("No model trained yet.")
         else:
             # Selecting the coherent model for the evaluation
             # According to the initial declaration (batch/single round)
-            model = self.get_model()
+            # model = self.get_model()
 
             # Preparing DMatrix
             # d_test = xgb.DMatrix(X_tst)
@@ -263,18 +260,14 @@ class LightGBM(RecommenderGBM):
         if (X_tst is None):
             X_tst, Y_tst = self.load_data(self.test_dataset)
             print("Test set loaded from file.")
-        if (self.sround_model is None) and (self.batch_model is None):
+        if self.model is None:
             print("No model trained yet.")
         else:
-            #Selecting the coherent model for the evaluation
-            #According to the initial declaration (batch/single round)
-            if self.batch is False:
-                model = self.sround_model
-            else:
-                model = self.batch_model
+            # Selecting the coherent model for the evaluation
+            model = self.model
 
-            #Making predictions
-            #Wants row data for prediction
+            # Making predictions
+            # Wants row data for prediction
             Y_pred = model.predict(X_tst)
             return Y_pred
 
@@ -284,15 +277,11 @@ class LightGBM(RecommenderGBM):
     #path: path to the model
     #-------------------------
     def load_model(self, path):
-        if (self.batch is False):
-            #Reinitializing model
-            self.sround_model = lgb.Booster(model_file=path)
-            print("Model correctly loaded.\n")    
+        #Reinitializing model
+        self.model = lgb.Booster(model_file=path)
+        print("Model correctly loaded.\n")
 
-        else:
-            #By loading in this way it is possible to keep on learning            
-            self.batch_model = lgb.Booster(model_file=path)
-            print("Batch model correctly loaded.\n")
+
 
 
     #Returns/prints the importance of the features
@@ -300,11 +289,8 @@ class LightGBM(RecommenderGBM):
     #verbose:   it also prints the features importance
     #-------------------------------------------------
     def get_feat_importance(self, verbose = False):
-        
-        if (self.batch is False):
-            model = self.sround_model
-        else:
-            model = self.batch_model
+
+        model = self.model
         
         #Getting the importance
         importance = model.feature_importance(importance_type="gain")
@@ -317,10 +303,7 @@ class LightGBM(RecommenderGBM):
         return importance
 
     def plot_fimportance(self):
-        if (self.batch is False):
-            model = self.sround_model
-        else:
-            model = self.batch_model
+        model = self.model
         import matplotlib.pyplot as plt
         lgb.plot_importance(model,importance_type="split")
         plt.title("Feature Importance: SPLIT")
@@ -356,13 +339,7 @@ class LightGBM(RecommenderGBM):
     def get_model(self):
         # Selecting the coherent model for the evaluation
         # According to the initial declaration (batch/single round)
-        
-        if self.batch is False:
-            return self.sround_model
-        else:
-            # we have an already saved model due to incremental training
-            self.load_model(self.previous_model_path)
-            return self.batch_model
+        return self.model
 
     def get_best_iter(self):
-        return self.sround_model.best_iteration
+        return self.model.best_iteration
