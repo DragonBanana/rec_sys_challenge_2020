@@ -371,8 +371,8 @@ def cache_dataset_as_svm(filename, X_train, Y_train):
     if pathlib.Path(f"{filename}.svm").exists():
         raise Exception("file already exists, be careful to overwrite it")
 
-    X_chunks = np.array_split(X_train, 100)
-    Y_chunks = np.array_split(Y_train, 100)
+    X_chunks = np.array_split(X_train, 1000)
+    Y_chunks = np.array_split(Y_train, 1000)
 
     pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
 

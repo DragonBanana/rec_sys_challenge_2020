@@ -130,8 +130,8 @@ def run_xgb():
     del X_train, Y_train
 
     # Load the local validation dataset for early stopping
-    X_local_val = get_dataset_batch(X_label, train_dataset_id, 2, 0, 1)
-    Y_local_val = get_dataset_batch(Y_label, train_dataset_id, 2, 0, 1)
+    X_local_val = get_dataset_batch(X_label, val_dataset_id, 2, 0, 1)
+    Y_local_val = get_dataset_batch(Y_label, val_dataset_id, 2, 0, 1)
     # If oversample is set
     if use_oversample is True:
         df = pd.concat([X_local_val, Y_local_val], axis=1)
@@ -147,10 +147,11 @@ def run_xgb():
 
     # Save the model
     xgboost.save_model(xgb_model_filename)
+    del train, local_val
 
     # Load the remote validation dataset for testing
-    X_remote_val = get_dataset_batch(X_label, train_dataset_id, 2, 1, 1)
-    Y_remote_val = get_dataset_batch(Y_label, train_dataset_id, 2, 1, 1)
+    X_remote_val = get_dataset_batch(X_label, val_dataset_id, 2, 1, 1)
+    Y_remote_val = get_dataset_batch(Y_label, val_dataset_id, 2, 1, 1)
     # If oversample is set
     if use_oversample is True:
         df = pd.concat([X_remote_val, Y_remote_val], axis=1)
@@ -168,9 +169,10 @@ def run_xgb():
     print(f"max: {max_v}")
     print(f"min: {min_v}")
     print(f"avg: {avg_v}")
+    del remote_val
 
     # Load the remote validation dataset for testing
-    X_test = get_dataset(X_label, train_dataset_id)
+    X_test = get_dataset(X_label, test_dataset_id)
     test = xgb.DMatrix(X_test)
     del X_test
 
