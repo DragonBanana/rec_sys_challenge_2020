@@ -17,8 +17,8 @@ folder = f"skopt_result"
 # Cached svm filename
 svm_filename = "skopt_svm_file"
 
-train_dataset_id = "train_days_123456"
-val_dataset_id = "val_days_7"
+train_dataset_id = "holdout/train"
+val_dataset_id = "holdout/test"
 
 X_label = [
     "raw_feature_creator_follower_count",
@@ -106,26 +106,20 @@ def run(label: str):
                    path=f"{folder}/{label}",
                    path_log=f"{folder}/{label}")
 
-    # if pl.Path(f"{label}.save.npz").is_file():
-    #     OP.loadModel(f"{label}.save.npz")
-
     # Load the training dataset
-    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.5)
-    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.5)
+    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.25)
+    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.25)
     # Cache the training dataset
     cache_dataset_as_svm(svm_filename, X_train, Y_train)
-    train = xgb.DMatrix(f"{svm_filename}.svm#~/{svm_filename}.cache")
-    train.feature_names = X_train.columns
+    train = xgb.DMatrix(f"{svm_filename}_{label}.svm#/home/ubuntu/{svm_filename}_{label}.cache")
+    train.feature_names = X_label
     # Delete the data structure that are not useful anymore
     del X_train, Y_train
 
-    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.1)
+    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.5)
     val = xgb.DMatrix(X_val, Y_val)
-    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 0.8)
+    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 0.5)
     test = xgb.DMatrix(X_test, Y_test)
-
-
-
 
     del X_val, Y_val, X_test, Y_test
 
@@ -135,7 +129,7 @@ def run(label: str):
     OP.loadTrainData(holder_train=train)
     OP.loadValData(holder_val=val)
     OP.loadTestData(holder_test=test)
-    OP.setParamsXGB(early_stopping_rounds=15, tree_method='hist')
+    OP.setParamsXGB(early_stopping_rounds=10, tree_method='hist')
 
     OP.optimize()
 
