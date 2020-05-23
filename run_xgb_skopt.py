@@ -71,13 +71,13 @@ X_label = [
     "is_tweet_in_engager_main_language",
     "statistical_probability_main_language_of_engager_engage_tweet_language_1",
     "statistical_probability_main_language_of_engager_engage_tweet_language_2",
-    "tweet_feature_token_length",
-    "tweet_feature_token_length_unique",
-    "engager_feature_knows_hashtag_positive",
-    "engager_feature_knows_hashtag_negative",
-    "engager_feature_knows_hashtag_like",
-    "engager_feature_knows_hashtag_reply",
-    "engager_feature_knows_hashtag_rt",
+    # "tweet_feature_token_length",
+    # "tweet_feature_token_length_unique",
+    # "engager_feature_knows_hashtag_positive",
+    # "engager_feature_knows_hashtag_negative",
+    # "engager_feature_knows_hashtag_like",
+    # "engager_feature_knows_hashtag_reply",
+    # "engager_feature_knows_hashtag_rt",
     "hashtag_similarity_fold_ensembling_positive",
     "link_similarity_fold_ensembling_positive",
     "domain_similarity_fold_ensembling_positive"
@@ -119,7 +119,7 @@ def run(label: str):
     # Delete the data structure that are not useful anymore
     del X_train, Y_train
 
-    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.8)
+    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.1)
     val = xgb.DMatrix(X_val, Y_val)
     X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 0.8)
     test = xgb.DMatrix(X_test, Y_test)

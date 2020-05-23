@@ -160,7 +160,6 @@ class EngagerKnowsHashtagAbstract(GeneratedFeaturePickle, ABC):
         )
 
         self._save_train_result_if_not_present(result, train_dataset_id)
-
         if not self._exists_test_feature(test_dataset_id):
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
@@ -174,12 +173,10 @@ class EngagerKnowsHashtagAbstract(GeneratedFeaturePickle, ABC):
             dataframe = pd.concat([
                 engagers_feature.load_or_create(),
                 creation_timestamps_feature.load_or_create(),
-                hashtag_feature.load_or_create(),
-                engagement_feature.load_or_create(),
+                hashtag_feature.load_or_create()
             ], axis=1)
 
             dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
-
             result = pd.DataFrame(
                 [self.find_similarity_no_update(engager_id, hashtag_arr, prev_hashtags_dictionary,
                                                 already_seen_users_set)

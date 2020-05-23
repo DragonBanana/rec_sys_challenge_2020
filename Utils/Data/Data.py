@@ -136,8 +136,7 @@ def get_dataset(features: list, dataset_id: str):
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
             dataframe[column] = dataframe[column].fillna(0).astype(np.int64, copy=False)
-        # HOTFIX
-        elif str(dataframe[column].dtype).lower() == "boolean" or str(dataframe[column].dtype).lower() == "object" :
+        elif str(dataframe[column].dtype).lower() == "boolean":
             dataframe[column] = dataframe[column].fillna(False).astype(np.bool, copy=False)
     return dataframe
 
@@ -171,8 +170,7 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
             dataframe[column] = dataframe[column].fillna(0).astype(np.int64, copy=False)
-        # HOTFIX
-        elif str(dataframe[column].dtype).lower() == "boolean" or str(dataframe[column].dtype).lower() == "object" :
+        elif str(dataframe[column].dtype).lower() == "boolean":
             dataframe[column] = dataframe[column].fillna(False).astype(np.bool, copy=False)
     return dataframe
 
