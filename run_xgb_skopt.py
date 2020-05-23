@@ -111,7 +111,7 @@ def run(label: str):
     Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.25)
     # Cache the training dataset
     cache_dataset_as_svm(svm_filename, X_train, Y_train)
-    train = xgb.DMatrix(f"{svm_filename}_{label}.svm#/home/ubuntu/{svm_filename}_{label}.cache")
+    train = xgb.DMatrix(f"{svm_filename}.svm#/home/ubuntu/temp/{svm_filename}_{label}.cache")
     train.feature_names = X_label
     # Delete the data structure that are not useful anymore
     del X_train, Y_train
