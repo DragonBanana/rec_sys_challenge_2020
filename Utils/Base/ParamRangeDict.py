@@ -181,7 +181,7 @@ def catRange(kind):
                         Real(0.1, 1),                       # colsample_bylevel
                         Integer(5,300),                     # leaf_estimation_iterations
                         Real(1,5),                          # scale_pos_weight
-                        Real(0.0001,2, 'log_uniform')]      # model_shrink_rate
+                        Real(0.0001,2.1, 'log_uniform')]      # model_shrink_rate
 
     
     # PERSONALIZED SCALE_POS_WEIGHT
