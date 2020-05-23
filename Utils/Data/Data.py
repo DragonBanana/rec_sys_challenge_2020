@@ -136,7 +136,8 @@ def get_dataset(features: list, dataset_id: str):
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
             dataframe[column] = dataframe[column].fillna(0).astype(np.int64, copy=False)
-        elif str(dataframe[column].dtype).lower() == "boolean":
+        # HOTFIX
+        elif str(dataframe[column].dtype).lower() == "boolean" or str(dataframe[column].dtype).lower() == "object" :
             dataframe[column] = dataframe[column].fillna(False).astype(np.bool, copy=False)
     return dataframe
 
@@ -170,7 +171,8 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
     for column in dataframe.columns:
         if str(dataframe[column].dtype).lower()[:3] == "int":
             dataframe[column] = dataframe[column].fillna(0).astype(np.int64, copy=False)
-        elif str(dataframe[column].dtype).lower() == "boolean":
+        # HOTFIX
+        elif str(dataframe[column].dtype).lower() == "boolean" or str(dataframe[column].dtype).lower() == "object" :
             dataframe[column] = dataframe[column].fillna(False).astype(np.bool, copy=False)
     return dataframe
 
@@ -228,11 +230,19 @@ def oversample(dataframe: pd.DataFrame, column_name: str, value, desired_percent
     current_percentage = current_selected_row_size / current_size
     delta_percentage = desired_percentage - current_percentage
 
-    assert delta_percentage > 0, "Something went wrong with oversampling, is the desired percentage high enough?"
+    print(f"current_percentage: {current_percentage}, desired_percentage: {desired_percentage}, delta_percentage: {delta_percentage}")
 
-    n_new_rows = int(delta_percentage * current_size)
+    if delta_percentage > 0:
 
-    sample = sample.sample(n_new_rows, replace=True)
-    dataframe = pd.concat([dataframe, sample])
-    dataframe.reset_index(drop=True, inplace=True)
-    return dataframe
+        assert delta_percentage > 0, "Something went wrong with oversampling, is the desired percentage high enough?"
+
+        n_new_rows = int(delta_percentage * current_size)
+
+        sample = sample.sample(n_new_rows, replace=True)
+        dataframe = pd.concat([dataframe, sample])
+        dataframe.reset_index(drop=True, inplace=True)
+        return dataframe
+
+    else:
+
+        return dataframe
