@@ -98,13 +98,19 @@ class TweetTokenLengthFeatureDictArray(TweetTextFeatureDictArrayNumpy):
 
 
         # load the tweet id, token_list dataframe
-        tokens_feature_df = pd.read_csv(tweet_tokens_csv_path)
+        tokens_feature_df_reader = pd.read_csv(tweet_tokens_csv_path, chunksize=250000)
+        length_arr = None
 
-        # for every tweet, calculate the length (n of tokens)
-        length_df = tokens_feature_df['tweet_features_text_tokens'].map(lambda x: x.split('\t')).map(lambda x: len(x) - 2)
+        for chunk in tokens_feature_df_reader:
+            arr = chunk['tweet_features_text_tokens']\
+                .map(lambda x: x.split('\t'))\
+                .map(lambda x: len(x) - 2)\
+                .values
 
-        # convert to numpy
-        length_arr = np.array(length_df)
+            if length_arr is None:
+                length_arr = arr
+            else:
+                length_arr = np.hstack([length_arr, arr])
 
         self.save_dictionary(length_arr)
 
@@ -121,15 +127,18 @@ class TweetTokenLengthUniqueFeatureDictArray(TweetTextFeatureDictArrayNumpy):
         tweet_tokens_csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/from_text_token/tweet_tokens_all_unique.csv")
 
         # load the tweet id, token_list dataframe
-        tokens_feature_df = pd.read_csv(tweet_tokens_csv_path)
+        tokens_feature_df_reader = pd.read_csv(tweet_tokens_csv_path)
+        length_arr = None
 
-        # for every tweet, calculate the length (n of UNIQUE (conversion from list to set) tokens)
-        length_df = tokens_feature_df['tweet_features_text_tokens'] \
-                    .map(lambda x: x.split('\t')) \
-                    .map(lambda x: set(x)) \
-                    .map(lambda x: len(x) - 2)
-
-        # convert to numpy
-        length_arr = np.array(length_df)
+        for chunk in tokens_feature_df_reader:
+            arr = chunk['tweet_features_text_tokens'] \
+                .map(lambda x: x.split('\t'))\
+                .map(lambda x: set(x))      \
+                .map(lambda x: len(x) - 2) \
+                .values
+            if length_arr is None:
+                length_arr = arr
+            else:
+                length_arr = np.hstack([length_arr, arr])
 
         self.save_dictionary(length_arr)
