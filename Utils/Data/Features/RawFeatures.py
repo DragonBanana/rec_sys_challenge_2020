@@ -25,6 +25,14 @@ class RawFeatureCSV(Feature):
         df.columns = [self.feature_name]
         return df
 
+    def load_feature_reader(self, chunksize=1000):
+        if not self.has_feature():
+            self.create_feature()
+
+        reader = pd.read_csv(self.csv_path, compression="gzip", index_col=0, header=0,
+                         dtype={self.feature_name: pd.StringDtype()}, chunksize=chunksize)
+        return reader
+
     def create_feature(self):
         df = _get_raw_column(self.feature_name, self.dataset_id)
         self.csv_path.parent.mkdir(parents=True, exist_ok=True)
