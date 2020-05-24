@@ -105,9 +105,7 @@ def main():
 
     print("checkpoint 2")
     OP.setParameters(n_calls=50, 
-                     n_random_starts=20,
-                     x0=x,
-                     y0=y)
+                     n_random_starts=20)
     print("checkpoint 3")
     #Before introducing datasets put the categorical features otherwise they will be ignored.
     OP.setCategoricalFeatures([4,5,6,11,12,13,43,44,45,46,47])
