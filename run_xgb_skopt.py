@@ -116,14 +116,14 @@ def run(label: str):
     # Delete the data structure that are not useful anymore
     del X_train, Y_train
 
-    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.5)
+    X_val, Y_val = get_dataset_xgb_batch(1, 0, val_dataset_id, X_label, Y_label, 0.25)
     val = xgb.DMatrix(X_val, Y_val)
-    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 0.5)
+    X_test, Y_test = get_dataset_xgb_batch(1, 0, val_dataset_id, X_label, Y_label, 0.75)
     test = xgb.DMatrix(X_test, Y_test)
 
     del X_val, Y_val, X_test, Y_test
 
-    OP.setParameters(n_calls=50, n_random_starts=20)
+    OP.setParameters(n_calls=100, n_random_starts=30)
     OP.defineMI()
     # Use GenerateBatchSVM in order to generate the batches
     OP.loadTrainData(holder_train=train)

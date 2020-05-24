@@ -5,10 +5,10 @@ def parse(name):
     print(name)
 
     first_line = [0]
-    ignored_lines = [0, 14, 16, 19, 24, 29, 33, 37, 39]
-    new_lines = [40]
-    objective_lines = [15, 38]
-    lines = 41
+    ignored_lines = [0, 14, 16, 18, 21, 26, 31, 35, 39, 41]
+    new_lines = [42]
+    objective_lines = [15, 17, 40]
+    lines = 43
 
     for i, line in enumerate(file.readlines()):
 

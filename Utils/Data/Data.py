@@ -154,7 +154,7 @@ def get_dataset_batch(features: list, dataset_id: str, total_n_split: int, split
         for feature_name in tqdm(features):
             if (feature_name, dataset_id) in FEATURES.keys():
                 f = FEATURES[(feature_name, dataset_id)]
-                df = f.load_or_create()
+                df = np.array_split(f.load_or_create(), total_n_split)[split_n]
                 if len(df.columns) == 1:
                     dataframe[feature_name] = df[f.feature_name]
                 else:

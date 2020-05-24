@@ -19,7 +19,7 @@ from Utils.Submission.Submission import create_submission_file
 label = "like"
 
 # The name of the submission file
-submission_filename = f"xgb_submission_{label}.py"
+submission_filename = f"xgb_submission_{label}.csv"
 
 # Train dataset id
 train_dataset_id = "holdout/train"
@@ -34,7 +34,7 @@ test_dataset_id = "test"
 use_oversample = True
 os_column_name = "engager_feature_number_of_previous_positive_engagement_ratio_1"
 os_value = -1
-os_percentage = 0.15
+os_percentage = 0.25
 
 # Cached svm filename
 svm_filename = "cached_svm_submission"
@@ -44,20 +44,20 @@ xgb_model_filename = f"xgb_model_{label}.model"
 
 # XGBoost model
 xgboost = XGBoost(
-    early_stopping_rounds=20,
-    num_rounds=1000,
-    max_depth=14,
-    min_child_weight=2,
-    colsample_bytree=0.986681081839595,
-    learning_rate=0.084682683195233,
-    reg_alpha=0.000709687642837,
-    reg_lambda=0.004524218043733,
-    scale_pos_weight=0.701767017039216,
-    gamma=8.5138404902064,
-    subsample=0.726578069020986,
-    base_score=0.5,
-    max_delta_step=0.018196005449355,
-    num_parallel_tree=13
+    early_stopping_rounds=10,
+    num_rounds=251,
+    max_depth = 32,
+    min_child_weight = 15,
+    colsample_bytree = 0.10215989375359413,
+    learning_rate = 0.05435469938538081,
+    reg_alpha = 0.0028520521268626583,
+    reg_lambda = 0.008769086983026421,
+    scale_pos_weight = 0.8474544735871221,
+    gamma = 0.527193282128536,
+    subsample = 0.7935286778483793,
+    base_score = 0.5,
+    max_delta_step = 13.670433144032879,
+    num_parallel_tree = 4
 )
 
 # The features
@@ -105,11 +105,23 @@ X_label = [
     "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_engager",
     "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_engager",
     "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",
+    # "engager_main_language",
+    # "creator_main_language",
     "creator_and_engager_have_same_main_language",
     "is_tweet_in_creator_main_language",
     "is_tweet_in_engager_main_language",
     "statistical_probability_main_language_of_engager_engage_tweet_language_1",
-    "statistical_probability_main_language_of_engager_engage_tweet_language_2"
+    "statistical_probability_main_language_of_engager_engage_tweet_language_2",
+    # "tweet_feature_token_length",
+    # "tweet_feature_token_length_unique",
+    # "engager_feature_knows_hashtag_positive",
+    # "engager_feature_knows_hashtag_negative",
+    # "engager_feature_knows_hashtag_like",
+    # "engager_feature_knows_hashtag_reply",
+    # "engager_feature_knows_hashtag_rt",
+    "hashtag_similarity_fold_ensembling_positive",
+    "link_similarity_fold_ensembling_positive",
+    "domain_similarity_fold_ensembling_positive"
 ]
 
 # The labels
@@ -120,8 +132,8 @@ Y_label = [
 
 def run_xgb():
     # Load the training dataset
-    X_train = get_dataset(X_label, train_dataset_id)
-    Y_train = get_dataset(Y_label, train_dataset_id)
+    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.25)
+    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.25)
     # Cache the training dataset
     cache_dataset_as_svm(svm_filename, X_train, Y_train)
     train = xgb.DMatrix(f"{svm_filename}.svm#{svm_filename}.cache")
@@ -164,11 +176,11 @@ def run_xgb():
 
     # Evaluate the model
     prauc, rce, conf, max_v, min_v, avg_v = xgboost.evaluate(remote_val)
-    print(f"prauc: {prauc}")
-    print(f"rce: {rce}")
-    print(f"max: {max_v}")
-    print(f"min: {min_v}")
-    print(f"avg: {avg_v}")
+    print(f"local eval - prauc: {prauc}")
+    print(f"local eval - rce: {rce}")
+    print(f"local eval - max: {max_v}")
+    print(f"local eval - min: {min_v}")
+    print(f"local eval - avg: {avg_v}")
     del remote_val
 
     # Load the remote validation dataset for testing
@@ -178,6 +190,9 @@ def run_xgb():
 
     # Retrieve the predictions
     predictions = xgboost.get_prediction(test)
+    print(f"remote submission - max: {predictions.max()}")
+    print(f"remote submission - min: {predictions.min()}")
+    print(f"remote submission - avg: {predictions.mean()}")
 
     # Retrieve users and tweets
     tweets = get_feature("raw_feature_tweet_id", test_dataset_id)["raw_feature_tweet_id"].array
