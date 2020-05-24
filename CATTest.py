@@ -88,7 +88,7 @@ if __name__ == '__main__':
     '''
     # Load train data
     loading_data_start_time = time.time()
-    X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.50)
+    X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.05)
 
     # Load test data
     X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
@@ -97,16 +97,16 @@ if __name__ == '__main__':
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
     #Initialize Model
-    CAT = CatBoost(iterations=600,
-                   depth=16,
-                   learning_rate=1.0,
-                   l2_leaf_reg=10.0,
-                   subsample=0.9,
-                   random_strenght=30,
-                   colsample_bylevel=1.0,
-                   leaf_estimation_iterations=10,
-                   scale_pos_weight=1.0,
-                   model_shrink_rate=0.03948556779496452,
+    CAT = CatBoost(iterations=2000,
+                   depth=3,
+                   learning_rate=0.002625110703588269,
+                   l2_leaf_reg=0.03457895103187542,
+                   subsample=0.31339914601467217,
+                   random_strenght=12.827877354210997,
+                   colsample_bylevel=0.7683922128051455,
+                   leaf_estimation_iterations=85,
+                   scale_pos_weight=0.5,
+                   model_shrink_rate=0.4021475843013613,
                    #ES
                    early_stopping_rounds = 15
                 )
@@ -149,4 +149,26 @@ if __name__ == '__main__':
     #Uncomment to print feature importance at the end of training
     #print(CAT.get_feat_importance())
 
-    create_submission_file(tweets, users, predictions, "cat_like_holdout_first.csv")
+    create_submission_file(tweets, users, predictions, "cat_like_holdout.csv")
+
+#Current submission
+'''
+ITERATION NUMBER 50
+iterations= 2000
+depth= 3
+learning_rate= 0.002625110703588269
+l2_leaf_reg= 0.03457895103187542
+subsample= 0.31339914601467217
+random_strenght= 12.827877354210997
+colsample_bylevel= 0.7683922128051455
+leaf_estimation_iterations= 85
+scale_pos_weight= 0.5
+model_shrink_rate= 0.4021475843013613
+-------
+EXECUTION TIME: 1164.449078321457
+-------
+best_es_iteration: 836
+-------
+PRAUC = 0.7162025109339223
+RCE   = 9.901181639021617
+'''
