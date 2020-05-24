@@ -142,8 +142,8 @@ if __name__ == '__main__':
     '''
     
 
-    tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    tweets = Data.get_feature("raw_feature_tweet_id", sub_dataset)["raw_feature_tweet_id"].array
+    users = Data.get_feature("raw_feature_engager_id", sub_dataset)["raw_feature_engager_id"].array
 
     # CAT Prediction
     prediction_start_time = time.time()
