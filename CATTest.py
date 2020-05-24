@@ -10,6 +10,7 @@ if __name__ == '__main__':
     # Defining the dataset used
     train_dataset = "holdout/train"
     test_dataset = "holdout/test"
+    sub_dataset="test"
 
     # Define the X label
     X_label = [
@@ -92,7 +93,10 @@ if __name__ == '__main__':
 
     # Load test data
     X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
-    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
+    #X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
+
+    # Load test data
+    X_test = Data.get_dataset(X_label, sub_dataset)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
