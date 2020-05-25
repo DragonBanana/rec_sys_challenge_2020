@@ -127,7 +127,7 @@ class TweetTokenLengthUniqueFeatureDictArray(TweetTextFeatureDictArrayNumpy):
         tweet_tokens_csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/from_text_token/tweet_tokens_all_unique.csv")
 
         # load the tweet id, token_list dataframe
-        tokens_feature_df_reader = pd.read_csv(tweet_tokens_csv_path)
+        tokens_feature_df_reader = pd.read_csv(tweet_tokens_csv_path, chunksize=250000)
         length_arr = None
 
         for chunk in tokens_feature_df_reader:
