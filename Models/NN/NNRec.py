@@ -9,16 +9,19 @@ import time
 from tqdm import tqdm
 import pandas as pd
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
+from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
 
 from Utils.Base.RecommenderBase import RecommenderBase
 from Utils.NN.CustomDatasets import CustomTestDatasetCap, CustomDatasetCap
 from Utils.NN.NNUtils import flat_accuracy, create_data_loaders, format_time
 from Utils.NN.TorchModels import BertClassifierDoubleInput
+from abc import ABC, abstractmethod
 
 
-class NNRecNewLoader(RecommenderBase):
+# abstract class for nn recommenders
+class NNRec(RecommenderBase, ABC):
 
-    # TODO ES
+    # TODO add support for Early Stopping
     def __init__(self, hidden_dropout_prob=0.1, weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4, ):
         super().__init__()
         self.device = None
@@ -31,6 +34,10 @@ class NNRecNewLoader(RecommenderBase):
         self.epochs = epochs
 
         self.model = None
+
+    @abstractmethod
+    def _get_model(self, input_size_2, hidden_size_2):
+        pass
 
     def _find_device(self):
         # If there's a GPU available...
@@ -50,91 +57,6 @@ class NNRecNewLoader(RecommenderBase):
 
         return device
 
-    def evaluate(self, preds, labels=None):
-        # Tries to load X and Y if not directly passed
-        if (labels is None):
-            print("No labels passed, cannot perform evaluation.")
-
-        if (self.model is None):
-            print("No model trained, cannot to perform evaluation.")
-
-        else:
-            # Declaring the class containing the metrics
-            cm = CoMe(preds, labels)
-
-            # Evaluating
-            prauc = cm.compute_prauc()
-            rce = cm.compute_rce()
-            # Confusion matrix
-            conf = cm.confMatrix()
-            # Prediction stats
-            max_pred, min_pred, avg = cm.computeStatistics()
-
-            return prauc, rce, conf, max_pred, min_pred, avg
-
-    def get_prediction(self,
-                       df_test_features: pd.DataFrame,
-                       df_test_tokens_reader: pd.io.parsers.TextFileReader,
-                       pretrained_model_dict_path: str = None
-                       ):
-        if pretrained_model_dict_path is None:
-            assert self.model is not None, "You are trying to predict without training."
-        else:
-            self.model = BertClassifierDoubleInput(input_size_2=df_test_features.shape[1], hidden_size_2=128)
-            self.model.load_state_dict(torch.load(pretrained_model_dict_path))
-
-        self.model.cuda()
-        self.model.eval()
-
-        preds = None
-
-        test_dataset = CustomTestDatasetCap(df_features=df_test_features, df_tokens_reader=df_test_tokens_reader)
-        test_dataloader = DataLoader(test_dataset,  # The training samples.
-                                     sampler=SequentialSampler(test_dataset),  # Select batches sequentially
-                                     batch_size=df_test_tokens_reader.chunksize  # Trains with this batch size.
-                                     )
-
-        # Evaluate data for one epoch
-        for batch in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
-            # Unpack this training batch from our dataloader.
-            #
-            # As we unpack the batch, we'll also copy each tensor to the GPU using
-            # the `to` method.
-            #
-            # `batch` contains three pytorch tensors:
-            #   [0]: input ids
-            #   [1]: attention masks
-            #   [2]: features
-            #   [3]: labels
-            b_input_ids = batch[0].to(self.device)
-            b_input_mask = batch[1].to(self.device)
-            b_features = batch[2].to(self.device)
-
-            # Tell pytorch not to bother with constructing the compute graph during
-            # the forward pass, since this is only needed for backprop (training).
-            with torch.no_grad():
-                # Forward pass, calculate logit predictions.
-                # token_type_ids is the same as the "segment ids", which
-                # differentiates sentence 1 and 2 in 2-sentence tasks.
-                # The documentation for this `model` function is here:
-                # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
-                # Get the "logits" output by the model. The "logits" are the output
-                # values prior to applying an activation function like the softmax.
-                loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = self.model(input_ids=b_input_ids,
-                                                                                            input_features=b_features,
-                                                                                            token_type_ids=None,
-                                                                                            attention_mask=b_input_mask)
-
-            curr_preds = curr_preds.detach().cpu().numpy()
-
-            if preds is None:
-                preds = curr_preds
-            else:
-                preds = np.vstack([preds, curr_preds])
-
-        return preds
-
-
     def load_model(self):
         pass
 
@@ -151,12 +73,6 @@ class NNRecNewLoader(RecommenderBase):
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
 
-        print("df_train_label")
-        print(df_train_label)
-
-        print("df_val_label")
-        print(df_val_label)
-
         # Set the seed value all over the place to make this reproducible.
         seed_val = 42
 
@@ -167,7 +83,8 @@ class NNRecNewLoader(RecommenderBase):
         if gpu:
             torch.cuda.manual_seed_all(seed_val)
 
-        self.model = BertClassifierDoubleInput(input_size_2=df_train_features.shape[1], hidden_size_2=128)
+        self.model = self._get_model(input_size_2=df_train_features.shape[1], hidden_size_2=128)
+
         if gpu:
             self.model.cuda()
 
@@ -323,7 +240,7 @@ class NNRecNewLoader(RecommenderBase):
             # outputs prior to activation.
             loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
                                                                             input_features=b_features,
-                                                                            token_type_ids=None,
+                                                                            # token_type_ids=None,
                                                                             attention_mask=b_input_mask,
                                                                             labels=b_labels)
 
@@ -491,3 +408,99 @@ class NNRecNewLoader(RecommenderBase):
 
         return avg_val_accuracy, avg_val_loss, validation_time, prauc, rce
 
+    def evaluate(self, preds, labels=None):
+        # Tries to load X and Y if not directly passed
+        if (labels is None):
+            print("No labels passed, cannot perform evaluation.")
+
+        if (self.model is None):
+            print("No model trained, cannot to perform evaluation.")
+
+        else:
+            # Declaring the class containing the metrics
+            cm = CoMe(preds, labels)
+
+            # Evaluating
+            prauc = cm.compute_prauc()
+            rce = cm.compute_rce()
+            # Confusion matrix
+            conf = cm.confMatrix()
+            # Prediction stats
+            max_pred, min_pred, avg = cm.computeStatistics()
+
+            return prauc, rce, conf, max_pred, min_pred, avg
+
+    def get_prediction(self,
+                       df_test_features: pd.DataFrame,
+                       df_test_tokens_reader: pd.io.parsers.TextFileReader,
+                       pretrained_model_dict_path: str = None
+                       ):
+        if pretrained_model_dict_path is None:
+            assert self.model is not None, "You are trying to predict without training."
+        else:
+            self.model = BertClassifierDoubleInput(input_size_2=df_test_features.shape[1], hidden_size_2=128)
+            self.model.load_state_dict(torch.load(pretrained_model_dict_path))
+
+        self.model.cuda()
+        self.model.eval()
+
+        preds = None
+
+        test_dataset = CustomTestDatasetCap(df_features=df_test_features, df_tokens_reader=df_test_tokens_reader)
+        test_dataloader = DataLoader(test_dataset,  # The training samples.
+                                     sampler=SequentialSampler(test_dataset),  # Select batches sequentially
+                                     batch_size=df_test_tokens_reader.chunksize  # Trains with this batch size.
+                                     )
+
+        # Evaluate data for one epoch
+        for batch in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
+            # Unpack this training batch from our dataloader.
+            #
+            # As we unpack the batch, we'll also copy each tensor to the GPU using
+            # the `to` method.
+            #
+            # `batch` contains three pytorch tensors:
+            #   [0]: input ids
+            #   [1]: attention masks
+            #   [2]: features
+            #   [3]: labels
+            b_input_ids = batch[0].to(self.device)
+            b_input_mask = batch[1].to(self.device)
+            b_features = batch[2].to(self.device)
+
+            # Tell pytorch not to bother with constructing the compute graph during
+            # the forward pass, since this is only needed for backprop (training).
+            with torch.no_grad():
+                # Forward pass, calculate logit predictions.
+                # token_type_ids is the same as the "segment ids", which
+                # differentiates sentence 1 and 2 in 2-sentence tasks.
+                # The documentation for this `model` function is here:
+                # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
+                # Get the "logits" output by the model. The "logits" are the output
+                # values prior to applying an activation function like the softmax.
+                loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = self.model(input_ids=b_input_ids,
+                                                                                            input_features=b_features,
+                                                                                            token_type_ids=None,
+                                                                                            attention_mask=b_input_mask)
+
+            curr_preds = curr_preds.detach().cpu().numpy()
+
+            if preds is None:
+                preds = curr_preds
+            else:
+                preds = np.vstack([preds, curr_preds])
+
+        return preds
+
+
+
+class BertRec(NNRec):
+
+    def _get_model(self, input_size_2, hidden_size_2):
+        return BertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2)
+
+
+class DistilBertRec(NNRec):
+
+    def _get_model(self, input_size_2, hidden_size_2):
+        return DistilBertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2)
