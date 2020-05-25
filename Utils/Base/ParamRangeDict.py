@@ -34,7 +34,7 @@ REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
     param_range_dict = [Categorical([501]),                 #num_rounds
-                        Integer(2, 15),                    #max_depth
+                        Integer(2, 32),                    #max_depth
                         Integer(1, 20),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree
                         Real(0.001, 0.1, 'log-uniform'),      #learning rate
@@ -51,15 +51,19 @@ def xgbRange(kind):
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:
         param_range_dict[7] = Real(0.7, 1.2)
+        param_range_dict[10] = Categorical([0.439])              #base_score
         param_range_dict[11] = Real(0, 20)                      #max_delta_step
     elif kind in RETWEET:
         param_range_dict[7] = Real(0.8, 1.3)
+        param_range_dict[10] = Categorical([0.113])              #base_score
         param_range_dict[11] = Real(0, 50)                      #max_delta_step
     elif kind in REPLY:
         param_range_dict[7] = Real(0.9, 1.4)
+        param_range_dict[10] = Categorical([0.0273])              #base_score
         param_range_dict[11] = Real(0, 200)                      #max_delta_step
     elif kind in COMMENT:
         param_range_dict[7] = Real(1, 1.5)
+        param_range_dict[10] = Categorical([0.008])              #base_score
         param_range_dict[11] = Real(0, 400)                      #max_delta_step
 
     return param_range_dict
