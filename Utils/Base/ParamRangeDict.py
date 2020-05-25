@@ -37,7 +37,7 @@ def xgbRange(kind):
                         Integer(2, 32),                    #max_depth
                         Integer(1, 20),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree
-                        Real(0.001, 0.1, 'log-uniform'),      #learning rate
+                        Real(0.0001, 0.05, 'log-uniform'),      #learning rate
                         Real(0.0001, 1, 'log-uniform'),    #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),    #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
