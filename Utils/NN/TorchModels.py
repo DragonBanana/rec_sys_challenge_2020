@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import BCEWithLogitsLoss
-from transformers import BertModel
+from transformers import BertModel, DistilBertModel
 
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
@@ -54,6 +54,7 @@ class BertClassifierDoubleInput(nn.Module):
             head_mask=None,
             inputs_embeds=None,
             labels=None, ):
+
         bert_outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
@@ -68,6 +69,8 @@ class BertClassifierDoubleInput(nn.Module):
         pooled_output = torch.cat([pooled_output, input_features.float()], dim=1)
 
         pooled_output = self.first_layer(pooled_output)
+
+        pooled_output = nn.ReLU()(pooled_output)
 
         logits = self.classifier(pooled_output)
 
@@ -91,3 +94,63 @@ class BertClassifierDoubleInput(nn.Module):
 
 
         return outputs  # (loss), logits, (hidden_states), (attentions), prauc, rce, conf, max_pred, min_pred, avg
+
+
+class DistilBertClassifierDoubleInput(nn.Module):
+
+    def __init__(self, input_size_2, hidden_size_2, hidden_dropout_prob=0.1, ):
+        super().__init__()
+
+        self.bert = DistilBertModel.from_pretrained("distilbert-base-multilingual-cased")
+
+        self.dropout = nn.Dropout(hidden_dropout_prob)
+
+        hidden_size_bert = 768
+        self.first_layer = nn.Linear(hidden_size_bert + input_size_2, hidden_size_2)
+
+        self.classifier = nn.Linear(hidden_size_2, 1)
+
+    def forward(
+            self,
+            input_ids=None,
+            input_features=None,  # the second input
+            attention_mask=None,
+            head_mask=None,
+            inputs_embeds=None,
+            labels=None, ):
+        distilbert_output = self.bert(
+            input_ids,
+            attention_mask=attention_mask,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+        )
+
+        hidden_state = distilbert_output[0]  # (bs, seq_len, dim)
+        pooled_output = hidden_state[:, 0]  # (bs, dim)
+        pooled_output = torch.cat([pooled_output, input_features.float()], dim=1)
+
+        pooled_output = self.first_layer(pooled_output)  # (bs, dim)
+        pooled_output = nn.ReLU()(pooled_output)  # (bs, dim)
+        pooled_output = self.dropout(pooled_output)  # (bs, dim)
+        logits = self.classifier(pooled_output)  # (bs, dim)
+
+        preds = torch.sigmoid(logits)
+
+        outputs = (logits,) + distilbert_output[1:]
+
+        if labels is not None:
+            loss_fct = BCEWithLogitsLoss()
+            loss = loss_fct(logits.view(-1), labels.view(-1).float())
+            # Declaring the class containing the metrics
+            cm = CoMe(preds.detach().cpu().numpy(), labels.detach().cpu().numpy())
+            # Evaluating
+            prauc = cm.compute_prauc()
+            rce = cm.compute_rce()
+            # Confusion matrix
+            conf = cm.confMatrix()
+            # Prediction stats
+            max_pred, min_pred, avg = cm.computeStatistics()
+
+            outputs = (loss,) + outputs + (preds, prauc, rce, conf, max_pred, min_pred, avg)
+
+        return outputs  # (loss), logits, (hidden_states), (attentions), (preds, prauc, rce, conf, max_pred, min_pred, avg)
