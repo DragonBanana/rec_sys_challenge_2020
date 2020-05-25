@@ -1,301 +1,19 @@
-from torch import nn
 import torch
-from torch.utils.data.dataset import Dataset
-from transformers import BertForSequenceClassification, AdamW, BertConfig
+from transformers import AdamW
 # from torchviz import make_dot
-from transformers.modeling_bert import BertModel
-from Utils.Data.Data import get_dataset, get_feature
 import numpy as np
-from torch.nn import CrossEntropyLoss, MSELoss, BCEWithLogitsLoss
-from torch.utils.data import TensorDataset, random_split
-from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
+from torch.utils.data import DataLoader, SequentialSampler
 from transformers import get_linear_schedule_with_warmup
 import random
 import time
 from tqdm import tqdm
 import pandas as pd
-import gc
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 
 from Utils.Base.RecommenderBase import RecommenderBase
-
-
-class FFNN(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
-        super(FFNN, self).__init__()
-        # Linear function
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-
-        # Non-linearity
-        self.sigmoid = nn.Sigmoid()
-
-        # Linear function (readout)
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
-
-    def forward(self, x):
-        # Linear function  # LINEAR
-        out = self.fc1(x)
-
-        # Non-linearity  # NON-LINEAR
-        out = self.sigmoid(out)
-
-        # Linear function (readout)  # LINEAR
-        out = self.fc2(out)
-        return out
-
-
-class BertClassifierDoubleInput(nn.Module):
-
-    def __init__(self, input_size_2, hidden_size_2, hidden_dropout_prob=0.1, ):
-        super().__init__()
-
-        self.bert = BertModel.from_pretrained("bert-base-multilingual-cased")
-
-        self.dropout = nn.Dropout(hidden_dropout_prob)
-
-        hidden_size_bert = 768
-        self.first_layer = nn.Linear(hidden_size_bert + input_size_2, hidden_size_2)
-
-        self.classifier = nn.Linear(hidden_size_2, 1)
-
-    def forward(
-            self,
-            input_ids=None,
-            input_features=None,  # the second input
-            attention_mask=None,
-            token_type_ids=None,
-            position_ids=None,
-            head_mask=None,
-            inputs_embeds=None,
-            labels=None, ):
-        bert_outputs = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds,
-        )
-
-        pooled_output = bert_outputs[1]
-
-        pooled_output = torch.cat([pooled_output, input_features.float()], dim=1)
-
-        pooled_output = self.first_layer(pooled_output)
-
-        logits = self.classifier(pooled_output)
-
-        outputs = (logits,) + bert_outputs[2:]  # add hidden states and attention if they are here
-
-        if labels is not None:
-            loss_fct = BCEWithLogitsLoss()
-            loss = loss_fct(logits.view(-1), labels.view(-1).float())
-            # Declaring the class containing the metrics
-            preds = torch.sigmoid(logits)
-            cm = CoMe(preds.detach().cpu().numpy(), labels.detach().cpu().numpy())
-            # Evaluating
-            prauc = cm.compute_prauc()
-            rce = cm.compute_rce()
-            # Confusion matrix
-            conf = cm.confMatrix()
-            # Prediction stats
-            max_pred, min_pred, avg = cm.computeStatistics()
-
-            outputs = (loss,) + outputs + (preds, prauc, rce, conf, max_pred, min_pred, avg)
-
-        return outputs  # (loss), logits, (hidden_states), (attentions), prauc, rce, conf, max_pred, min_pred, avg
-
-
-class CustomDataset(Dataset):
-    def __init__(self, df_features: pd.DataFrame,
-                 df_tokens_reader: pd.io.parsers.TextFileReader,
-                 df_label: pd.DataFrame):
-
-        self.df_features = df_features
-        self.df_tokens_reader = df_tokens_reader
-        self.df_label = df_label
-        self.count = -1
-
-    def __len__(self):
-        # TODO DEBUG
-        print(f"debug len of custom dataset:{len(self.df_features)}")
-        return len(self.df_features)
-
-    def __getitem__(self, index):
-
-        # debug
-        #print(f"debug-> index is:{index}")
-
-        # if true, update the caches, i.e. self.tensors
-        if index % self.df_tokens_reader.chunksize == 0:
-            self.count += 1
-
-            df_tokens_cache = self.df_tokens_reader.get_chunk()
-            df_tokens_cache.columns = ['tokens']
-            start = index * self.df_tokens_reader.chunksize
-            end = start + self.df_tokens_reader.chunksize
-            df_features_cache = self.df_features.iloc[start:end]
-            df_label_cache = self.df_label.iloc[start:end]
-
-            text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
-            #print(f"first text_series: {text_series}")
-            max_len = get_max_len(text_series)
-            attention_masks = np.ones((len(text_series), max_len), dtype=np.int8)
-            # padding
-            for i in range(len(text_series)):
-                i_shifted = i + index  # * self.df_tokens_reader.chunksize
-                initial_len = len(text_series[i_shifted])
-                miss = max_len - initial_len
-                text_series[i_shifted] += [0] * miss
-                for j in range(initial_len, max_len):
-                    attention_masks[i][j] = 0
-
-            # todo we need to optimize this
-            list_arr = []
-            for feat in df_features_cache.columns:
-                list_arr.append(df_features_cache[feat].values)
-            feature_mat = np.array(list_arr)
-            del list_arr
-            gc.collect()
-
-            text_series = text_series.map(lambda l: [int(elem) for elem in l]).map(lambda x: np.array(x))
-            #print(f"text_series : {text_series}")
-
-            text_np_mat = np.array(list(text_series))
-            # print(f"text_np_mat :\n {text_np_mat}")
-            # print(f"text_np_mat type : {type(text_np_mat)}")
-            # print(f"text_np_mat 0 type : {type(text_np_mat[0])}")
-
-            #print(f"text_np_mat 0 : {text_np_mat[0]}")
-            text_tensor = torch.tensor(text_np_mat)
-            attention_masks = torch.tensor(attention_masks)
-            labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
-                                  .map(lambda x: 1 if x else 0).values)
-            features = torch.tensor(feature_mat.T)
-            self.tensors = [text_tensor, attention_masks, features, labels]
-
-        return tuple(tensor[index - self.count * self.df_tokens_reader.chunksize] for tensor in self.tensors)
-
-
-class CustomDatasetCap(Dataset):
-    def __init__(self, df_features: pd.DataFrame,
-                 df_tokens_reader: pd.io.parsers.TextFileReader,
-                 df_label: pd.DataFrame,
-                 cap: int = 128):
-
-        self.df_features = df_features
-        self.df_tokens_reader_original = df_tokens_reader
-        self.df_tokens_reader_current = None
-        self.df_label = df_label
-        self.count = -1
-        self.cap = cap
-
-    def __len__(self):
-        return len(self.df_features)
-
-    def __getitem__(self, index):
-
-        # debug
-        #print(f"debug-> index is:{index}")
-
-        # if true, update the caches, i.e. self.tensors
-        if index % self.df_tokens_reader_original.chunksize == 0:
-            sep_tok_id = 102
-            if index == 0:
-                self.count = 0
-                self.df_tokens_reader_current = pd.read_csv(self.df_tokens_reader_original.f,
-                                                            chunksize=self.df_tokens_reader_original.chunksize, index_col=0, header=0,)
-            else:
-                self.count += 1
-
-            df_tokens_cache = self.df_tokens_reader_current.get_chunk()
-            df_tokens_cache.columns = ['tokens']
-
-            start = index
-            end = start + self.df_tokens_reader_current.chunksize
-            df_features_cache = self.df_features.iloc[start:end]
-            df_label_cache = self.df_label.iloc[start:end]
-
-            text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
-            #print(f"first text_series: {text_series}")
-            max_len, is_capped = get_max_len_cap(text_series, self.cap)
-            attention_masks = np.ones((len(text_series), max_len), dtype=np.int8)
-            if is_capped:
-                debug_first_branch = False
-                debug_second_branch = False
-
-                # remove the additional tokens if exceeds max_len,
-                # else: pad
-                for i in range(len(text_series)):
-                    debug_first_branch = False
-                    debug_second_branch = False
-
-                    i_shifted = i + index
-                    if len(text_series[i_shifted]) > max_len:
-                        debug_first_branch = True
-                        # remove the additional tokens
-                        while len(text_series[i_shifted]) >= (max_len):
-                            text_series[i_shifted].pop()
-                        # append the SEP token
-                        text_series[i_shifted].append(sep_tok_id)
-
-                    elif len(text_series[i_shifted]) < max_len:  # padding
-                        debug_second_branch = True
-                        initial_len = len(text_series[i_shifted])
-                        miss = max_len - initial_len
-                        text_series[i_shifted] += [0] * miss
-                        for j in range(initial_len, max_len):
-                            attention_masks[i][j] = 0
-                    # print(
-                    #    f"iteration {i}, debug_first_branch {debug_first_branch} ,debug_second_branch {debug_second_branch}, len: {len(text_series[i_shifted])}")
-                    # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
-                    # print(f"type of the array: {text_series[i_shifted].dtype}")
-
-            else:  # if the series is not capped, normal padding
-
-                # padding
-                for i in range(len(text_series)):
-                    i_shifted = i + index  # * self.df_tokens_reader.chunksize
-                    initial_len = len(text_series[i_shifted])
-                    miss = max_len - initial_len
-                    text_series[i_shifted] += [0] * miss
-                    for j in range(initial_len, max_len):
-                        attention_masks[i][j] = 0
-                    # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
-
-            # todo we need to optimize this
-            list_arr = []
-            for feat in df_features_cache.columns:
-                list_arr.append(df_features_cache[feat].values)
-            feature_mat = np.array(list_arr)
-            del list_arr
-            gc.collect()
-
-            text_series = text_series.map(lambda l: [int(elem) for elem in l]).map(
-                lambda x: np.array(x, dtype=np.int32))
-
-            # print(f"text_series : {text_series}")
-            # print(f"text_series type: {type(text_series)}")
-            # print(f"text_series to numpy: {text_series.to_numpy()}")
-
-            text_np_mat = np.stack(text_series)
-            #print(f"text_np_mat :\n {text_np_mat}")
-            #print(f"text_np_mat shape :\n {text_np_mat.shape}")
-            #print(f"text_np_mat type : {type(text_np_mat)}")
-            #print(f"text_np_mat dtype : {text_np_mat.dtype}")
-            #print(f"text_np_mat 0 type : {type(text_np_mat[0])}")
-
-            #print(f"text_np_mat 0 : {text_np_mat[0]}")
-            #print(f"text_np_mat 0 dtype : {text_np_mat[0].dtype}")
-            text_tensor = torch.tensor(text_np_mat, dtype=torch.int64)
-            attention_masks = torch.tensor(attention_masks, dtype=torch.int8)
-            #print(df_label_cache['tweet_feature_engagement_is_like'])
-            labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
-                                  .map(lambda x: 1 if x else 0).values, dtype=torch.int8)
-            features = torch.tensor(feature_mat.T)
-            self.tensors = [text_tensor, attention_masks, features, labels]
-
-        return tuple(tensor[index - self.count * self.df_tokens_reader_current.chunksize] for tensor in self.tensors)
+from Utils.NN.CustomDatasets import CustomTestDatasetCap, CustomDatasetCap
+from Utils.NN.NNUtils import flat_accuracy, create_data_loaders, format_time
+from Utils.NN.TorchModels import BertClassifierDoubleInput
 
 
 class NNRecNewLoader(RecommenderBase):
@@ -354,8 +72,68 @@ class NNRecNewLoader(RecommenderBase):
 
             return prauc, rce, conf, max_pred, min_pred, avg
 
-    def get_prediction(self):
-        pass
+    def get_prediction(self,
+                       df_test_features: pd.DataFrame,
+                       df_test_tokens_reader: pd.io.parsers.TextFileReader,
+                       pretrained_model_dict_path: str = None
+                       ):
+        if pretrained_model_dict_path is None:
+            assert self.model is not None, "You are trying to predict without training."
+        else:
+            self.model = BertClassifierDoubleInput(input_size_2=df_test_features.shape[1], hidden_size_2=128)
+            self.model.load_state_dict(torch.load(pretrained_model_dict_path))
+
+        self.model.cuda()
+        self.model.eval()
+
+        preds = None
+
+        test_dataset = CustomTestDatasetCap(df_features=df_test_features, df_tokens_reader=df_test_tokens_reader)
+        test_dataloader = DataLoader(test_dataset,  # The training samples.
+                                     sampler=SequentialSampler(test_dataset),  # Select batches sequentially
+                                     batch_size=df_test_tokens_reader.chunksize  # Trains with this batch size.
+                                     )
+
+        # Evaluate data for one epoch
+        for batch in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
+            # Unpack this training batch from our dataloader.
+            #
+            # As we unpack the batch, we'll also copy each tensor to the GPU using
+            # the `to` method.
+            #
+            # `batch` contains three pytorch tensors:
+            #   [0]: input ids
+            #   [1]: attention masks
+            #   [2]: features
+            #   [3]: labels
+            b_input_ids = batch[0].to(self.device)
+            b_input_mask = batch[1].to(self.device)
+            b_features = batch[2].to(self.device)
+
+            # Tell pytorch not to bother with constructing the compute graph during
+            # the forward pass, since this is only needed for backprop (training).
+            with torch.no_grad():
+                # Forward pass, calculate logit predictions.
+                # token_type_ids is the same as the "segment ids", which
+                # differentiates sentence 1 and 2 in 2-sentence tasks.
+                # The documentation for this `model` function is here:
+                # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
+                # Get the "logits" output by the model. The "logits" are the output
+                # values prior to applying an activation function like the softmax.
+                loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = self.model(input_ids=b_input_ids,
+                                                                                            input_features=b_features,
+                                                                                            token_type_ids=None,
+                                                                                            attention_mask=b_input_mask)
+
+            curr_preds = curr_preds.detach().cpu().numpy()
+
+            if preds is None:
+                preds = curr_preds
+            else:
+                preds = np.vstack([preds, curr_preds])
+
+        return preds
+
 
     def load_model(self):
         pass
@@ -712,79 +490,4 @@ class NNRecNewLoader(RecommenderBase):
         print("  Validation took: {:}".format(validation_time))
 
         return avg_val_accuracy, avg_val_loss, validation_time, prauc, rce
-
-
-# Function to calculate the accuracy of our predictions vs labels
-def flat_accuracy(preds, labels):
-    preds = preds.squeeze()
-    my_round = lambda x: 1 if x >= 0.5 else 0
-    pred_flat = np.fromiter(map(my_round, preds), dtype=np.int).flatten()
-    labels_flat = labels.flatten()
-    return np.sum(pred_flat == labels_flat) / len(labels_flat)
-
-
-def get_max_len(sentences):
-    max_len = 0
-    # For every sentence...
-    for sent in sentences:
-        # Update the maximum sentence length.
-        max_len = max(max_len, len(sent))
-
-    print('Max sentence length: ', max_len)
-    return max_len
-    # return 322
-
-
-def get_max_len_cap(sentences, cap: int = 128) -> (int, bool):
-    is_capped = False
-
-    max_len = 0
-    # For every sentence...
-    for sent in sentences:
-        # Update the maximum sentence length.
-        max_len = max(max_len, len(sent))
-        # check if the value is higher than the cap
-        if max_len >= cap:
-            is_capped = True
-            max_len = cap
-            break
-
-    print('Max sentence length: ', max_len)
-    print('Is capped: ', is_capped)
-    return max_len, is_capped
-
-
-def create_data_loaders(train_dataset, val_dataset, batch_size=3):
-    # The DataLoader needs to know our batch size for training, so we specify it
-    # here. For fine-tuning BERT on a specific task, the authors recommend a batch
-    # size of 16 or 32.
-
-    # Create the DataLoaders for our training and validation sets.
-    # We'll take training samples in random order.
-    train_dataloader = DataLoader(
-        train_dataset,  # The training samples.
-        sampler=SequentialSampler(train_dataset),  # Select batches sequentially
-        batch_size=batch_size  # Trains with this batch size.
-    )
-
-    # For validation the order doesn't matter, so we'll just read them sequentially.
-    validation_dataloader = DataLoader(
-        val_dataset,  # The validation samples.
-        sampler=SequentialSampler(val_dataset),  # Pull out batches sequentially.
-        batch_size=batch_size  # Evaluate with this batch size.
-    )
-
-    return train_dataloader, validation_dataloader
-
-
-def format_time(elapsed):
-    import datetime
-    '''
-    Takes a time in seconds and returns a string hh:mm:ss
-    '''
-    # Round to the nearest second.
-    elapsed_rounded = int(round((elapsed)))
-
-    # Format as hh:mm:ss
-    return str(datetime.timedelta(seconds=elapsed_rounded))
 
