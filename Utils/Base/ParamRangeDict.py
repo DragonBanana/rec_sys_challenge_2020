@@ -33,7 +33,7 @@ COMMENT = "commentCOMMENTComment"
 REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
-    param_range_dict = [Categorical([301]),                 #num_rounds
+    param_range_dict = [Categorical([1001]),                 #num_rounds
                         Integer(8, 32),                    #max_depth
                         Integer(1, 20),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree
@@ -51,19 +51,19 @@ def xgbRange(kind):
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.439])             #base_score
+        param_range_dict[10] = Categorical([0.9])             #base_score
         param_range_dict[11] = Real(0, 20)                      #max_delta_step
     elif kind in RETWEET:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.113])              #base_score
+        param_range_dict[10] = Categorical([0.9])              #base_score
         param_range_dict[11] = Real(0, 50)                      #max_delta_step
     elif kind in REPLY:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.0273])              #base_score
+        param_range_dict[10] = Categorical([0.9])              #base_score
         param_range_dict[11] = Real(0, 200)                      #max_delta_step
     elif kind in COMMENT:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.008])              #base_score
+        param_range_dict[10] = Categorical([0.9])              #base_score
         param_range_dict[11] = Real(0, 400)                      #max_delta_step
 
     return param_range_dict
