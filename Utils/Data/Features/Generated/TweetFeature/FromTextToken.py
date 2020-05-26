@@ -8,6 +8,9 @@ import numpy as np
 import gzip
 
 from Utils.Data.Features.MappedFeatures import MappedFeatureTweetId
+from Utils.Data.Features.RawFeatures import RawFeatureTweetTextToken
+
+from BERT.TokenizerWrapper import TokenizerWrapper
 
 
 class TweetFeatureMappedMentions(GeneratedFeaturePickle):
@@ -232,3 +235,42 @@ class TweetFeatureTokenLengthUnique(GeneratedFeaturePickle):
 
         # Save the dataframe
         self.save_feature(length_df)
+
+
+class TweetFeatureTextContainsAdultContent(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_number_of_adult_content_words", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
+
+        self.tok = TokenizerWrapper("bert-base-multilingual-cased")
+        
+        self.adult_content_words = ['adult content', 'adult film', 'adult movie', 'adult video', 'anal', 'ass', 'bara', 'barely legal', 'bdsm', 'bestiality', 'bisexual', 'bitch', 'blowjob', 'bondage', 'boob', 'boobs', 'boobies', 'boobys', 'booty', 'bound & gagged', 'bound and gagged', 'breast', 'breasts', 'bukkake', 'butt', 'cameltoe', 'creampie', 'cock', 'condom', 'cuck-old', 'cuckold', 'cum', 'cumshot', 'cunt', 'deep thraot', 'deap throat', 'deep thraoting', 'deap throating', 'deep-thraot', 'deap-throat', 'deep-thraoting', 'deap-throating', 'deepthraot', 'deapthroat', 'deepthraoting', 'deapthroating', 'dick', 'dildo', 'emetophilia', 'erotic', 'erotica', 'erection', 'erections', 'escort', 'facesitting', 'facial', 'felching', 'femdon', 'fetish', 'fisting', 'futanari', 'fuck', 'fucking', 'fucked', 'fucks', 'fucker', 'gangbang', 'gapping', 'gay', 'gentlemens club', 'gloryhole', 'glory hole', 'gonzo', 'gore', 'guro', 'handjob', 'hardon', 'hard-on', 'hentai', 'hermaphrodite', 'hidden camera', 'hump', 'humped', 'humping', 'hustler', 'incest', 'jerk off', 'jerking off', 'kinky', 'lesbian', 'lolicon ', 'masturbate', 'masturbating', 'masturbation', 'mature', 'mens club', 'menstrual', 'menstral', 'menstraul', 'milf', 'milking', 'naked', 'naughty', 'nude', 'orgasm', 'orgy', 'orgie', 'pearl necklace', 'pegging', 'penis', 'penetration', 'playboy', 'playguy', 'playgirl', 'porn', 'pornography', 'pornstar', 'pov', 'pregnant', 'preggo', 'pubic', 'pussy', 'rape', 'rimjob', 'scat', 'semen', 'sex', 'sexual', 'sexy', 'sexting', 'shemale', 'skank', 'slut', 'snuff', 'snuf', 'sperm', 'squirt', 'suck', 'swapping', 'tit', 'trans', 'transman', 'transsexual', 'transgender', 'threesome', 'tube8', 'twink', 'upskirt', 'vagina', 'virgin', 'whore', 'wore', 'xxx', 'yaoi', 'yif', 'yiff', 'yiffy', 'yuri', 'youporn']
+
+    def check_if_contains_adult_words(self, row):
+        tokens = row.replace('\n','').split('\t')
+        sentence = self.tok.decode(tokens).lower()
+        count = 0
+        for w in self.adult_content_words:
+            if w in sentence:
+                count += 1
+        return count
+    
+    def create_feature(self):
+        # Load the tweet ids and tokens
+        tweet_tokens_feature = RawFeatureTweetTextToken(self.dataset_id)
+        tweet_tokens_df = tweet_tokens_feature.load_or_create()
+
+        #print(tweet_tokens_df)
+
+        number_of_adult_words_df = pd.DataFrame(tweet_tokens_df['raw_feature_tweet_text_token'].apply(self.check_if_contains_adult_words))
+        
+        #print(number_of_adult_words_df)
+        
+        print("Number of rows with feature == 0 :", (number_of_adult_words_df['raw_feature_tweet_text_token'] == 0).sum())
+
+        # Save the dataframe
+        self.save_feature(number_of_adult_words_df)
