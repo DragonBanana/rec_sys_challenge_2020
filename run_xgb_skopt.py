@@ -107,8 +107,8 @@ def run(label: str):
                    path_log=f"{folder}/{label}")
 
     # Load the training dataset
-    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.2)
-    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.2)
+    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.05)
+    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.05)
     # Cache the training dataset
     cache_dataset_as_svm(svm_filename, X_train, Y_train)
     train = xgb.DMatrix(f"{svm_filename}.svm#/home/ubuntu/temp/{svm_filename}_{label}.cache")
@@ -116,14 +116,14 @@ def run(label: str):
     # Delete the data structure that are not useful anymore
     del X_train, Y_train
 
-    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 1)
+    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.5)
     val = xgb.DMatrix(X_val, Y_val)
-    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 1)
+    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 0.5)
     test = xgb.DMatrix(X_test, Y_test)
 
     del X_val, Y_val, X_test, Y_test
 
-    OP.setParameters(n_calls=100, n_random_starts=20)
+    OP.setParameters(n_calls=100, n_random_starts=30)
     OP.defineMI()
     # Use GenerateBatchSVM in order to generate the batches
     OP.loadTrainData(holder_train=train)

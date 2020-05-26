@@ -74,7 +74,7 @@ def main():
     ]                                                                           
     # Define the Y label
     Y_label = [
-        "tweet_feature_engagement_is_like"
+        "tweet_feature_engagement_is_comment"
     ]
 
     model_name = "catboost_classifier"
