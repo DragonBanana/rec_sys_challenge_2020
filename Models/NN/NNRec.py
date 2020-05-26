@@ -349,7 +349,7 @@ class NNRec(RecommenderBase, ABC):
                 # values prior to applying an activation function like the softmax.
                 loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
                                                                                 input_features=b_features,
-                                                                                token_type_ids=None,
+                                                                                # token_type_ids=None,
                                                                                 attention_mask=b_input_mask,
                                                                                 labels=b_labels)
 
@@ -491,7 +491,6 @@ class NNRec(RecommenderBase, ABC):
                 preds = np.vstack([preds, curr_preds])
 
         return preds
-
 
 
 class BertRec(NNRec):
