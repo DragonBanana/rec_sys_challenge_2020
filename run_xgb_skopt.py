@@ -123,13 +123,13 @@ def run(label: str):
 
     del X_val, Y_val, X_test, Y_test
 
-    OP.setParameters(n_calls=100, n_random_starts=30)
+    OP.setParameters(n_calls=100, n_random_starts=20)
     OP.defineMI()
     # Use GenerateBatchSVM in order to generate the batches
     OP.loadTrainData(holder_train=train)
     OP.loadValData(holder_val=val)
     OP.loadTestData(holder_test=test)
-    OP.setParamsXGB(early_stopping_rounds=25, tree_method='hist')
+    OP.setParamsXGB(early_stopping_rounds=15, tree_method='hist')
 
     OP.optimize()
 
