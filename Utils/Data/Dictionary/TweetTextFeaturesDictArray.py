@@ -85,6 +85,8 @@ class TweetTextEmbeddingsHashtagsMentionsLDA20FeatureDictArray(TweetTextEmbeddin
         super().__init__("text_embeddings_hashtags_mentions_LDA_20_feature_dict_array")
 
 
+# TODO the csv file is inconsistent, don't use these dictionaries
+
 class TweetTokenLengthFeatureDictArray(TweetTextFeatureDictArrayNumpy):
 
     def __init__(self):

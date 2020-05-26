@@ -1,3 +1,6 @@
+from tqdm import tqdm
+
+from Utils.Data.Data import get_feature_reader
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
 from Utils.Data.Features.Feature import Feature
@@ -198,14 +201,22 @@ class TweetFeatureTokenLength(GeneratedFeaturePickle):
         tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
         tweet_id_df = tweet_id_feature.load_or_create()
 
-        # load the length dictionary
-        tweet_length_dict = TweetTokenLengthFeatureDictArray().load_or_create()
+        # load the tweet id, token_list dataframe
+        tokens_feature_df_reader = get_feature_reader('raw_feature_tweet_text_token', self.dataset_id, chunksize=250000)
+        length_arr = None
 
+        for chunk in tqdm(tokens_feature_df_reader):
+            curr_arr = chunk['raw_feature_tweet_text_token'] \
+                .map(lambda x: x.split('\t')) \
+                .map(lambda x: len(x) - 2) \
+                .values
 
-        # Compute for each engagement the tweet mentions
-        length_df = pd.DataFrame(tweet_id_df['mapped_feature_tweet_id'].map(lambda t_id: tweet_length_dict[t_id]))
+            if length_arr is None:
+                length_arr = curr_arr
+            else:
+                length_arr = np.hstack([length_arr, curr_arr])
 
-
+        length_df = pd.DataFrame({'tweet_feature_token_length': length_arr})
         # Save the dataframe
         self.save_feature(length_df)
 
@@ -224,11 +235,22 @@ class TweetFeatureTokenLengthUnique(GeneratedFeaturePickle):
         tweet_id_feature = MappedFeatureTweetId(self.dataset_id)
         tweet_id_df = tweet_id_feature.load_or_create()
 
-        # load the length dictionary
-        tweet_length_unique_dict = TweetTokenLengthUniqueFeatureDictArray().load_or_create()
+        # load the tweet id, token_list dataframe
+        tokens_feature_df_reader = get_feature_reader('raw_feature_tweet_text_token', self.dataset_id, chunksize=250000)
+        length_arr = None
 
-        # Compute for each engagement the tweet mentions
-        length_df = pd.DataFrame(tweet_id_df['mapped_feature_tweet_id'].map(lambda t_id: tweet_length_unique_dict[t_id]))
+        for chunk in tqdm(tokens_feature_df_reader):
+            curr_arr = chunk['raw_feature_tweet_text_token'] \
+                .map(lambda x: x.split('\t')) \
+                .map(lambda x: set(x))\
+                .map(lambda x: len(x) - 2) \
+                .values
 
+            if length_arr is None:
+                length_arr = curr_arr
+            else:
+                length_arr = np.hstack([length_arr, curr_arr])
+
+        length_df = pd.DataFrame({'tweet_feature_token_length_unique': length_arr})
         # Save the dataframe
         self.save_feature(length_df)
