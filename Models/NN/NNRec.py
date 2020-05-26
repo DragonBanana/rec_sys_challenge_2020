@@ -174,6 +174,7 @@ class NNRec(RecommenderBase, ABC):
                 }
             )
             torch.save(self.model.state_dict(), f"./saved_models/saved_model_epoch{epoch_i + 1}")
+            torch.save(optimizer.state_dict(), f"./saved_models/optimizer_epoch{epoch_i + 1}")
 
         print("")
         print("Training complete!")
@@ -320,8 +321,21 @@ class NNRec(RecommenderBase, ABC):
         nb_eval_steps = 0
         preds = None
 
+        # Measure how long the training epoch takes.
+        t0 = time.time()
+
         # Evaluate data for one epoch
-        for batch in tqdm(validation_dataloader, total=len(validation_dataloader)):
+        for step, batch in tqdm(enumerate(validation_dataloader), total=len(validation_dataloader)):
+
+            # Progress update every 40 batches.
+            if step % 40 == 0 and not step == 0:
+                # Calculate elapsed time in minutes.
+                elapsed = format_time(time.time() - t0)
+
+                # Report progress.
+                print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(validation_dataloader), elapsed))
+
+
             # Unpack this training batch from our dataloader.
             #
             # As we unpack the batch, we'll also copy each tensor to the GPU using
@@ -366,8 +380,8 @@ class NNRec(RecommenderBase, ABC):
             total_eval_prauc += prauc
             total_eval_rce += rce
 
-            print(f"current batch RCE: {rce}")
-            print(f"current batch PRAUC: {prauc}")
+            # print(f"current batch RCE: {rce}")
+            # print(f"current batch PRAUC: {prauc}")
 
             # Move logits and labels to CPU
             logits = logits.detach().cpu().numpy()
