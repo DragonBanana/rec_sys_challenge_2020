@@ -34,7 +34,7 @@ REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
     param_range_dict = [Categorical([1001]),                 #num_rounds
-                        Integer(8, 32),                    #max_depth
+                        Integer(2, 16),                    #max_depth
                         Integer(1, 20),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree
                         Real(0.001, 0.1, 'log-uniform'),      #learning rate
@@ -44,26 +44,22 @@ def xgbRange(kind):
                         Real(0.7, 1.3),                     #scale_pos_weight
                         Real(0.1, 20, 'log-uniform'),                      #gamma
                         Real(0.1, 1),                       #subsample
-                        Categorical([0.5]),                        #base_score
+                        Real(0.05, 0.5),                       #base_score
                         Real(0, 200),                      #max_delta_step
-                        Integer(1, 5)]                        #num_parallel_tree
+                        Integer(1, 10)]                        #num_parallel_tree
 
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:
-        param_range_dict[7] = Categorical([1,2])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.3])             #base_score
+        param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[11] = Real(0, 20)                      #max_delta_step
     elif kind in RETWEET:
-        param_range_dict[7] = Categorical([1,2])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.2])              #base_score
+        param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[11] = Real(0, 50)                      #max_delta_step
     elif kind in REPLY:
-        param_range_dict[7] = Categorical([1,2])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.1])              #base_score
+        param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[11] = Real(0, 200)                      #max_delta_step
     elif kind in COMMENT:
-        param_range_dict[7] = Categorical([1,2,5])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.05])              #base_score
+        param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[11] = Real(0, 400)                      #max_delta_step
 
     return param_range_dict
