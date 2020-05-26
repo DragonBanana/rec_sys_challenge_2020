@@ -23,6 +23,7 @@ from Utils.Data.Features.Generated.TweetFeature.IsLanguage import *
 from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
 from Utils.Data.Features.Generated.TweetFeature.NumberOfHashtags import TweetFeatureNumberOfHashtags
 from Utils.Data.Features.Generated.TweetFeature.NumberOfMedia import *
+from Utils.Data.Features.Generated.TweetFeature.HasDiscriminantHashtag import *
 from Utils.Data.Features.MappedFeatures import *
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Features.RawFeatures import *
@@ -164,6 +165,13 @@ def populate_features():
         result[("engager_feature_knows_hashtag_reply", dataset_id)] = EngagerKnowsHashtagReply(dataset_id)
         result[("engager_feature_knows_hashtag_rt", dataset_id)] = EngagerKnowsHashtagRetweet(dataset_id)
         result[("engager_feature_knows_hashtag_comment", dataset_id)] = EngagerKnowsHashtagComment(dataset_id)
+
+        # DISCRIMINATIVE HASHTAGS
+        result[("tweet_feature_has_discriminative_hashtag_like", dataset_id)] = HasDiscriminativeHashtag_Like(dataset_id)
+        result[("tweet_feature_has_discriminative_hashtag_reply", dataset_id)] = HasDiscriminativeHashtag_Reply(dataset_id)
+        result[("tweet_feature_has_discriminative_hashtag_retweet", dataset_id)] = HasDiscriminativeHashtag_Retweet(dataset_id)
+        result[("tweet_feature_has_discriminative_hashtag_comment", dataset_id)] = HasDiscriminativeHashtag_Comment(dataset_id)
+
 
         # NUMBER OF PREVIOUS ENGAGEMENTS
         result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
