@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from Utils.Data.Data import get_feature_reader
+import Utils.Data as data
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
 from Utils.Data.Features.Feature import Feature
@@ -205,7 +205,7 @@ class TweetFeatureTokenLength(GeneratedFeaturePickle):
         tweet_id_df = tweet_id_feature.load_or_create()
 
         # load the tweet id, token_list dataframe
-        tokens_feature_df_reader = get_feature_reader('raw_feature_tweet_text_token', self.dataset_id, chunksize=250000)
+        tokens_feature_df_reader = data.Data.get_feature_reader('raw_feature_tweet_text_token', self.dataset_id, chunksize=250000)
         length_arr = None
 
         for chunk in tqdm(tokens_feature_df_reader):
@@ -239,7 +239,7 @@ class TweetFeatureTokenLengthUnique(GeneratedFeaturePickle):
         tweet_id_df = tweet_id_feature.load_or_create()
 
         # load the tweet id, token_list dataframe
-        tokens_feature_df_reader = get_feature_reader('raw_feature_tweet_text_token', self.dataset_id, chunksize=250000)
+        tokens_feature_df_reader = data.Data.get_feature_reader('raw_feature_tweet_text_token', self.dataset_id, chunksize=250000)
         length_arr = None
 
         for chunk in tqdm(tokens_feature_df_reader):
