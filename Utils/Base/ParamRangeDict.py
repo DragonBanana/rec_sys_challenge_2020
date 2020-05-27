@@ -174,22 +174,22 @@ def lgbmName():
 def catRange(kind):
     param_range_dict = [Integer(2000,2001),                 # iterations
                         Integer(1,16),                      # depth
-                        Real(0.000001, 1, 'log_uniform'),     # learning_rate
-                        Real(0.000001, 40, 'log_uniform'),    # l2_leaf_reg
+                        Real(0.000001, 0.99999999, 'log_uniform'),     # learning_rate
+                        Real(0.000001, 50, 'log_uniform'),    # l2_leaf_reg
                         Real(0.1, 0.9),                     # subsample
-                        Real(0.0001, 60),                   # random_strenght
+                        Real(0.0001, 70),                   # random_strenght
                         Real(0.1, 1),                       # colsample_bylevel
                         Integer(5,300),                     # leaf_estimation_iterations
-                        Real(1,5),                          # scale_pos_weight
-                        Real(0.0001,2.1, 'log_uniform')]      # model_shrink_rate
+                        Real(0.2,5),                          # scale_pos_weight
+                        Real(0.00001,2.1, 'log_uniform')]      # model_shrink_rate
 
     
     # PERSONALIZED SCALE_POS_WEIGHT
     # From documentation put it to neg_samples/pos_samples 
     if kind in LIKE:
-        param_range_dict[8] = Real(0.5, 5)
+        param_range_dict[8] = Real(0.1, 5)
     elif kind in RETWEET:
-        param_range_dict[8] = Real(1, 15)
+        param_range_dict[8] = Real(0.2, 15)
     elif kind in REPLY:
         param_range_dict[8] = Real(15, 55)
     elif kind in COMMENT:
