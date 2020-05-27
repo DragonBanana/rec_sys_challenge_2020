@@ -175,7 +175,7 @@ def catRange(kind):
     param_range_dict = [Integer(2000,2001),                 # iterations
                         Integer(1,16),                      # depth
                         Real(0.000001, 0.99999999, 'log_uniform'),     # learning_rate
-                        Real(0.000001, 50, 'log_uniform'),    # l2_leaf_reg
+                        Real(0.000001, 100, 'log_uniform'),    # l2_leaf_reg
                         Real(0.1, 0.9),                     # subsample
                         Real(0.0001, 70),                   # random_strenght
                         Real(0.1, 1),                       # colsample_bylevel
