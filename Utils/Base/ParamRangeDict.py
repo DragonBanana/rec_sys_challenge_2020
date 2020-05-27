@@ -113,8 +113,8 @@ def lgbmRange(kind):
     param_range_dict = [Integer(70, 4095),                      #num_leaves
                         Real(0.005, 1, 'log-uniform'),          #learning rate
                         Integer(2, 70),                         #max_depth
-                        Real(0.1, 1, 'log-uniform'),            #lambda_l1
-                        Real(0.1, 1, 'log-uniform'),            #lambda_l2
+                        Real(1,50),                             #lambda_l1
+                        Real(1,50),                             #lambda_l2
                         Real(0.4, 1),                           #colsample_bynode
                         Real(0.4, 1),                           #colsample_bytree
                         Real(0.1, 1),                           #pos_subsample
