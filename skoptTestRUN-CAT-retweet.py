@@ -175,8 +175,8 @@ def main():
                    auto_save=True)
 
     print("checkpoint 2")
-    OP.setParameters(n_calls=50, 
-                     n_random_starts=20,
+    OP.setParameters(n_calls=25, 
+                     n_random_starts=1,
                      x0=x0,
                      y0=y0)
     print("checkpoint 3")
