@@ -102,9 +102,11 @@ class MappedFeatureGroupedTweetLanguage(MappedFeaturePickle):
         # others (vietnamita, birmano, armeno, georgiano, uiguro)
         elif language_id == 30 or language_id == 51 or language_id == 63 or language_id == 64 or language_id == 65:
             return 30
+        else:
+            return language_id
         
     def remap_language_id(self, group_id):
-        if x not in self.group_id_dict:
+        if group_id not in self.group_id_dict:
             self.group_id_dict[group_id] = self.current_mapping
             self.current_mapping += 1
         return self.group_id_dict[group_id]
@@ -112,11 +114,12 @@ class MappedFeatureGroupedTweetLanguage(MappedFeaturePickle):
     def create_feature(self):
         feature = MappedFeatureTweetLanguage(self.dataset_id)
         dataframe = feature.load_or_create()
-        #mapped_dataframe = map_column_single_value(dataframe[feature.feature_name], dictionary)
         
-        grouped_dataframe = pd.DataFrame(dataframe["mapped_feature_tweet_language"].map(lambda x: get_grouped_id(x)))
-        
-        mapped_dataframe = pd.DataFrame(dataframe["mapped_feature_tweet_language"].map(lambda x: remap_language_id(x)))
+        #dataframe = dataframe.head()
+        grouped_dataframe = pd.DataFrame(dataframe["mapped_feature_tweet_language"].map(lambda x: self.get_grouped_id(x)))
+        #print(grouped_dataframe)
+        mapped_dataframe = pd.DataFrame(dataframe["mapped_feature_tweet_language"].map(lambda x: self.remap_language_id(x)))
+        #print(mapped_dataframe)
 
         self.save_feature(mapped_dataframe)
 
