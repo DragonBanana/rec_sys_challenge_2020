@@ -66,6 +66,61 @@ class MappedFeatureTweetLanguage(MappedFeaturePickle):
         self.save_feature(mapped_dataframe)
 
 
+class MappedFeatureGroupedTweetLanguage(MappedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("mapped_feature_grouped_tweet_language", dataset_id)
+        
+        self.group_id_dict = {}
+        self.current_mapping = 0
+        
+    def get_grouped_id(self, language_id):
+        # ??? inglese misto altre cose
+        if language_id == 16 or language_id == 18 or language_id == 20:
+            return 16
+        # [UNK]
+        elif language_id == 26 or language_id == 56 or language_id == 57 or language_id == 58 or language_id == 59 or language_id == 61:
+            return 26
+        # ???
+        elif language_id == 28 or language_id == 36 or language_id == 37 or language_id == 43 or language_id == 45 or language_id == 46:
+            return 28
+        # persian / pashto
+        elif language_id == 25 or language_id == 44 or language_id == 41:
+            return 25
+        # lingue indiane
+        elif language_id == 8 or language_id == 32 or language_id == 34 or language_id == 35 or language_id == 47 or language_id == 48 or language_id == 49 or language_id == 50 or language_id == 52 or language_id == 53 or language_id == 54 or language_id == 60 or language_id == 62:
+            return 8
+        # lingue est europa
+        elif language_id == 14 or language_id == 23 or language_id == 24 or language_id == 55:
+            return 14
+        # lingue nord europa
+        elif language_id == 21 or language_id == 31 or language_id == 38 or language_id == 39:
+            return 21
+        # lingue centro europa / balcani
+        elif language_id == 29 or language_id == 40 or language_id == 42:
+            return 29
+        # others (vietnamita, birmano, armeno, georgiano, uiguro)
+        elif language_id == 30 or language_id == 51 or language_id == 63 or language_id == 64 or language_id == 65:
+            return 30
+        
+    def remap_language_id(self, group_id):
+        if x not in self.group_id_dict:
+            self.group_id_dict[group_id] = self.current_mapping
+            self.current_mapping += 1
+        return self.group_id_dict[group_id]
+        
+    def create_feature(self):
+        feature = MappedFeatureTweetLanguage(self.dataset_id)
+        dataframe = feature.load_or_create()
+        #mapped_dataframe = map_column_single_value(dataframe[feature.feature_name], dictionary)
+        
+        grouped_dataframe = pd.DataFrame(dataframe["mapped_feature_tweet_language"].map(lambda x: get_grouped_id(x)))
+        
+        mapped_dataframe = pd.DataFrame(dataframe["mapped_feature_tweet_language"].map(lambda x: remap_language_id(x)))
+
+        self.save_feature(mapped_dataframe)
+
+
 class MappedFeatureTweetId(MappedFeaturePickle):
 
     def __init__(self, dataset_id: str):
