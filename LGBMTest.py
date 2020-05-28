@@ -12,56 +12,69 @@ if __name__ == '__main__':
 
     # Define the X label
     X_label = [
-        "raw_feature_creator_follower_count",                                                               #0                                                                                   
-        "raw_feature_creator_following_count",                                                              #1                
-        "raw_feature_engager_follower_count",                                                               #2                
-        "raw_feature_engager_following_count",                                                              #3                
-        "raw_feature_creator_is_verified",                                                                  #4 CATEGORICAL            
-        "raw_feature_engager_is_verified",                                                                  #5 CATEGORICAL            
-        "raw_feature_engagement_creator_follows_engager",                                                   #6 CATEGORICAL                            
-        "tweet_feature_number_of_photo",                                                                    #7            
-        "tweet_feature_number_of_video",                                                                    #8            
-        "tweet_feature_number_of_gif",                                                                      #9        
-        "tweet_feature_number_of_media",                                                                    #10            
-        "tweet_feature_is_retweet",                                                                         #11 CATEGORICAL    
-        "tweet_feature_is_quote",                                                                           #12 CATEGORICAL    
-        "tweet_feature_is_top_level",                                                                       #13 CATEGORICAL        
-        "tweet_feature_number_of_hashtags",                                                                 #14            
-        "tweet_feature_creation_timestamp_hour",                                                            #15                    
-        "tweet_feature_creation_timestamp_week_day",                                                        #16                       
-        "tweet_feature_number_of_mentions",                                                                 #17            
-        "engager_feature_number_of_previous_like_engagement",                                               #18                                
-        "engager_feature_number_of_previous_reply_engagement",                                              #19                                
-        "engager_feature_number_of_previous_retweet_engagement",                                            #20                                    
-        "engager_feature_number_of_previous_comment_engagement",                                            #21                                  
-        "engager_feature_number_of_previous_positive_engagement",                                           #22                                    
-        "engager_feature_number_of_previous_negative_engagement",                                           #23                                    
-        "engager_feature_number_of_previous_engagement",                                                    #24                            
-        "engager_feature_number_of_previous_like_engagement_ratio",                                         #25                                    
-        "engager_feature_number_of_previous_reply_engagement_ratio",                                        #26                                        
-        "engager_feature_number_of_previous_retweet_engagement_ratio",                                      #27                                        
-        "engager_feature_number_of_previous_comment_engagement_ratio",                                      #28                                        
-        "engager_feature_number_of_previous_positive_engagement_ratio",                                     #29                                        
-        "engager_feature_number_of_previous_negative_engagement_ratio",                                     #30                                        
-        "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator",        #31                                                                        
-        "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator",       #32                                                                        
-        "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator",     #33                                                                        
-        "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_creator",     #34                                                                        
-        "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_creator",    #35                                                                            
-        "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_creator",    #36                                                                            
-        "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_engager",        #37                                                                        
-        "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_engager",       #38                                                                        
-        "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_engager",     #39                                                                        
-        "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_engager",     #40                                                                        
-        "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_engager",    #41                                                                            
-        "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",    #42                                                                            
-        "engager_main_language",                                                                            #43 CATEGORICAL    
-        "creator_main_language",                                                                            #44 CATEGORICAL    
-        "creator_and_engager_have_same_main_language",                                                      #45 CATEGORICAL                        
-        "is_tweet_in_creator_main_language",                                                                #46 CATEGORICAL                
-        "is_tweet_in_engager_main_language",                                                                #47 CATEGORICAL                
-        "statistical_probability_main_language_of_engager_engage_tweet_language_1",                         #48                                                    
-        "statistical_probability_main_language_of_engager_engage_tweet_language_2"                          #49     
+            "raw_feature_creator_follower_count",                       #0                                                                                   
+            "raw_feature_creator_following_count",                      #1                
+            "raw_feature_engager_follower_count",                       #2                
+            "raw_feature_engager_following_count",                      #3                
+            "raw_feature_creator_is_verified",                      #4 CATEGORICAL            
+            "raw_feature_engager_is_verified",                      #5 CATEGORICAL            
+            "raw_feature_engagement_creator_follows_engager",                       #6 CATEGORICAL                            
+            "tweet_feature_number_of_photo",                        #7            
+            "tweet_feature_number_of_video",                        #8            
+            "tweet_feature_number_of_gif",                      #9        
+            "tweet_feature_number_of_media",                        #10            
+            "tweet_feature_is_retweet",                     #11 CATEGORICAL    
+            "tweet_feature_is_quote",                       #12 CATEGORICAL    
+            "tweet_feature_is_top_level",                       #13 CATEGORICAL        
+            "tweet_feature_number_of_hashtags",                     #14            
+            "tweet_feature_creation_timestamp_hour",                        #15                    
+            "tweet_feature_creation_timestamp_week_day",                        #16                       
+            "tweet_feature_number_of_mentions",                     #17            
+            "engager_feature_number_of_previous_like_engagement",                       #18                                
+            "engager_feature_number_of_previous_reply_engagement",                      #19                                
+            "engager_feature_number_of_previous_retweet_engagement",                        #20                                    
+            "engager_feature_number_of_previous_comment_engagement",                        #21                                  
+            "engager_feature_number_of_previous_positive_engagement",                       #22                                    
+            "engager_feature_number_of_previous_negative_engagement",                       #23                                    
+            "engager_feature_number_of_previous_engagement",                        #24                            
+            "engager_feature_number_of_previous_like_engagement_ratio_1",                       #25                                    
+            "engager_feature_number_of_previous_reply_engagement_ratio_1",                      #26                                        
+            "engager_feature_number_of_previous_retweet_engagement_ratio_1",                        #27                                        
+            "engager_feature_number_of_previous_comment_engagement_ratio_1",                        #28                                        
+            "engager_feature_number_of_previous_positive_engagement_ratio_1",                       #29                                        
+            "engager_feature_number_of_previous_negative_engagement_ratio_1",                       #30                                        
+            "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator",                        #31                                                                        
+            "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator",                       #32                                                                        
+            "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator",                     #33                                                                        
+            "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_creator",                     #34                                                                        
+            "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_creator",                        #35                                                                            
+            "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_creator",                        #36                                                                            
+            "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_engager",                        #37                                                                        
+            "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_engager",                       #38                                                                        
+            "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_engager",                     #39                                                                        
+            "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_engager",                     #40                                                                        
+            "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_engager",                        #41                                                                            
+            "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",                        #42                                                                            
+            # "engager_main_language",                      #43 CATEGORICAL    
+            # "creator_main_language",                      #44 CATEGORICAL    
+            "creator_and_engager_have_same_main_language",                      #45 CATEGORICAL       - 43                 
+            "is_tweet_in_creator_main_language",                        #46 CATEGORICAL                -44
+            "is_tweet_in_engager_main_language",                        #47 CATEGORICAL                45
+            "statistical_probability_main_language_of_engager_engage_tweet_language_1",                     #48     46                                               
+            "statistical_probability_main_language_of_engager_engage_tweet_language_2",                     #49     47                                              
+            # "tweet_feature_token_length",                     #50 CATEGORICAL     
+            # "tweet_feature_token_length_unique",                  
+            # "engager_feature_knows_hashtag_positive",                 
+            # "engager_feature_knows_hashtag_negative",                 
+            # "engager_feature_knows_hashtag_like",                 
+            # "engager_feature_knows_hashtag_reply",                    
+            # "engager_feature_knows_hashtag_rt",                   
+            "hashtag_similarity_fold_ensembling_positive",                  #48
+            "link_similarity_fold_ensembling_positive",                 #49
+            "domain_similarity_fold_ensembling_positive",               #50
+            "tweet_feature_creation_timestamp_hour_shifted",            #51 CATEGORICAL
+            "tweet_feature_creation_timestamp_day_phase",               #52 CATEGORICAL
+            "tweet_feature_creation_timestamp_day_phase_shifted"        #53 CATEGORICAL   
     ]
     # Define the Y label
     Y_label = [
@@ -139,24 +152,24 @@ if __name__ == '__main__':
         objective         =     'binary',
         num_threads       =     48,
         num_iterations    =     800,
-        num_leaves        =     1366,
-        learning_rate     =     0.012213193609590826,
-        max_depth         =     13,
-        lambda_l1         =     0.21052274719305814,
-        lambda_l2         =     0.972229194811426,
-        colsample_bynode  =     0.821823940475557,
-        colsample_bytree  =     0.6948637552375507,
-        pos_subsample     =     0.7028563858482733,
-        neg_subsample     =     0.7609270443313841,
-        bagging_freq      =     3,
-        max_bin           =     3926,
-        min_data_in_leaf  =     1775,
+        num_leaves        =     4095,
+        learning_rate     =     0.19427915995236367,
+        max_depth         =     42,
+        lambda_l1         =     13.394159317542586,
+        lambda_l2         =     37.34765845618101,
+        colsample_bynode  =     0.8434454846050612,
+        colsample_bytree  =     0.4,
+        pos_subsample     =     0.5229372711625544,
+        neg_subsample     =     0.6717257766022016,
+        bagging_freq      =     2,
+        max_bin           =     3564,
+        min_data_in_leaf  =     697,
         early_stopping_rounds=15
         )
 
     # LGBM Training
     training_start_time = time.time()
-    LGBM.fit(X=X_train, Y=Y_train, X_val=X_val, Y_val=Y_val, categorical_feature=set([4,5,6,11,12,13,43,44,45,46,47]))
+    LGBM.fit(X=X_train, Y=Y_train, X_val=X_val, Y_val=Y_val, categorical_feature=set([4,5,6,11,12,13,43,44,45,46,47,51,52,53]))
     print(f"Training time: {time.time() - training_start_time} seconds")
 
     # LGBM Evaluation
@@ -184,4 +197,4 @@ if __name__ == '__main__':
     #Uncomment to plot feature importance at the end of training
     LGBM.plot_fimportance()
 
-    create_submission_file(tweets, users, predictions, "lgbm_like_submission_holdout_1.csv")
+    create_submission_file(tweets, users, predictions, "lgbm_like_submission_WOW.csv")
