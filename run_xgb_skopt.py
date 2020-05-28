@@ -107,8 +107,8 @@ def run(label: str):
                    path_log=f"{folder}/{label}")
 
     # Load the training dataset
-    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.05)
-    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.05)
+    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.5)
+    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.5)
     # Cache the training dataset
     cache_dataset_as_svm(svm_filename, X_train, Y_train)
     train = xgb.DMatrix(f"{svm_filename}.svm#/home/ubuntu/temp/{svm_filename}_{label}.cache")
