@@ -51,19 +51,19 @@ def xgbRange(kind):
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.4392]),            #base_score
+        param_range_dict[10] = Categorical([0.4392])            #base_score
         param_range_dict[11] = Real(0, 20)                      #max_delta_step
     elif kind in RETWEET:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.1131]),            #base_score
+        param_range_dict[10] = Categorical([0.1131])            #base_score
         param_range_dict[11] = Real(0, 50)                      #max_delta_step
     elif kind in REPLY:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.0274]),            #base_score
+        param_range_dict[10] = Categorical([0.0274])            #base_score
         param_range_dict[11] = Real(0, 200)                      #max_delta_step
     elif kind in COMMENT:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
-        param_range_dict[10] = Categorical([0.0078]),            #base_score
+        param_range_dict[10] = Categorical([0.0078])            #base_score
         param_range_dict[11] = Real(0, 400)                      #max_delta_step
 
     return param_range_dict
