@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 class NNRec(RecommenderBase, ABC):
 
     # TODO add support for Early Stopping
-    def __init__(self, hidden_dropout_prob=0.1, weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4, ):
+    def __init__(self, hidden_dropout_prob=0.1, weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4, hidden_size_2=128):
         super().__init__()
         self.device = None
         self.device = self._find_device()
@@ -32,6 +32,7 @@ class NNRec(RecommenderBase, ABC):
         self.eps = eps
         self.num_warmup_steps = num_warmup_steps
         self.epochs = epochs
+        self.hidden_size_2 = hidden_size_2
 
         self.model = None
 
@@ -83,7 +84,7 @@ class NNRec(RecommenderBase, ABC):
         if gpu:
             torch.cuda.manual_seed_all(seed_val)
 
-        self.model = self._get_model(input_size_2=df_train_features.shape[1], hidden_size_2=128)
+        self.model = self._get_model(input_size_2=df_train_features.shape[1], hidden_size_2=self.hidden_size_2)
 
         if gpu:
             self.model.cuda()
@@ -452,7 +453,7 @@ class NNRec(RecommenderBase, ABC):
         if pretrained_model_dict_path is None:
             assert self.model is not None, "You are trying to predict without training."
         else:
-            self.model = BertClassifierDoubleInput(input_size_2=df_test_features.shape[1], hidden_size_2=128)
+            self.model = BertClassifierDoubleInput(input_size_2=df_test_features.shape[1], hidden_size_2=self.hidden_size_2)
             self.model.load_state_dict(torch.load(pretrained_model_dict_path))
 
         self.model.cuda()

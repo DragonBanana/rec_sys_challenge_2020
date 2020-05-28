@@ -220,8 +220,11 @@ def main():
 
     OP.setParameters(n_calls=100, n_random_starts=20)
     OP.loadTrainData(df_metatrain, df_metatrain_label)
-    # OP.loadTestData(X_test, Y_test)
-    OP.loadValData(df_metaval, df_metaval_label)
+
+    OP.loadValData(df_metaval, df_metaval_label)  # early stopping
+
+    OP.loadTestData(df_metaval, df_metaval_label)  # evaluate objective
+
     OP.setParamsLGB(objective='binary', early_stopping_rounds=10, eval_metric="binary", is_unbalance=True)
     OP.setCategoricalFeatures(categorical_features_set)
     # OP.loadModelHardCoded()
