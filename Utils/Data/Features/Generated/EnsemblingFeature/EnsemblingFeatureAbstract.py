@@ -25,8 +25,7 @@ class EnsemblingFeatureAbstract(GeneratedFeaturePickle, ABC):
         self.df_train = df_train
         self.df_train_label = df_train_label
         self.df_to_predict = df_to_predict
-        self.model_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/ensembling/{path}/{self.feature_name}_model.model")
+        self.model_path = f"{Feature.ROOT_PATH}/{self.dataset_id}/ensembling/{path}/{self.feature_name}_model.model"
         self.param_dict = param_dict
 
     def _get_model(self):

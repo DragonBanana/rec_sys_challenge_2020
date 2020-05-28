@@ -167,7 +167,7 @@ def main():
     df_feat_3 = feat_3.load_or_create()
 
     third_feature_end_time = time.time()
-    print(f"Loading second feature time: {third_feature_end_time - second_feature_end_time} seconds")
+    print(f"Loading third feature time: {third_feature_end_time - second_feature_end_time} seconds")
 
     # check dimensions
     len_val = len(df_val)

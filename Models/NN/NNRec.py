@@ -516,4 +516,5 @@ class BertRec(NNRec):
 class DistilBertRec(NNRec):
 
     def _get_model(self, input_size_2, hidden_size_2):
-        return DistilBertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2)
+        return DistilBertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2,
+                                               hidden_dropout_prob=self.hidden_dropout_prob)

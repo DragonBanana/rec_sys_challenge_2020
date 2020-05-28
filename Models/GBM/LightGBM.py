@@ -281,7 +281,9 @@ class LightGBM(RecommenderGBM):
         self.model = lgb.Booster(model_file=path)
         print("Model correctly loaded.\n")
 
-
+    def save_model(self, path=None, filename=None):
+        self.model.save_model(filename)
+        print(f"Model correctly saved in {filename}.\n")
 
 
     #Returns/prints the importance of the features
