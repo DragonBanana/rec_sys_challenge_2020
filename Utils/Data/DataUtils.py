@@ -158,6 +158,7 @@ def populate_features():
         #result[("tweet_feature_dominant_topic_LDA_20", dataset_id)] = TweetFeatureDominantTopicLDA20(dataset_id)
         result[("tweet_feature_token_length", dataset_id)] = TweetFeatureTokenLength(dataset_id)
         result[("tweet_feature_token_length_unique", dataset_id)] = TweetFeatureTokenLengthUnique(dataset_id)
+        result[("tweet_feature_number_of_adult_content_words", dataset_id)] = TweetFeatureTextContainsAdultContent(dataset_id)
 
         result[("engager_feature_knows_hashtag_positive", dataset_id)] = EngagerKnowsHashtagPositive(dataset_id)
         result[("engager_feature_knows_hashtag_negative", dataset_id)] = EngagerKnowsHashtagNegative(dataset_id)

@@ -68,9 +68,9 @@ if __name__ == '__main__':
     ]                                                                           
     # Define the Y label
     Y_label = [
-        "tweet_feature_engagement_is_like"
+        "tweet_feature_engagement_is_retweet"
     ]
-    kind="like"
+    kind="retweet"
     cat = [4,5,6,11,12,13,43,44,45,46,47]
 
     '''
@@ -101,16 +101,16 @@ if __name__ == '__main__':
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
     #Initialize Model
-    CAT = CatBoost(iterations=2000,
-                   depth=3,
-                   learning_rate=0.002625110703588269,
-                   l2_leaf_reg=0.03457895103187542,
-                   subsample=0.31339914601467217,
-                   random_strenght=12.827877354210997,
-                   colsample_bylevel=0.7683922128051455,
-                   leaf_estimation_iterations=85,
-                   scale_pos_weight=0.5,
-                   model_shrink_rate=0.4021475843013613,
+    CAT = CatBoost(iterations=2001,
+                   depth=10,
+                   learning_rate=0.1161580698133093,
+                   l2_leaf_reg=49.99999999999999,
+                   subsample=0.44117905436201776,
+                   random_strenght=24.297829998244666,
+                   colsample_bylevel=0.6567248074904101,
+                   leaf_estimation_iterations=189,
+                   scale_pos_weight=0.7344318860266257,
+                   model_shrink_rate=4.2513463475987553e-05,
                    #ES
                    early_stopping_rounds = 15
                 )
@@ -153,9 +153,11 @@ if __name__ == '__main__':
     #Uncomment to print feature importance at the end of training
     #print(CAT.get_feat_importance())
 
-    create_submission_file(tweets, users, predictions, "cat_like_holdout.csv")
+    create_submission_file(tweets, users, predictions, "cat_retweet_holdout.csv")
 
 #Current submission
+
+#LIKE
 '''
 ITERATION NUMBER 50
 iterations= 2000
@@ -175,4 +177,27 @@ best_es_iteration: 836
 -------
 PRAUC = 0.7162025109339223
 RCE   = 9.901181639021617
+'''
+
+#RETWEET
+'''
+ITERATION NUMBER 18
+iterations= 2001
+depth= 10
+learning_rate= 0.1161580698133093
+l2_leaf_reg= 49.99999999999999
+subsample= 0.44117905436201776
+random_strenght= 24.297829998244666
+colsample_bylevel= 0.6567248074904101
+leaf_estimation_iterations= 189
+scale_pos_weight= 0.7344318860266257
+model_shrink_rate= 4.2513463475987553e-05
+-------
+EXECUTION TIME: 208.18177938461304
+-------
+best_es_iteration: 18
+-------
+PRAUC = 0.47189792209973797
+RCE   = 20.75129130233313
+-------
 '''

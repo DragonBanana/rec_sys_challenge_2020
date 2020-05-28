@@ -91,7 +91,6 @@ class TweetFeatureCreationTimestampDayPhase_Shifted(GeneratedFeaturePickle):
         feature = TweetFeatureCreationTimestampHour(self.dataset_id)
         feature_df = feature.load_or_create()
         # Count the number of photos
-        print(feature_df[feature_df[feature.feature_name].isnull()])
         week_day_df = pd.DataFrame(feature_df[feature.feature_name].map(lambda x: dayphase_dict[(x+12)%24]))
 
         self.save_feature(week_day_df)
