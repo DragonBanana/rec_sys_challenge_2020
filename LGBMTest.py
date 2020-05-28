@@ -4,7 +4,7 @@ from Models.GBM.LightGBM import LightGBM
 import time
 from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
-
+from Utils.Data.Data import oversample
 if __name__ == '__main__':
     train_dataset = "holdout/train"
     val_dataset = "holdout/test"
@@ -91,6 +91,18 @@ if __name__ == '__main__':
 
     # Load local_test data
     X_local, Y_local = Data.get_dataset_xgb_batch(2, 1, val_dataset, X_label, Y_label, 1)
+    # If oversample is set
+    # Oversample the cold users
+    use_oversample = True
+    os_column_name = "engager_feature_number_of_previous_positive_engagement_ratio_1"
+    os_value = -1
+    os_percentage = 0.25
+    if use_oversample is True:
+        df = pd.concat([X_local, Y_local], axis=1)
+        oversampled_df = oversample(df, os_column_name, os_value, os_percentage)
+        X_local = oversampled_df[X_label]
+        Y_local = oversampled_df[Y_label]
+        del df, oversampled_df
 
     # Load test data
     X_test = Data.get_dataset(X_label, test_dataset)
