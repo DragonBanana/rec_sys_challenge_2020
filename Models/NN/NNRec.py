@@ -17,6 +17,7 @@ from Utils.NN.NNUtils import flat_accuracy, create_data_loaders, format_time
 from Utils.NN.TorchModels import BertClassifierDoubleInput
 from abc import ABC, abstractmethod
 
+from Utils.TelegramBot import telegram_bot_send_update
 
 # abstract class for nn recommenders
 class NNRec(RecommenderBase, ABC):
@@ -161,8 +162,7 @@ class NNRec(RecommenderBase, ABC):
                                                                               validation_dataloader=validation_dataloader)
 
             # Record all statistics from this epoch.
-            training_stats.append(
-                {
+            curr_stats = {
                     'epoch': epoch_i + 1,
                     'Training Loss': avg_train_loss,
                     'PRAUC train': prauc_train,
@@ -174,7 +174,12 @@ class NNRec(RecommenderBase, ABC):
                     'Training Time': training_time,
                     'Validation Time': validation_time
                 }
-            )
+            training_stats.append(curr_stats)
+
+            bot_string = "DistilBertDoubleInput NN \n ---------------- \n"
+            bot_string = bot_string + "\n".join([key+": "+str(curr_stats[key]) for key in curr_stats])
+            telegram_bot_send_update(bot_string)
+
             #torch.save(self.model.state_dict(), f"./saved_models/saved_model_epoch{epoch_i + 1}")
             #torch.save(optimizer.state_dict(), f"./saved_models/optimizer_epoch{epoch_i + 1}")
 
