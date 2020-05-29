@@ -70,7 +70,7 @@ class CreatorNumberOfPreviousEngagementGivenAbstract(GeneratedFeaturePickle, ABC
         dataframe = pd.concat([
             creation_timestamps_feature.load_or_create(),
             creator_id_feature.load_or_create(),
-            engagement_feature.load_or_create(),
+            engager_id_feature.load_or_create(),
             engagement_feature.load_or_create()
         ], axis=1)
 
