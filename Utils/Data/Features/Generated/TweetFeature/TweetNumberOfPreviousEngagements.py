@@ -72,16 +72,14 @@ class TweetNumberOfPreviousEngagementAbstract(GeneratedFeaturePickle, ABC):
             engagement_feature.load_or_create()
         ], axis=1)
 
-        # take only positive engagements
-        dataframe = dataframe[dataframe[engagement_col]==True]
-
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
         tweet_counter_array = np.zeros(dataframe[tweet_id_col].max() + 1, dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase(tweet_id=tweet_id, counter_array=tweet_counter_array)
-             for tweet_id in zip(dataframe[tweet_id_col])],
+             if engagement else tweet_counter_array[tweet_id]
+             for tweet_id, engagement in zip(dataframe[tweet_id_col], dataframe[engagement_col])],
             index=dataframe.index
         )
 
