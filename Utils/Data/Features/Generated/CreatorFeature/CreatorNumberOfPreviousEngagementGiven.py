@@ -83,7 +83,7 @@ class CreatorNumberOfPreviousEngagementGivenAbstract(GeneratedFeaturePickle, ABC
             [find_and_increase(creator_id=creator_id, engager_id=engager_id, counter_array=counter_array)
              if engagement else counter_array[creator_id]
              for creator_id, engager_id, engagement in
-             zip(dataframe[creator_id_col], dataframe[engager_id_col],dataframe[engagement_col])],
+             zip(dataframe[creator_id_col], dataframe[engager_id_col], dataframe[engagement_col])],
             index=dataframe.index
         )
         self._save_train_result_if_not_present(result, train_dataset_id)
