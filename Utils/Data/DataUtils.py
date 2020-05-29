@@ -201,11 +201,11 @@ def populate_features():
         result[("creator_feature_number_of_previous_negative_engagements_received",dataset_id)] = CreatorNumberOfPreviousEngagementReceivedNegative(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS A CREATOR HAS RECEIVED
         result[("creator_feature_number_of_previous_like_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenLike(dataset_id)
-        result[("creator_feature_number_of_previous_reply_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
-        result[("creator_feature_number_of_previous_retweet_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
+        result[("creator_feature_number_of_previous_reply_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenReply(dataset_id)
+        result[("creator_feature_number_of_previous_retweet_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenRetweet(dataset_id)
         result[("creator_feature_number_of_previous_comment_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
-        result[("creator_feature_number_of_previous_positive_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
-        result[("creator_feature_number_of_previous_negative_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
+        result[("creator_feature_number_of_previous_positive_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenPositive(dataset_id)
+        result[("creator_feature_number_of_previous_negative_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenNegative(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS A TWEET HAS RECEIVED
         result[("tweet_feature_number_of_previous_like_engagements",dataset_id)] = TweetNumberOfPreviousEngagementLike(dataset_id)
         result[("tweet_feature_number_of_previous_reply_engagements",dataset_id)] = TweetNumberOfPreviousEngagementReply(dataset_id)
@@ -408,23 +408,30 @@ def to_svm(arg, filename):
         f=f"temp/{i}_{filename}.svm"
     )
 
-def cache_dataset_as_svm(filename, X_train, Y_train=None):
+def cache_dataset_as_svm(filename, X_train, Y_train=None, no_fuck_my_self=False):
     if Y_train is None:
         Y_train = pd.DataFrame(np.full(len(X_train), 0))
     if pathlib.Path(f"{filename}.svm").exists():
         print("file already exists, be careful to overwrite it")
     else:
-        X_chunks = np.array_split(X_train, 1000)
-        Y_chunks = np.array_split(Y_train, 1000)
+        if no_subsample:
+            skd.dump_svmlight_file(
+                X=X_train,
+                y=Y_train[Y_train.columns[0]].array,
+                f=f"{filename}.svm"
+            )
+        else:
+            X_chunks = np.array_split(X_train, 1000)
+            Y_chunks = np.array_split(Y_train, 1000)
 
-        pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
+            pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
 
-        partial_to_svm = functools.partial(to_svm, filename=filename)
-        with mp.Pool(30) as p:
-            p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
+            partial_to_svm = functools.partial(to_svm, filename=filename)
+            with mp.Pool(30) as p:
+                p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
 
-        cmd = f'cat temp/*{filename}.svm > {filename}.svm'
-        os.system(cmd)
-        cmd = f'rm -r temp'
-        os.system(cmd)
+            cmd = f'cat temp/*{filename}.svm > {filename}.svm'
+            os.system(cmd)
+            cmd = f'rm -r temp'
+            os.system(cmd)
 
