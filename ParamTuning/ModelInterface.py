@@ -24,7 +24,7 @@ import multiprocessing as mp
 import xgboost as xgb
 import catboost as cat
 import lightgbm as lgbm
-
+from Utils.TelegramBot import telegram_bot_send_update
 
 class ModelInterface(object):
     def __init__(self, model_name, kind, mode):
@@ -1331,22 +1331,3 @@ def run_xgb_external_memory(param, model_interface, queue):
     queue.put(model_interface.metriComb(tot_prauc, tot_rce))
     return model_interface.metriComb(tot_prauc, tot_rce)
 #--------------------------------------------------------------
-
-
-#----------------------------------------------------------------
-#                       TELEGRAM BOT
-#----------------------------------------------------------------
-
-
-import requests
-
-def telegram_bot_send_update(update):
-	
-	bot_token='1188007388:AAFjZeeKPkxocN-AtnfICXbOZi_0cjTUpiU'
-	group_id='-479667758'
-	
-	send_update='https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + group_id + '&sparse_mode=Markdown&text=' + update
-	#send_update = 'https://api.telegram.org/bot' + bot_token +'/getUpdates'
-	response = requests.get(send_update)
-	
-	return response.json()
