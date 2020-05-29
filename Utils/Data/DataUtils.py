@@ -5,6 +5,8 @@ from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
 from Utils.Data.Features.Generated.CreatorFeature.CreatorFrequencyUniqueTokens import CreatorFrequencyUniqueTokens
+from Utils.Data.Features.Generated.CreatorFeature.CreatorNumberOfPreviousEngagementGiven import *
+from Utils.Data.Features.Generated.CreatorFeature.CreatorNumberOfPreviousEngagementReceived import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowsHashtag import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
@@ -25,6 +27,7 @@ from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
 from Utils.Data.Features.Generated.TweetFeature.NumberOfHashtags import TweetFeatureNumberOfHashtags
 from Utils.Data.Features.Generated.TweetFeature.NumberOfMedia import *
 from Utils.Data.Features.Generated.TweetFeature.HasDiscriminantHashtag import *
+from Utils.Data.Features.Generated.TweetFeature.TweetNumberOfPreviousEngagements import *
 from Utils.Data.Features.MappedFeatures import *
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Features.RawFeatures import *
@@ -110,7 +113,7 @@ def populate_features():
         result[
             ("raw_feature_engagement_creator_follows_engager", dataset_id)] = RawFeatureEngagementCreatorFollowsEngager(
             dataset_id)
-        if dataset_id != "test" or dataset_id != "new_test":
+        if dataset_id != "test" and dataset_id != "new_test":
             result[("raw_feature_engagement_reply_timestamp", dataset_id)] = RawFeatureEngagementReplyTimestamp(
                 dataset_id)
             result[("raw_feature_engagement_retweet_timestamp", dataset_id)] = RawFeatureEngagementRetweetTimestamp(
@@ -189,6 +192,27 @@ def populate_features():
         result[("engager_feature_number_of_previous_comment_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementWithLanguage(dataset_id)
         result[("engager_feature_number_of_previous_positive_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementWithLanguage(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementWithLanguage(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS A CREATOR HAS RECEIVED
+        result[("creator_feature_number_of_previous_like_engagements_received",dataset_id)] = CreatorNumberOfPreviousEngagementReceivedLike(dataset_id)
+        result[("creator_feature_number_of_previous_reply_engagements_received",dataset_id)] = CreatorNumberOfPreviousEngagementReceivedReply(dataset_id)
+        result[("creator_feature_number_of_previous_retweet_engagements_received",dataset_id)] = CreatorNumberOfPreviousEngagementReceivedRetweet(dataset_id)
+        result[("creator_feature_number_of_previous_comment_engagements_received",dataset_id)] = CreatorNumberOfPreviousEngagementReceivedComment(dataset_id)
+        result[("creator_feature_number_of_previous_positive_engagements_received",dataset_id)] = CreatorNumberOfPreviousEngagementReceivedPositive(dataset_id)
+        result[("creator_feature_number_of_previous_negative_engagements_received",dataset_id)] = CreatorNumberOfPreviousEngagementReceivedNegative(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS A CREATOR HAS RECEIVED
+        result[("creator_feature_number_of_previous_like_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenLike(dataset_id)
+        result[("creator_feature_number_of_previous_reply_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
+        result[("creator_feature_number_of_previous_retweet_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
+        result[("creator_feature_number_of_previous_comment_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
+        result[("creator_feature_number_of_previous_positive_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
+        result[("creator_feature_number_of_previous_negative_engagements_given",dataset_id)] = CreatorNumberOfPreviousEngagementGivenComment(dataset_id)
+        # NUMBER OF PREVIOUS ENGAGEMENTS A TWEET HAS RECEIVED
+        result[("tweet_feature_number_of_previous_like_engagements",dataset_id)] = TweetNumberOfPreviousEngagementLike(dataset_id)
+        result[("tweet_feature_number_of_previous_reply_engagements",dataset_id)] = TweetNumberOfPreviousEngagementReply(dataset_id)
+        result[("tweet_feature_number_of_previous_retweet_engagements",dataset_id)] = TweetNumberOfPreviousEngagementRetweet(dataset_id)
+        result[("tweet_feature_number_of_previous_comment_engagements",dataset_id)] = TweetNumberOfPreviousEngagementComment(dataset_id)
+        result[("tweet_feature_number_of_previous_positive_engagements",dataset_id)] = TweetNumberOfPreviousEngagementPositive(dataset_id)
+        result[("tweet_feature_number_of_previous_negative_engagements",dataset_id)] = TweetNumberOfPreviousEngagementNegative(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS RATIO
         result[("engager_feature_number_of_previous_like_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementRatio(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementRatio(dataset_id)
@@ -203,7 +227,7 @@ def populate_features():
         result[("engager_feature_number_of_previous_comment_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousCommentEngagementRatio1(dataset_id)
         result[("engager_feature_number_of_previous_positive_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagementRatio1(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement_ratio_1", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagementRatio1(dataset_id)
-        # NUMBER OF PREVIOUS ENGAGEMENTS BETWEEN CREATOR AND ENGAGER BY CREATIR
+        # NUMBER OF PREVIOUS ENGAGEMENTS BETWEEN CREATOR AND ENGAGER BY CREATOR
         result[("engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
         result[("engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator", dataset_id)] = EngagerFeatureNumberOfPreviousRetweetEngagementBetweenCreatorAndEngagerByCreator(dataset_id)
@@ -244,7 +268,7 @@ def populate_features():
 
 
         # IS ENGAGEMENT TYPE
-        if dataset_id != "test" or dataset_id != "new_test":
+        if dataset_id != "test" and dataset_id != "new_test":
             result[("tweet_feature_engagement_is_like", dataset_id)] = TweetFeatureEngagementIsLike(dataset_id)
             result[("tweet_feature_engagement_is_retweet", dataset_id)] = TweetFeatureEngagementIsRetweet(dataset_id)
             result[("tweet_feature_engagement_is_comment", dataset_id)] = TweetFeatureEngagementIsComment(dataset_id)
@@ -386,7 +410,7 @@ def to_svm(arg, filename):
 
 def cache_dataset_as_svm(filename, X_train, Y_train=None):
     if Y_train is None:
-        Y_train = np.full(0, len(X_train))
+        Y_train = pd.DataFrame(np.full(len(X_train), 0))
     if pathlib.Path(f"{filename}.svm").exists():
         print("file already exists, be careful to overwrite it")
     else:
