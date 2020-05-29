@@ -2,26 +2,26 @@ import numpy as np
 from Utils.Data.DatasetUtils import is_test_or_val_set, get_train_set_id_from_test_or_val_set, \
     get_test_or_val_set_id_from_train
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
-from Utils.Data.Features.MappedFeatures import MappedFeatureEngagerId, MappedFeatureTweetHashtags, MappedFeatureTweetId
+from Utils.Data.Features.MappedFeatures import MappedFeatureEngagerId, MappedFeatureTweetHashtags, MappedFeatureCreatorId, MappedFeatureTweetId
 import time
 from abc import ABC, abstractmethod
 
 
-def find_and_increase(tweet_id, counter_array):
-    current_count = counter_array[tweet_id]
-    counter_array[tweet_id] += 1
+def find_and_increase(creator_id, counter_array):
+    current_count = counter_array[creator_id]
+    counter_array[creator_id] += 1
     return current_count
 
 
-class TweetNumberOfPreviousEngagementAbstract(GeneratedFeaturePickle, ABC):
+class CreatorNumberOfPreviousEngagementReceivedAbstract(GeneratedFeaturePickle, ABC):
 
     def __init__(self, dataset_id: str):
 
-        super().__init__("tweet_feature_number_of_previous_" + self._get_suffix() + "_engagements", dataset_id)
+        super().__init__("creator_feature_number_of_previous_" + self._get_suffix() + "_engagements_received", dataset_id)
         self.pck_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/tweet_features/{self.feature_name}.pck.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/creator_features/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/tweet_features/{self.feature_name}.csv.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/creator_features/{self.feature_name}.csv.gz")
 
     @abstractmethod
     def _get_suffix(self) -> str:
@@ -58,57 +58,56 @@ class TweetNumberOfPreviousEngagementAbstract(GeneratedFeaturePickle, ABC):
 
         # Load features
         creation_timestamps_feature = RawFeatureTweetTimestamp(train_dataset_id)
-        tweet_id_feature = MappedFeatureTweetId(train_dataset_id)
+        creator_id_feature = MappedFeatureCreatorId(train_dataset_id)
         engagement_feature = self._get_engagement_feature(train_dataset_id)
 
         # save column names
-        tweet_id_col = tweet_id_feature.feature_name
+        creator_id_col = creator_id_feature.feature_name
         engagement_col = engagement_feature.feature_name
 
         dataframe = pd.concat([
             creation_timestamps_feature.load_or_create(),
-            tweet_id_feature.load_or_create(),
+            creator_id_feature.load_or_create(),
             engagement_feature.load_or_create()
         ], axis=1)
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        tweet_counter_array = np.zeros(dataframe[tweet_id_col].max() + 1, dtype=int)
+        creator_counter_array = np.zeros(dataframe[creator_id_col].max() + 1, dtype=int)
 
         result = pd.DataFrame(
-            [find_and_increase(tweet_id=tweet_id, counter_array=tweet_counter_array)
-             if engagement else tweet_counter_array[tweet_id]
-             for tweet_id, engagement in zip(dataframe[tweet_id_col], dataframe[engagement_col])],
+            [find_and_increase(creator_id=creator_id, counter_array=creator_counter_array)
+             if engagement else creator_counter_array[creator_id]
+             for creator_id, engagement in zip(dataframe[creator_id_col], dataframe[engagement_col])],
             index=dataframe.index
         )
-
         self._save_train_result_if_not_present(result, train_dataset_id)
 
         if not self._exists_test_feature(test_dataset_id):
             # Load features
             # Load features
             creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
-            tweet_id_feature = MappedFeatureTweetId(test_dataset_id)
+            creator_id_feature = MappedFeatureCreatorId(test_dataset_id)
 
             # save column names
-            tweet_id_col = tweet_id_feature.feature_name
+            creator_id_col = creator_id_feature.feature_name
 
             dataframe = pd.concat([
-                tweet_id_feature.load_or_create(),
+                creator_id_feature.load_or_create(),
                 creation_timestamps_feature.load_or_create(),
             ], axis=1)
 
             dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-            if dataframe[tweet_id_col].max() + 1 > tweet_counter_array.size:
-                tweet_counter_array = np.pad(
-                    tweet_counter_array,
-                    pad_width=(0, dataframe[tweet_id_col].max() + 1 - tweet_counter_array.size),
+            if dataframe[creator_id_col].max() + 1 > creator_counter_array.size:
+                creator_counter_array = np.pad(
+                    creator_counter_array,
+                    pad_width=(0, dataframe[creator_id_col].max() + 1 - creator_counter_array.size),
                     mode='constant',
                     constant_values=0
                 )
 
-            result = pd.DataFrame(dataframe[tweet_id_col].map(lambda x: tweet_counter_array[x]),
+            result = pd.DataFrame(dataframe[creator_id_col].map(lambda x: creator_counter_array[x]),
                                   index=dataframe.index)
 
             result.sort_index(inplace=True)
@@ -119,7 +118,7 @@ class TweetNumberOfPreviousEngagementAbstract(GeneratedFeaturePickle, ABC):
             self._save_test_result(result, test_dataset_id)
 
 
-class TweetNumberOfPreviousEngagementPositive(TweetNumberOfPreviousEngagementAbstract):
+class CreatorNumberOfPreviousEngagementReceivedPositive(CreatorNumberOfPreviousEngagementReceivedAbstract):
 
     def _get_suffix(self) -> str:
         return "positive"
@@ -128,7 +127,7 @@ class TweetNumberOfPreviousEngagementPositive(TweetNumberOfPreviousEngagementAbs
         return TweetFeatureEngagementIsPositive(dataset_id=dataset_id)
 
 
-class TweetNumberOfPreviousEngagementNegative(TweetNumberOfPreviousEngagementAbstract):
+class CreatorNumberOfPreviousEngagementReceivedNegative(CreatorNumberOfPreviousEngagementReceivedAbstract):
 
     def _get_suffix(self) -> str:
         return "negative"
@@ -137,7 +136,7 @@ class TweetNumberOfPreviousEngagementNegative(TweetNumberOfPreviousEngagementAbs
         return TweetFeatureEngagementIsNegative(dataset_id=dataset_id)
 
 
-class TweetNumberOfPreviousEngagementLike(TweetNumberOfPreviousEngagementAbstract):
+class CreatorNumberOfPreviousEngagementReceivedLike(CreatorNumberOfPreviousEngagementReceivedAbstract):
 
     def _get_suffix(self) -> str:
         return "like"
@@ -146,7 +145,7 @@ class TweetNumberOfPreviousEngagementLike(TweetNumberOfPreviousEngagementAbstrac
         return TweetFeatureEngagementIsLike(dataset_id=dataset_id)
 
 
-class TweetNumberOfPreviousEngagementRetweet(TweetNumberOfPreviousEngagementAbstract):
+class CreatorNumberOfPreviousEngagementReceivedRetweet(CreatorNumberOfPreviousEngagementReceivedAbstract):
 
     def _get_suffix(self) -> str:
         return "retweet"
@@ -155,7 +154,7 @@ class TweetNumberOfPreviousEngagementRetweet(TweetNumberOfPreviousEngagementAbst
         return TweetFeatureEngagementIsRetweet(dataset_id=dataset_id)
 
 
-class TweetNumberOfPreviousEngagementReply(TweetNumberOfPreviousEngagementAbstract):
+class CreatorNumberOfPreviousEngagementReceivedReply(CreatorNumberOfPreviousEngagementReceivedAbstract):
 
     def _get_suffix(self) -> str:
         return "reply"
@@ -164,7 +163,7 @@ class TweetNumberOfPreviousEngagementReply(TweetNumberOfPreviousEngagementAbstra
         return TweetFeatureEngagementIsReply(dataset_id=dataset_id)
 
 
-class TweetNumberOfPreviousEngagementComment(TweetNumberOfPreviousEngagementAbstract):
+class CreatorNumberOfPreviousEngagementReceivedComment(CreatorNumberOfPreviousEngagementReceivedAbstract):
 
     def _get_suffix(self) -> str:
         return "comment"
