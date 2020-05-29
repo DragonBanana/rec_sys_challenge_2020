@@ -51,18 +51,18 @@ def main():
             "engager_feature_number_of_previous_comment_engagement_ratio_1",                        #28                                        
             "engager_feature_number_of_previous_positive_engagement_ratio_1",                       #29                                        
             "engager_feature_number_of_previous_negative_engagement_ratio_1",                       #30                                        
-            #"engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator",                        #31                                                                        
-            #"engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator",                       #32                                                                        
-            #"engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator",                     #33                                                                        
-            #"engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_creator",                     #34                                                                        
-            #"engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_creator",                        #35                                                                            
-            #"engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_creator",                        #36                                                                            
-            #"engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_engager",                        #37                                                                        
-            #"engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_engager",                       #38                                                                        
-            #"engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_engager",                     #39                                                                        
-            #"engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_engager",                     #40                                                                        
-            #"engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_engager",                        #41                                                                            
-            #"engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",                        #42                                                                            
+            "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator",                        #31                                                                        
+            "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator",                       #32                                                                        
+            "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator",                     #33                                                                        
+            "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_creator",                     #34                                                                        
+            "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_creator",                        #35                                                                            
+            "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_creator",                        #36                                                                            
+            "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_engager",                        #37                                                                        
+            "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_engager",                       #38                                                                        
+            "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_engager",                     #39                                                                        
+            "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_engager",                     #40                                                                        
+            "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_engager",                        #41                                                                            
+            "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",                        #42                                                                            
             # "engager_main_language",                      #43 CATEGORICAL    
             # "creator_main_language",                      #44 CATEGORICAL    
             #"creator_and_engager_have_same_main_language",                      #45 CATEGORICAL       - 31                
@@ -77,13 +77,18 @@ def main():
             # "engager_feature_knows_hashtag_like",                 
             # "engager_feature_knows_hashtag_reply",                    
             # "engager_feature_knows_hashtag_rt",                   
-            "hashtag_similarity_fold_ensembling_positive",                  #31
-            "link_similarity_fold_ensembling_positive",                 #32
-            "domain_similarity_fold_ensembling_positive",               #33
-            "tweet_feature_creation_timestamp_hour_shifted",            #34 CATEGORICAL
-            "tweet_feature_creation_timestamp_day_phase",               #35 CATEGORICAL
-            "tweet_feature_creation_timestamp_day_phase_shifted"        #36 CATEGORICAL
-
+            "hashtag_similarity_fold_ensembling_positive",                  #43
+            "link_similarity_fold_ensembling_positive",                 #44
+            "domain_similarity_fold_ensembling_positive",               #45
+            "tweet_feature_creation_timestamp_hour_shifted",            #46 CATEGORICAL
+            "tweet_feature_creation_timestamp_day_phase",               #47 CATEGORICAL
+            "tweet_feature_creation_timestamp_day_phase_shifted",        #48 CATEGORICAL
+            "engager_feature_number_of_previous_like_engagement_with_language", #49
+            "engager_feature_number_of_previous_reply_engagement_with_language",        #50
+            "engager_feature_number_of_previous_retweet_engagement_with_language",      #51 
+            "engager_feature_number_of_previous_comment_engagement_with_language",      #52
+            "engager_feature_number_of_previous_positive_engagement_with_language",     #53
+            "engager_feature_number_of_previous_negative_engagement_with_language",     #54
     ]                                                                           
     # Define the Y label
     Y_label = [
@@ -117,7 +122,7 @@ def main():
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
     OP.setParamsLGB(objective='binary',early_stopping_rounds=15, eval_metric="binary",is_unbalance=False)
-    OP.setCategoricalFeatures(set([4,5,6,11,12,13,34,35,36]))
+    OP.setCategoricalFeatures(set([4,5,6,11,12,13,46,47,48]))
     #OP.loadModelHardCoded()
     res=OP.optimize()
 

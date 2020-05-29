@@ -27,7 +27,7 @@ class LightGBM(RecommenderGBM):
                  metric='binary',
                  num_threads= 16,       
                  #In tuning dict
-                 num_iterations = 100,
+                 num_iterations = 1000,
                  num_leaves= 31,
                  learning_rate= 0.2,
                  max_depth= 14, 
