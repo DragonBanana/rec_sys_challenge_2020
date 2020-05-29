@@ -106,7 +106,7 @@ def run(params):
 def main():
     #for dropout in [0.3, 0.5]:
     #    for hidden_size_2 in [32, 64]:
-    params = {'hidden_dropout_prob': dropout, 'weight_decay': 1e-5, 'hidden_size_2': hidden_size_2}
+    params = {'hidden_dropout_prob': 0.5, 'weight_decay': 1e-5, 'hidden_size_2': 256, 'hidden_size_3': 64}
     run(params)
 
 

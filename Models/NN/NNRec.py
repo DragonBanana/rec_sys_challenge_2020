@@ -34,11 +34,12 @@ class NNRec(RecommenderBase, ABC):
         self.num_warmup_steps = num_warmup_steps
         self.epochs = epochs
         self.hidden_size_2 = hidden_size_2
+        self.hidden_size_3 = hidden_size_3
 
         self.model = None
 
     @abstractmethod
-    def _get_model(self, input_size_2, hidden_size_2):
+    def _get_model(self, input_size_2, hidden_size_2, hidden_size_3):
         pass
 
     def _find_device(self):
@@ -86,7 +87,7 @@ class NNRec(RecommenderBase, ABC):
         if gpu:
             torch.cuda.manual_seed_all(seed_val)
 
-        self.model = self._get_model(input_size_2=df_train_features.shape[1], hidden_size_2=self.hidden_size_2)
+        self.model = self._get_model(input_size_2=df_train_features.shape[1], hidden_size_2=self.hidden_size_2, hidden_size_3=self.hidden_size_3)
 
         if gpu:
             self.model.cuda()
@@ -177,6 +178,13 @@ class NNRec(RecommenderBase, ABC):
             training_stats.append(curr_stats)
 
             bot_string = "DistilBertDoubleInput NN \n ---------------- \n"
+            bot_string = bot_string + "Input size: " + str(self.input_size_2) + "\n"
+            bot_string = bot_string + "Hidden size 2: " + str(self.hidden_size_2) + "\n"
+            bot_string = bot_string + "Hidden size 3: " + str(self.hidden_size_3) + "\n"
+            bot_string = bot_string + "Dropout: " + str(self.hidden_dropout_prob) + "\n"
+            bot_string = bot_string + "Weight decay: " + str(self.weight_decay) + "\n"
+            bot_string = bot_string + "Learning rate: " + str(self.lr) + "\n"
+            bot_string = bot_string + "Epsilon: " + str(self.eps) + "\n ---------------- $
             bot_string = bot_string + "\n".join([key+": "+str(curr_stats[key]) for key in curr_stats])
             telegram_bot_send_update(bot_string)
 
@@ -423,7 +431,7 @@ class NNRec(RecommenderBase, ABC):
         avg_val_prauc = total_eval_prauc / len(validation_dataloader)
         avg_val_rce = total_eval_rce / len(validation_dataloader)
 
-        print("debug")
+        #print("debug")
         prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds, labels=labels)
 
 
@@ -448,9 +456,9 @@ class NNRec(RecommenderBase, ABC):
     def evaluate(self, preds, labels=None):
 
         #print(preds)
-        print(preds.shape)
+        #print(preds.shape)
         #print(labels)
-        print(labels.shape)
+        #print(labels.shape)
 
         # Tries to load X and Y if not directly passed
         if (labels is None):
@@ -481,7 +489,7 @@ class NNRec(RecommenderBase, ABC):
         if pretrained_model_dict_path is None:
             assert self.model is not None, "You are trying to predict without training."
         else:
-            self.model = BertClassifierDoubleInput(input_size_2=df_test_features.shape[1], hidden_size_2=self.hidden_size_2)
+            self.model = self._get_model(input_size_2=df_test_features.shape[1], hidden_size_2=self.hidden_size_2, hidden_size_3=self.hidden_size_3)
             self.model.load_state_dict(torch.load(pretrained_model_dict_path))
 
         self.model.cuda()
@@ -490,9 +498,9 @@ class NNRec(RecommenderBase, ABC):
         preds = None
 
         test_dataset = CustomTestDatasetCap(df_features=df_test_features, df_tokens_reader=df_test_tokens_reader)
-        test_dataloader = DataLoader(test_dataset,  # The training samples.
+        test_dataloader = DataLoader(test_dataset,  # The test samples.
                                      sampler=SequentialSampler(test_dataset),  # Select batches sequentially
-                                     batch_size=df_test_tokens_reader.chunksize  # Trains with this batch size.
+                                     batch_size=df_test_tokens_reader.chunksize  # Generates predictions with this batch size.
                                      )
 
         # Evaluate data for one epoch
@@ -538,12 +546,13 @@ class NNRec(RecommenderBase, ABC):
 
 class BertRec(NNRec):
 
-    def _get_model(self, input_size_2, hidden_size_2):
-        return BertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2)
+    def _get_model(self, input_size_2, hidden_size_2, hidde_size_3):
+        return BertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2, hidden_size_3=hidden_size_3
+                                                hidden_dropout_prob=self.hidden_dropout_prob)
 
 
 class DistilBertRec(NNRec):
 
-    def _get_model(self, input_size_2, hidden_size_2):
-        return DistilBertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2,
-                                               hidden_dropout_prob=self.hidden_dropout_prob)
+    def _get_model(self, input_size_2, hidden_size_2, hidde_size_3):
+        return DistilBertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2, hidden_size_3=hidden_size_3, 
+                                                hidden_dropout_prob=self.hidden_dropout_prob)
