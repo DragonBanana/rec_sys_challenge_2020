@@ -23,7 +23,7 @@ from Utils.TelegramBot import telegram_bot_send_update
 class NNRec(RecommenderBase, ABC):
 
     # TODO add support for Early Stopping
-    def __init__(self, hidden_dropout_prob=0.1, weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4, hidden_size_2=128):
+    def __init__(self, hidden_dropout_prob=0.1, weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4, hidden_size_2=128, hidden_size_3=32):
         super().__init__()
         self.device = None
         self.device = self._find_device()
@@ -178,18 +178,17 @@ class NNRec(RecommenderBase, ABC):
             training_stats.append(curr_stats)
 
             bot_string = "DistilBertDoubleInput NN \n ---------------- \n"
-            bot_string = bot_string + "Input size: " + str(self.input_size_2) + "\n"
             bot_string = bot_string + "Hidden size 2: " + str(self.hidden_size_2) + "\n"
             bot_string = bot_string + "Hidden size 3: " + str(self.hidden_size_3) + "\n"
             bot_string = bot_string + "Dropout: " + str(self.hidden_dropout_prob) + "\n"
             bot_string = bot_string + "Weight decay: " + str(self.weight_decay) + "\n"
             bot_string = bot_string + "Learning rate: " + str(self.lr) + "\n"
-            bot_string = bot_string + "Epsilon: " + str(self.eps) + "\n ---------------- $
+            bot_string = bot_string + "Epsilon: " + str(self.eps) + "\n ---------------- \n"
             bot_string = bot_string + "\n".join([key+": "+str(curr_stats[key]) for key in curr_stats])
             telegram_bot_send_update(bot_string)
 
-            #torch.save(self.model.state_dict(), f"./saved_models/saved_model_epoch{epoch_i + 1}")
-            #torch.save(optimizer.state_dict(), f"./saved_models/optimizer_epoch{epoch_i + 1}")
+            #torch.save(self.model.state_dict(), f"./saved_models/saved_model_epoch{epoch_i + 1}_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size3}")
+            #torch.save(optimizer.state_dict(), f"./saved_models/optimizer_epoch{epoch_i + 1}_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size3}")
 
         print("")
         print("Training complete!")
@@ -504,7 +503,7 @@ class NNRec(RecommenderBase, ABC):
                                      )
 
         # Evaluate data for one epoch
-        for batch in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
+        for step, batch in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
             # Unpack this training batch from our dataloader.
             #
             # As we unpack the batch, we'll also copy each tensor to the GPU using
@@ -529,12 +528,14 @@ class NNRec(RecommenderBase, ABC):
                 # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
                 # Get the "logits" output by the model. The "logits" are the output
                 # values prior to applying an activation function like the softmax.
-                loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = self.model(input_ids=b_input_ids,
-                                                                                            input_features=b_features,
-                                                                                            token_type_ids=None,
-                                                                                            attention_mask=b_input_mask)
+                curr_preds = self.model(input_ids=b_input_ids,
+                                        input_features=b_features,
+                                        #token_type_ids=None, --> missing in distilbert?
+                                        attention_mask=b_input_mask)
 
-            curr_preds = curr_preds.detach().cpu().numpy()
+            #print(curr_preds)
+
+            curr_preds = curr_preds[0].detach().cpu().numpy()[:,0]
 
             if preds is None:
                 preds = curr_preds
@@ -546,13 +547,13 @@ class NNRec(RecommenderBase, ABC):
 
 class BertRec(NNRec):
 
-    def _get_model(self, input_size_2, hidden_size_2, hidde_size_3):
-        return BertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2, hidden_size_3=hidden_size_3
+    def _get_model(self, input_size_2, hidden_size_2, hidden_size_3):
+        return BertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2, hidden_size_3=hidden_size_3,
                                                 hidden_dropout_prob=self.hidden_dropout_prob)
 
 
 class DistilBertRec(NNRec):
 
-    def _get_model(self, input_size_2, hidden_size_2, hidde_size_3):
+    def _get_model(self, input_size_2, hidden_size_2, hidden_size_3):
         return DistilBertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2, hidden_size_3=hidden_size_3, 
                                                 hidden_dropout_prob=self.hidden_dropout_prob)

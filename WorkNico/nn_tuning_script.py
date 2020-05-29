@@ -1,9 +1,10 @@
 # from Models.NN.NNRecNew import NNRecNew
 from Models.NN.NNRec import DistilBertRec
 from Utils.Data.Data import get_dataset, get_feature, get_feature_reader
+from Utils.Submission.Submission import create_submission_file
 # from sklearn.model_selection import train_test_split
 import numpy as np
-
+import time
 
 def run(params):
 
@@ -92,13 +93,23 @@ def run(params):
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
+    #test_df = test_df.head(3)
 
     prediction_start_time = time.time()
-    predictions = rec.get_prediction(test_df.to_numpy())
+
+    text_test_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token",
+                                            dataset_id=test_dataset,
+                                            chunksize=chunksize)
+    predictions = rec.get_prediction(test_df, text_test_reader_df)
     print(f"Prediction time: {time.time() - prediction_start_time} seconds")
+
+    print(predictions)
 
     tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
     users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+
+    #tweets = tweets.head(3).array
+    #users = users.head(3).array
 
     create_submission_file(tweets, users, predictions, "nn_submission_like.csv")
 
@@ -106,7 +117,7 @@ def run(params):
 def main():
     #for dropout in [0.3, 0.5]:
     #    for hidden_size_2 in [32, 64]:
-    params = {'hidden_dropout_prob': 0.5, 'weight_decay': 1e-5, 'hidden_size_2': 256, 'hidden_size_3': 64}
+    params = {'epochs': 5, 'hidden_dropout_prob': 0.5, 'weight_decay': 1e-5, 'hidden_size_2': 256, 'hidden_size_3': 64}
     run(params)
 
 
