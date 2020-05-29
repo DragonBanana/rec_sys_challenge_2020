@@ -1,5 +1,6 @@
 import numpy as np
 
+import Utils.Data as data
 from Utils.Data.DatasetUtils import is_test_or_val_set, get_train_set_id_from_test_or_val_set, \
     get_test_or_val_set_id_from_train
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import UserBasicFeatureDictArrayNumpy
@@ -13,6 +14,19 @@ import scipy.sparse as sps
 import time
 import multiprocessing as mp
 
+def find_and_increase_engager(engager, creator, language, engagement, counter_array):
+    current_count = counter_array[engager][language]
+    if engagement:
+        counter_array[engager][language] = counter_array[engager][language] + 1
+    counter_array[creator][language] = counter_array[creator][language] + 1
+    return current_count
+
+def find_and_increase_creator(engager, creator, language, engagement, counter_array):
+    current_count = counter_array[creator][language]
+    if engagement:
+        counter_array[engager][language] = counter_array[engager][language] + 1
+    counter_array[creator][language] = counter_array[creator][language] + 1
+    return current_count
 
 class EngagerMainLanguage(GeneratedFeaturePickle):
 
@@ -24,16 +38,76 @@ class EngagerMainLanguage(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        engager_id_feature = MappedFeatureEngagerId(self.dataset_id)
-        engager_id_df = engager_id_feature.load_or_create()
 
-        users_main_language_array = MainLanguageUserBasicFeatureDictArray(self.dataset_id).load_or_create()
+        # Check if the dataset id is train or test
+        if is_test_or_val_set(self.dataset_id):
+            train_dataset_id = get_train_set_id_from_test_or_val_set(self.dataset_id)
+            test_dataset_id = get_test_or_val_set_id_from_train(train_dataset_id)
+        else:
+            train_dataset_id = self.dataset_id
+            test_dataset_id = get_test_or_val_set_id_from_train(train_dataset_id)
+
+        # Load features
+        creation_timestamps_feature = RawFeatureTweetTimestamp(train_dataset_id)
+        creators_feature = MappedFeatureCreatorId(train_dataset_id)
+        engagers_feature = MappedFeatureEngagerId(train_dataset_id)
+        language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+        engagement_feature = TweetFeatureEngagementIsPositive(train_dataset_id)
+
+        dataframe = pd.concat([
+            creation_timestamps_feature.load_or_create(),
+            creators_feature.load_or_create(),
+            engagers_feature.load_or_create(),
+            language_feature.load_or_create(),
+            engagement_feature.load_or_create()
+        ], axis=1)
+
+        dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
+
+        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 100), dtype=int)
 
         result = pd.DataFrame(
-            engager_id_df[engager_id_feature.feature_name].map(lambda x: users_main_language_array[x])
+            [find_and_increase_engager(engager_id, creator_id, language, engagement, engager_counter_array)
+             for engager_id, creator_id, language, engagement
+             in zip(dataframe[engagers_feature.feature_name],
+                    dataframe[creators_feature.feature_name],
+                    dataframe[language_feature.feature_name],
+                    dataframe[engagement_feature.feature_name]
+                    )],
+            index=dataframe.index
         )
+        if not EngagerMainLanguage(train_dataset_id).has_feature():
+            result.sort_index(inplace=True)
+            EngagerMainLanguage(train_dataset_id).save_feature(result)
+        if not EngagerMainLanguage(test_dataset_id).has_feature():
+            # Load features
+            creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
+            creators_feature = MappedFeatureCreatorId(test_dataset_id)
+            engagers_feature = MappedFeatureEngagerId(test_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
 
-        self.save_feature(result)
+            dataframe = pd.concat([
+                creation_timestamps_feature.load_or_create(),
+                creators_feature.load_or_create(),
+                engagers_feature.load_or_create(),
+                language_feature.load_or_create()
+            ], axis=1)
+
+            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
+
+            result = pd.DataFrame(
+                [find_and_increase_engager(engager_id, creator_id, language, False, engager_counter_array)
+                 for engager_id, creator_id, language
+                 in zip(dataframe[engagers_feature.feature_name],
+                        dataframe[creators_feature.feature_name],
+                        dataframe[language_feature.feature_name]
+                        )],
+                index=dataframe.index
+            )
+
+            result.sort_index(inplace=True)
+
+            EngagerMainLanguage(test_dataset_id).save_feature(result)
 
 
 class CreatorMainLanguage(GeneratedFeaturePickle):
@@ -46,16 +120,77 @@ class CreatorMainLanguage(GeneratedFeaturePickle):
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.csv.gz")
 
     def create_feature(self):
-        creator_id_feature = MappedFeatureCreatorId(self.dataset_id)
-        creator_id_df = creator_id_feature.load_or_create()
 
-        users_main_language_array = MainLanguageUserBasicFeatureDictArray(self.dataset_id).load_or_create()
+        # Check if the dataset id is train or test
+        if is_test_or_val_set(self.dataset_id):
+            train_dataset_id = get_train_set_id_from_test_or_val_set(self.dataset_id)
+            test_dataset_id = get_test_or_val_set_id_from_train(train_dataset_id)
+        else:
+            train_dataset_id = self.dataset_id
+            test_dataset_id = get_test_or_val_set_id_from_train(train_dataset_id)
+
+        # Load features
+        creation_timestamps_feature = RawFeatureTweetTimestamp(train_dataset_id)
+        creators_feature = MappedFeatureCreatorId(train_dataset_id)
+        engagers_feature = MappedFeatureEngagerId(train_dataset_id)
+        language_feature = MappedFeatureTweetLanguage(train_dataset_id)
+        engagement_feature = TweetFeatureEngagementIsPositive(train_dataset_id)
+
+        dataframe = pd.concat([
+            creation_timestamps_feature.load_or_create(),
+            creators_feature.load_or_create(),
+            engagers_feature.load_or_create(),
+            language_feature.load_or_create(),
+            engagement_feature.load_or_create()
+        ], axis=1)
+
+        dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
+
+        engager_counter_array = np.zeros(
+            (data.DataStats.get_max_user_id() + 1, 100), dtype=int)
 
         result = pd.DataFrame(
-            creator_id_df[creator_id_feature.feature_name].map(lambda x: users_main_language_array[x])
+            [find_and_increase_creator(engager_id, creator_id, language, engagement, engager_counter_array)
+             for engager_id, creator_id, language, engagement
+             in zip(dataframe[engagers_feature.feature_name],
+                    dataframe[creators_feature.feature_name],
+                    dataframe[language_feature.feature_name],
+                    dataframe[engagement_feature.feature_name]
+                    )],
+            index=dataframe.index
         )
+        if not CreatorMainLanguage(train_dataset_id).has_feature():
+            result.sort_index(inplace=True)
+            CreatorMainLanguage(train_dataset_id).save_feature(result)
+        if not CreatorMainLanguage(test_dataset_id).has_feature():
+            # Load features
+            creation_timestamps_feature = RawFeatureTweetTimestamp(test_dataset_id)
+            creators_feature = MappedFeatureCreatorId(test_dataset_id)
+            engagers_feature = MappedFeatureEngagerId(test_dataset_id)
+            language_feature = MappedFeatureTweetLanguage(test_dataset_id)
 
-        self.save_feature(result)
+            dataframe = pd.concat([
+                creation_timestamps_feature.load_or_create(),
+                creators_feature.load_or_create(),
+                engagers_feature.load_or_create(),
+                language_feature.load_or_create()
+            ], axis=1)
+
+            dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
+
+            result = pd.DataFrame(
+                [find_and_increase_creator(engager_id, creator_id, language, False, engager_counter_array)
+                 for engager_id, creator_id, language
+                 in zip(dataframe[engagers_feature.feature_name],
+                        dataframe[creators_feature.feature_name],
+                        dataframe[language_feature.feature_name]
+                        )],
+                index=dataframe.index
+            )
+
+            result.sort_index(inplace=True)
+
+            CreatorMainLanguage(test_dataset_id).save_feature(result)
 
 
 class CreatorAndEngagerHaveSameMainLanguage(GeneratedFeaturePickle):

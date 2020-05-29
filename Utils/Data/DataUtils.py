@@ -15,6 +15,7 @@ from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements im
 from Utils.Data.Features.Generated.EnsemblingFeature.SimilarityFoldEnsembling import *
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike1, \
     XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1
+from Utils.Data.Features.Generated.LanguageFeature.MainGroupedLanguageFeature import *
 from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
 from Utils.Data.Features.Generated.TweetFeature.FromTextToken import *
@@ -224,6 +225,12 @@ def populate_features():
         result[("is_tweet_in_engager_main_language", dataset_id)] = IsTweetInEngagerMainLanguage(dataset_id)
         result[("statistical_probability_main_language_of_engager_engage_tweet_language_1", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage1(dataset_id)
         result[("statistical_probability_main_language_of_engager_engage_tweet_language_2", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage2(dataset_id)
+        # MAIN LANGUAGE
+        result[("engager_main_grouped_language", dataset_id)] = EngagerMainGroupedLanguage(dataset_id)
+        result[("creator_main_grouped_language", dataset_id)] = CreatorMainGroupedLanguage(dataset_id)
+        result[("creator_and_engager_have_same_main_grouped_language", dataset_id)] = CreatorAndEngagerHaveSameMainGroupedLanguage(dataset_id)
+        result[("is_tweet_in_creator_main_grouped_language", dataset_id)] = IsTweetInCreatorMainGroupedLanguage(dataset_id)
+        result[("is_tweet_in_engager_main_grouped_language", dataset_id)] = IsTweetInEngagerMainGroupedLanguage(dataset_id)
         # FOLD ENSEMBLING
         result[("xgb_fold_ensembling_like_1", dataset_id)] = XGBFoldEnsemblingLike1(dataset_id)
         result[("xgb_fold_ensembling_retweet_1", dataset_id)] = XGBFoldEnsemblingRetweet1(dataset_id)
