@@ -414,7 +414,7 @@ def cache_dataset_as_svm(filename, X_train, Y_train=None, no_fuck_my_self=False)
     if pathlib.Path(f"{filename}.svm").exists():
         print("file already exists, be careful to overwrite it")
     else:
-        if no_subsample:
+        if no_fuck_my_self:
             skd.dump_svmlight_file(
                 X=X_train,
                 y=Y_train[Y_train.columns[0]].array,
