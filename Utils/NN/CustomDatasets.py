@@ -127,7 +127,8 @@ class CustomDatasetCap(Dataset):
     def __init__(self, df_features: pd.DataFrame,
                  df_tokens_reader: pd.io.parsers.TextFileReader,
                  df_label: pd.DataFrame,
-                 cap: int = 128):
+                 cap: int = 128,
+                 batch_subsample=None):
 
         self.df_features = df_features
         self.df_tokens_reader_original = df_tokens_reader
@@ -135,6 +136,7 @@ class CustomDatasetCap(Dataset):
         self.df_label = df_label
         self.count = -1
         self.cap = cap
+        self.batch_subsample = batch_subsample
 
     def __len__(self):
         return len(self.df_features)
@@ -161,6 +163,19 @@ class CustomDatasetCap(Dataset):
             end = start + self.df_tokens_reader_current.chunksize
             df_features_cache = self.df_features.iloc[start:end]
             df_label_cache = self.df_label.iloc[start:end]
+
+            if self.batch_subsample is not None:
+                mask = np.zeros(self.df_tokens_reader_current.chunksize, dtype=int)
+                mask[:self.df_tokens_reader_current.chunksize * self.batch_subsample] = 1
+                np.random.shuffle(mask)
+                #mask = mask.astype(bool)
+                df_tokens_cache = df_tokens_cache[mask]
+                df_features_cache = df_features_cache[mask]
+                df_label_cache = df_label_cache[mask]
+                print(mask)
+                print(df_tokens_cache)
+                print(df_features_cache)
+                print(df_label_cache)
 
             text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
             #print(f"first text_series: {text_series}")

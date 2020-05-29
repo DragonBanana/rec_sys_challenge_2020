@@ -69,7 +69,8 @@ class NNRec(RecommenderBase, ABC):
             df_val_features: pd.DataFrame,
             df_val_tokens_reader: pd.io.parsers.TextFileReader,
             df_val_label: pd.DataFrame,
-            cat_feature_set: set):
+            cat_feature_set: set,
+            subsample=None):
 
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
@@ -95,9 +96,9 @@ class NNRec(RecommenderBase, ABC):
 
         # Combine the training inputs into a TensorDataset.
         train_dataset = CustomDatasetCap(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
-                                         df_label=df_train_label)
+                                         df_label=df_train_label, batch_subsample=subsample)
         val_dataset = CustomDatasetCap(df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
-                                       df_label=df_val_label)
+                                       df_label=df_val_label, batch_subsample=subsample)
 
         train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
                                                                       batch_size=df_train_tokens_reader.chunksize)

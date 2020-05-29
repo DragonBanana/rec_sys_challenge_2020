@@ -77,7 +77,9 @@ def run(params):
                     df_val_features=feature_val_df,
                     df_val_tokens_reader=text_val_reader_df,
                     df_val_label=label_val_df,
-                    cat_feature_set=set([]))
+                    cat_feature_set=set([]),
+                    subsample=0.1) # subsample percentage of each batch
+
     print("STATS: \n")
     print(stats)
     with open('stats.txt', 'w+') as f:
