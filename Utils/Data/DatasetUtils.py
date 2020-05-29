@@ -7,11 +7,13 @@ TRAIN_SET_IDS = [
     "train_days_1234",
     "train_days_12345",
     "train_days_123456",
-    "holdout/train"
+    "holdout/train",
+    "new_train"
 ]
 
 TEST_SET_IDS = [
-    "test"
+    "test",
+    "new_test"
 ]
 
 VAL_SET_IDS = [
@@ -32,7 +34,8 @@ TRAIN_TEST_SET_PAIRS = {
     "train_days_1234": "val_days_5",
     "train_days_12345": "val_days_6",
     "train_days_123456": "val_days_7",
-    "holdout/train": "holdout/test"
+    "holdout/train": "holdout/test",
+    "new_train": "new_test"
 }
 
 TEST_TRAIN_SET_PARIS = {v: k for k, v in TRAIN_TEST_SET_PAIRS.items()}

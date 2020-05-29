@@ -71,8 +71,14 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
     def create_feature(self):
         # Load the model
         model = self._get_model()
-        # Create the test DMatrix for xgboost
-        test = xgb.DMatrix(self.df_to_predict)
+        # Generate a random number
+        random_n = random.random()
+        # Cache the train matrix as libsvm
+        data.DataUtils.cache_dataset_as_svm(f"temp_ensembling_test_{random_n}", self.df_to_predict)
+        # Load the train matrix + external memory
+        test = xgb.DMatrix(f"temp_ensembling_test_{random_n}.svm")
+        # Overwrite the feature names for consistency
+        test.feature_names = self.df_train.columns
         # Predict the labels
         predictions = model.get_prediction(test)
         # Encapsulate the labels

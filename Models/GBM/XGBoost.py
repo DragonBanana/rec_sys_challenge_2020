@@ -111,7 +111,7 @@ class XGBoost(RecommenderGBM):
                                    early_stopping_rounds=self.early_stopping_rounds,
                                    evals=dmat_val,
                                    dtrain=dmat_train,
-                                   feval=custom_eval_xgb.custom_eval,
+                                   #feval=custom_eval_xgb.custom_eval,
                                    xgb_model=self.model)
 
         # if we have no model saved
@@ -120,7 +120,7 @@ class XGBoost(RecommenderGBM):
                                    num_boost_round=math.ceil(self.num_rounds),
                                    early_stopping_rounds=self.early_stopping_rounds,
                                    evals=dmat_val,
-                                   feval=custom_eval_xgb.custom_eval,
+                                   #feval=custom_eval_xgb.custom_eval,
                                    dtrain=dmat_train)
 
 
@@ -212,8 +212,8 @@ class XGBoost(RecommenderGBM):
                       'process_type': self.process_type,
                       'tree_method': self.tree_method,
                       'objective': self.objective,
-                      # 'eval_metric': self.eval_metric,
-                      'disable_default_eval_metric': 1,
+                      'eval_metric': self.eval_metric,
+                      #'disable_default_eval_metric': 1,
                       'colsample_bytree': self.colsample_bytree,
                       'learning_rate': self.learning_rate,
                       'max_depth': math.ceil(self.max_depth),

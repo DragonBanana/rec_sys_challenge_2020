@@ -33,8 +33,8 @@ COMMENT = "commentCOMMENTComment"
 REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
-    param_range_dict = [Categorical([201]),                 #num_rounds
-                        Integer(2, 32),                    #max_depth
+    param_range_dict = [Categorical([1001]),                 #num_rounds
+                        Integer(2, 16),                    #max_depth
                         Integer(1, 50),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree
                         Real(0.005, 0.5, 'log-uniform'),      #learning rate
@@ -42,11 +42,11 @@ def xgbRange(kind):
                         Real(0.0001, 1, 'log-uniform'),    #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
                         Real(0.7, 1.3),                     #scale_pos_weight
-                        Real(0.1, 20, 'log-uniform'),                      #gamma
+                        Real(0.1, 100, 'log-uniform'),                      #gamma
                         Real(0.1, 1),                       #subsample
                         Real(0.05, 0.5),                       #base_score
                         Real(0, 200),                      #max_delta_step
-                        Integer(1, 5)]                        #num_parallel_tree
+                        Integer(1, 10)]                        #num_parallel_tree
 
     #PERSONALIZED PARAMETERS---------------SET PROPER RANGE FOR EACH CLASS
     if kind in LIKE:

@@ -63,7 +63,7 @@ class EngagerFeatureNumberOfPreviousLikeEngagementBetweenCreatorAndEngagerByCrea
         result = pd.DataFrame(
             [find_and_increase_creator(eng_id, cre_id, engagement_dict)
              if engagement
-             else engagement_dict.get((cre_id, eng_id), 0)
+             else engagement_dict.get((eng_id, cre_id), 0)
              for eng_id, cre_id, engagement
              in zip(dataframe[engagers_feature.feature_name],
                     dataframe[creators_feature.feature_name],
@@ -224,7 +224,7 @@ class EngagerFeatureNumberOfPreviousReplyEngagementBetweenCreatorAndEngagerByCre
         result = pd.DataFrame(
             [find_and_increase_creator(eng_id, cre_id, engagement_dict)
              if engagement
-             else engagement_dict.get((cre_id, eng_id), 0)
+             else engagement_dict.get((eng_id, cre_id), 0)
              for eng_id, cre_id, engagement
              in zip(dataframe[engagers_feature.feature_name],
                     dataframe[creators_feature.feature_name],
@@ -386,7 +386,7 @@ class EngagerFeatureNumberOfPreviousRetweetEngagementBetweenCreatorAndEngagerByC
         result = pd.DataFrame(
             [find_and_increase_creator(eng_id, cre_id, engagement_dict)
              if engagement
-             else engagement_dict.get((cre_id, eng_id), 0)
+             else engagement_dict.get((eng_id, cre_id), 0)
              for eng_id, cre_id, engagement
              in zip(dataframe[engagers_feature.feature_name],
                     dataframe[creators_feature.feature_name],
@@ -548,7 +548,7 @@ class EngagerFeatureNumberOfPreviousCommentEngagementBetweenCreatorAndEngagerByC
         result = pd.DataFrame(
             [find_and_increase_creator(eng_id, cre_id, engagement_dict)
              if engagement
-             else engagement_dict.get((cre_id, eng_id), 0)
+             else engagement_dict.get((eng_id, cre_id), 0)
              for eng_id, cre_id, engagement
              in zip(dataframe[engagers_feature.feature_name],
                     dataframe[creators_feature.feature_name],
@@ -710,7 +710,7 @@ class EngagerFeatureNumberOfPreviousPositiveEngagementBetweenCreatorAndEngagerBy
         result = pd.DataFrame(
             [find_and_increase_creator(eng_id, cre_id, engagement_dict)
              if engagement
-             else engagement_dict.get((cre_id, eng_id), 0)
+             else engagement_dict.get((eng_id, cre_id), 0)
              for eng_id, cre_id, engagement
              in zip(dataframe[engagers_feature.feature_name],
                     dataframe[creators_feature.feature_name],
@@ -871,7 +871,7 @@ class EngagerFeatureNumberOfPreviousNegativeEngagementBetweenCreatorAndEngagerBy
         result = pd.DataFrame(
             [find_and_increase_creator(eng_id, cre_id, engagement_dict)
              if engagement
-             else engagement_dict.get((cre_id, eng_id), 0)
+             else engagement_dict.get((eng_id, cre_id), 0)
              for eng_id, cre_id, engagement
              in zip(dataframe[engagers_feature.feature_name],
                     dataframe[creators_feature.feature_name],

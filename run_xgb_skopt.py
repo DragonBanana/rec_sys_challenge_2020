@@ -17,8 +17,10 @@ folder = f"skopt_result"
 # Cached svm filename
 svm_filename = "skopt_svm_file"
 
-train_dataset_id = "holdout/train"
-val_dataset_id = "holdout/test"
+# train_dataset_id = "holdout/train"
+train_dataset_id = "train_days_123456"
+# val_dataset_id = "holdout/test"
+val_dataset_id = "val_days_7"
 
 X_label = [
     "raw_feature_creator_follower_count",
@@ -52,6 +54,12 @@ X_label = [
     "engager_feature_number_of_previous_comment_engagement_ratio_1",
     "engager_feature_number_of_previous_positive_engagement_ratio_1",
     "engager_feature_number_of_previous_negative_engagement_ratio_1",
+    "engager_feature_number_of_previous_like_engagement_ratio",
+    "engager_feature_number_of_previous_reply_engagement_ratio",
+    "engager_feature_number_of_previous_retweet_engagement_ratio",
+    "engager_feature_number_of_previous_comment_engagement_ratio",
+    "engager_feature_number_of_previous_positive_engagement_ratio",
+    "engager_feature_number_of_previous_negative_engagement_ratio",
     "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator",
     "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator",
     "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator",
@@ -64,23 +72,17 @@ X_label = [
     "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_engager",
     "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_engager",
     "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",
-    # "engager_main_language",
-    # "creator_main_language",
-    "creator_and_engager_have_same_main_language",
-    "is_tweet_in_creator_main_language",
-    "is_tweet_in_engager_main_language",
-    "statistical_probability_main_language_of_engager_engage_tweet_language_1",
-    "statistical_probability_main_language_of_engager_engage_tweet_language_2",
-    # "tweet_feature_token_length",
-    # "tweet_feature_token_length_unique",
-    # "engager_feature_knows_hashtag_positive",
-    # "engager_feature_knows_hashtag_negative",
-    # "engager_feature_knows_hashtag_like",
-    # "engager_feature_knows_hashtag_reply",
-    # "engager_feature_knows_hashtag_rt",
+    # "creator_and_engager_have_same_main_language",
+    # "is_tweet_in_creator_main_language",
+    # "is_tweet_in_engager_main_language",
+    # "statistical_probability_main_language_of_engager_engage_tweet_language_1",
+    # "statistical_probability_main_language_of_engager_engage_tweet_language_2",
     "hashtag_similarity_fold_ensembling_positive",
     "link_similarity_fold_ensembling_positive",
     "domain_similarity_fold_ensembling_positive"
+    "tweet_feature_creation_timestamp_hour_shifted",
+    "tweet_feature_creation_timestamp_day_phase",
+    "tweet_feature_creation_timestamp_day_phase_shifted"
 ]
 
 
@@ -107,8 +109,8 @@ def run(label: str):
                    path_log=f"{folder}/{label}")
 
     # Load the training dataset
-    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.5)
-    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.5)
+    X_train = get_dataset_batch(X_label, train_dataset_id, 1, 0, 0.05)
+    Y_train = get_dataset_batch(Y_label, train_dataset_id, 1, 0, 0.05)
     # Cache the training dataset
     cache_dataset_as_svm(svm_filename, X_train, Y_train)
     train = xgb.DMatrix(f"{svm_filename}.svm#/home/ubuntu/temp/{svm_filename}_{label}.cache")
@@ -116,20 +118,30 @@ def run(label: str):
     # Delete the data structure that are not useful anymore
     del X_train, Y_train
 
-    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.5)
-    val = xgb.DMatrix(X_val, Y_val)
-    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 0.5)
-    test = xgb.DMatrix(X_test, Y_test)
+    X_val, Y_val = get_dataset_xgb_batch(2, 0, val_dataset_id, X_label, Y_label, 0.25)
+    # Cache the training dataset
+    cache_dataset_as_svm(f"{svm_filename}_val", X_val, Y_val)
+    val = xgb.DMatrix(f"{svm_filename}_val.svm")
+    val.feature_names = X_label
+    del X_val, Y_val
 
-    del X_val, Y_val, X_test, Y_test
 
-    OP.setParameters(n_calls=100, n_random_starts=30)
+    # Delete the data structure that are not useful anymore
+    X_test, Y_test = get_dataset_xgb_batch(2, 1, val_dataset_id, X_label, Y_label, 0.25)
+    cache_dataset_as_svm(f"{svm_filename}_test", X_test, Y_test)
+    test = xgb.DMatrix(f"{svm_filename}_test.svm")
+    test.feature_names = X_label
+    del X_test, Y_test
+
+
+
+    OP.setParameters(n_calls=50, n_random_starts=20)
     OP.defineMI()
     # Use GenerateBatchSVM in order to generate the batches
     OP.loadTrainData(holder_train=train)
     OP.loadValData(holder_val=val)
     OP.loadTestData(holder_test=test)
-    OP.setParamsXGB(early_stopping_rounds=15, tree_method='hist')
+    OP.setParamsXGB(early_stopping_rounds=30, tree_method='gpu_hist', eval_metric="logloss")
 
     OP.optimize()
 

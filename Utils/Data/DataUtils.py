@@ -54,7 +54,9 @@ DATASET_IDS = [
     # "val_days_6",
     "val_days_7",
     "holdout/train",
-    "holdout/test"
+    "holdout/test",
+    "new_train",
+    "new_test"
 ]
 #---------------------------------------------------
 #                      NCV
@@ -107,7 +109,7 @@ def populate_features():
         result[
             ("raw_feature_engagement_creator_follows_engager", dataset_id)] = RawFeatureEngagementCreatorFollowsEngager(
             dataset_id)
-        if dataset_id != "test":
+        if dataset_id != "test" or dataset_id != "new_test":
             result[("raw_feature_engagement_reply_timestamp", dataset_id)] = RawFeatureEngagementReplyTimestamp(
                 dataset_id)
             result[("raw_feature_engagement_retweet_timestamp", dataset_id)] = RawFeatureEngagementRetweetTimestamp(
@@ -166,14 +168,11 @@ def populate_features():
         result[("engager_feature_knows_hashtag_reply", dataset_id)] = EngagerKnowsHashtagReply(dataset_id)
         result[("engager_feature_knows_hashtag_rt", dataset_id)] = EngagerKnowsHashtagRetweet(dataset_id)
         result[("engager_feature_knows_hashtag_comment", dataset_id)] = EngagerKnowsHashtagComment(dataset_id)
-
         # DISCRIMINATIVE HASHTAGS
         result[("tweet_feature_has_discriminative_hashtag_like", dataset_id)] = HasDiscriminativeHashtag_Like(dataset_id)
         result[("tweet_feature_has_discriminative_hashtag_reply", dataset_id)] = HasDiscriminativeHashtag_Reply(dataset_id)
         result[("tweet_feature_has_discriminative_hashtag_retweet", dataset_id)] = HasDiscriminativeHashtag_Retweet(dataset_id)
         result[("tweet_feature_has_discriminative_hashtag_comment", dataset_id)] = HasDiscriminativeHashtag_Comment(dataset_id)
-
-
         # NUMBER OF PREVIOUS ENGAGEMENTS
         result[("engager_feature_number_of_previous_like_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagement(dataset_id)
@@ -238,7 +237,7 @@ def populate_features():
 
 
         # IS ENGAGEMENT TYPE
-        if dataset_id != "test":
+        if dataset_id != "test" or dataset_id != "new_test":
             result[("tweet_feature_engagement_is_like", dataset_id)] = TweetFeatureEngagementIsLike(dataset_id)
             result[("tweet_feature_engagement_is_retweet", dataset_id)] = TweetFeatureEngagementIsRetweet(dataset_id)
             result[("tweet_feature_engagement_is_comment", dataset_id)] = TweetFeatureEngagementIsComment(dataset_id)
@@ -378,21 +377,23 @@ def to_svm(arg, filename):
         f=f"temp/{i}_{filename}.svm"
     )
 
-def cache_dataset_as_svm(filename, X_train, Y_train):
+def cache_dataset_as_svm(filename, X_train, Y_train=None):
+    if Y_train is None:
+        Y_train = np.full(0, len(X_train))
     if pathlib.Path(f"{filename}.svm").exists():
-        raise Exception("file already exists, be careful to overwrite it")
+        print("file already exists, be careful to overwrite it")
+    else:
+        X_chunks = np.array_split(X_train, 1000)
+        Y_chunks = np.array_split(Y_train, 1000)
 
-    X_chunks = np.array_split(X_train, 1000)
-    Y_chunks = np.array_split(Y_train, 1000)
+        pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
 
-    pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
+        partial_to_svm = functools.partial(to_svm, filename=filename)
+        with mp.Pool(30) as p:
+            p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
 
-    partial_to_svm = functools.partial(to_svm, filename=filename)
-    with mp.Pool(30) as p:
-        p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
-
-    cmd = f'cat temp/*{filename}.svm > {filename}.svm'
-    os.system(cmd)
-    cmd = f'rm -r temp'
-    os.system(cmd)
+        cmd = f'cat temp/*{filename}.svm > {filename}.svm'
+        os.system(cmd)
+        cmd = f'rm -r temp'
+        os.system(cmd)
 
