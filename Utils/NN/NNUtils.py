@@ -17,9 +17,8 @@ def get_max_len(sentences):
         # Update the maximum sentence length.
         max_len = max(max_len, len(sent))
 
-    print('Max sentence length: ', max_len)
+    #print('Max sentence length: ', max_len)
     return max_len
-    # return 322
 
 
 def get_max_len_cap(sentences, cap: int = 128) -> (int, bool):
@@ -36,8 +35,8 @@ def get_max_len_cap(sentences, cap: int = 128) -> (int, bool):
             max_len = cap
             break
 
-    print('Max sentence length: ', max_len)
-    print('Is capped: ', is_capped)
+    #print('Max sentence length: ', max_len)
+    #print('Is capped: ', is_capped)
     return max_len, is_capped
 
 

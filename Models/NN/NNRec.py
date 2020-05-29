@@ -12,7 +12,7 @@ from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
 
 from Utils.Base.RecommenderBase import RecommenderBase
-from Utils.NN.CustomDatasets import CustomTestDatasetCap, CustomDatasetCap
+from Utils.NN.CustomDatasets import *
 from Utils.NN.NNUtils import flat_accuracy, create_data_loaders, format_time
 from Utils.NN.TorchModels import BertClassifierDoubleInput
 from abc import ABC, abstractmethod
@@ -95,13 +95,13 @@ class NNRec(RecommenderBase, ABC):
         #     param.requires_grad = False
 
         # Combine the training inputs into a TensorDataset.
-        train_dataset = CustomDatasetCap(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+        train_dataset = CustomDatasetCapSubsample(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
                                          df_label=df_train_label, batch_subsample=subsample)
-        val_dataset = CustomDatasetCap(df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
+        val_dataset = CustomDatasetCapSubsample(df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
                                        df_label=df_val_label, batch_subsample=subsample)
 
         train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
-                                                                      batch_size=df_train_tokens_reader.chunksize)
+                                                                      batch_size=int(df_train_tokens_reader.chunksize * subsample))
 
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']
@@ -175,8 +175,8 @@ class NNRec(RecommenderBase, ABC):
                     'Validation Time': validation_time
                 }
             )
-            torch.save(self.model.state_dict(), f"./saved_models/saved_model_epoch{epoch_i + 1}")
-            torch.save(optimizer.state_dict(), f"./saved_models/optimizer_epoch{epoch_i + 1}")
+            #torch.save(self.model.state_dict(), f"./saved_models/saved_model_epoch{epoch_i + 1}")
+            #torch.save(optimizer.state_dict(), f"./saved_models/optimizer_epoch{epoch_i + 1}")
 
         print("")
         print("Training complete!")
@@ -201,6 +201,7 @@ class NNRec(RecommenderBase, ABC):
         # vs. test (source: https://stackoverflow.com/questions/51433378/what-does-model-train-do-in-pytorch)
         model.train()
         preds = None
+        labels = None
 
         # For each batch of training data...
         for step, batch in tqdm(enumerate(train_dataloader), total=len(train_dataloader)):
@@ -227,7 +228,8 @@ class NNRec(RecommenderBase, ABC):
             b_input_mask = batch[1].to(self.device)
             b_features = batch[2].to(self.device)
             b_labels = batch[3].to(self.device)
-
+            #print("b_labels:",b_labels.shape)
+            
             # Always clear any previously calculated gradients before performing a
             # backward pass. PyTorch doesn't do this automatically because
             # accumulating the gradients is "convenient while training RNNs".
@@ -261,6 +263,13 @@ class NNRec(RecommenderBase, ABC):
                 preds = curr_preds
             else:
                 preds = np.vstack([preds, curr_preds])
+            
+            curr_labels = b_labels.detach().cpu().numpy()
+
+            if labels is None:
+                labels = curr_labels
+            else:
+                labels = np.hstack([labels, curr_labels])
 
             print(f"batch {step} RCE: {rce}")
             print(f"batch {step} PRAUC: {prauc}")
@@ -285,7 +294,7 @@ class NNRec(RecommenderBase, ABC):
         avg_train_prauc = total_train_prauc / len(train_dataloader)
         avg_train_rce = total_train_rce / len(train_dataloader)
 
-        prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds, labels=self.df_train_label.values)
+        prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds, labels=labels)
 
 
         # Measure how long this epoch took.
@@ -322,6 +331,7 @@ class NNRec(RecommenderBase, ABC):
 
         nb_eval_steps = 0
         preds = None
+        labels = None
 
         # Measure how long the training epoch takes.
         t0 = time.time()
@@ -352,6 +362,7 @@ class NNRec(RecommenderBase, ABC):
             b_input_mask = batch[1].to(self.device)
             b_features = batch[2].to(self.device)
             b_labels = batch[3].to(self.device)
+            #print("b_labels:",b_labels.shape)
 
             # Tell pytorch not to bother with constructing the compute graph during
             # the forward pass, since this is only needed for backprop (training).
@@ -389,6 +400,11 @@ class NNRec(RecommenderBase, ABC):
             logits = logits.detach().cpu().numpy()
             label_ids = b_labels.to('cpu').numpy()
 
+            if labels is None:
+                labels = label_ids
+            else:
+                labels = np.hstack([labels, label_ids])
+
             # Calculate the accuracy for this batch of test sentences, and
             # accumulate it over all batches.
             total_eval_accuracy += flat_accuracy(logits, label_ids)
@@ -403,7 +419,7 @@ class NNRec(RecommenderBase, ABC):
         avg_val_rce = total_eval_rce / len(validation_dataloader)
 
         print("debug")
-        prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds, labels=self.df_val_label.values)
+        prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds, labels=labels)
 
 
         # Measure how long the validation run took.
@@ -425,6 +441,12 @@ class NNRec(RecommenderBase, ABC):
         return avg_val_accuracy, avg_val_loss, validation_time, prauc, rce
 
     def evaluate(self, preds, labels=None):
+
+        #print(preds)
+        print(preds.shape)
+        #print(labels)
+        print(labels.shape)
+
         # Tries to load X and Y if not directly passed
         if (labels is None):
             print("No labels passed, cannot perform evaluation.")
