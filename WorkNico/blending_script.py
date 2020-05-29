@@ -167,7 +167,7 @@ def main():
     df_feat_3 = feat_3.load_or_create()
 
     third_feature_end_time = time.time()
-    print(f"Loading second feature time: {third_feature_end_time - second_feature_end_time} seconds")
+    print(f"Loading third feature time: {third_feature_end_time - second_feature_end_time} seconds")
 
     # check dimensions
     len_val = len(df_val)
@@ -220,8 +220,11 @@ def main():
 
     OP.setParameters(n_calls=100, n_random_starts=20)
     OP.loadTrainData(df_metatrain, df_metatrain_label)
-    # OP.loadTestData(X_test, Y_test)
-    OP.loadValData(df_metaval, df_metaval_label)
+
+    OP.loadValData(df_metaval, df_metaval_label)  # early stopping
+
+    OP.loadTestData(df_metaval, df_metaval_label)  # evaluate objective
+
     OP.setParamsLGB(objective='binary', early_stopping_rounds=10, eval_metric="binary", is_unbalance=True)
     OP.setCategoricalFeatures(categorical_features_set)
     # OP.loadModelHardCoded()
