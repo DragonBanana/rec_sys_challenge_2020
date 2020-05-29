@@ -1,13 +1,15 @@
 # from Models.NN.NNRecNew import NNRecNew
 from Models.NN.NNRec import DistilBertRec
 from Utils.Data.Data import get_dataset, get_feature, get_feature_reader
+from Utils.Submission.Submission import create_submission_file
 # from sklearn.model_selection import train_test_split
 import numpy as np
-
+import time
 
 def run(params):
 
     rec = DistilBertRec(**params)
+
     feature_list = [
         #        "raw_feature_creator_follower_count",  # 0
         #        "raw_feature_creator_following_count",  # 1
@@ -26,7 +28,7 @@ def run(params):
         #        "engager_feature_number_of_previous_comment_engagement",  # 14
         #        "engager_feature_number_of_previous_positive_engagement",  # 15
         #        "engager_feature_number_of_previous_negative_engagement",  # 16
-        "engager_feature_number_of_previous_engagement",  # 20
+        #"engager_feature_number_of_previous_engagement",  # 17 ciao nico :-)
         "engager_feature_number_of_previous_like_engagement_ratio",  # 18
         "engager_feature_number_of_previous_reply_engagement_ratio",  # 19
         "engager_feature_number_of_previous_retweet_engagement_ratio",  # 20
@@ -34,12 +36,14 @@ def run(params):
         "engager_feature_number_of_previous_positive_engagement_ratio",  # 22
         "engager_feature_number_of_previous_negative_engagement_ratio"  # 23
     ]
-    chunksize = 128
-    n_data_train = 100000
-    n_data_val = 500000
 
-    train_dataset = "train_days_1"
-    val_dataset = "val_days_2"
+    chunksize = 100
+    n_data_train = 1000
+    n_data_val = 1000
+
+    train_dataset = "holdout/train"
+    val_dataset = "holdout/test"
+    test_dataset = "test"
 
     print(f"n_data_train: {n_data_train}")
     print(f"n_data_val: {n_data_val}")
@@ -71,6 +75,7 @@ def run(params):
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
 
+    ###   TRAINING
     stats = rec.fit(df_train_features=feature_train_df,
                     df_train_tokens_reader=text_train_reader_df,
                     df_train_label=label_train_df,
@@ -86,12 +91,34 @@ def run(params):
         for s in stats:
             f.write(str(s) + '\n')
 
+    ###   PREDICTION
+    test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
+    #test_df = test_df.head(3)
+
+    prediction_start_time = time.time()
+
+    text_test_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token",
+                                            dataset_id=test_dataset,
+                                            chunksize=chunksize)
+    predictions = rec.get_prediction(test_df, text_test_reader_df)
+    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
+
+    print(predictions)
+
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+
+    #tweets = tweets.head(3).array
+    #users = users.head(3).array
+
+    create_submission_file(tweets, users, predictions, "nn_submission_like.csv")
+
 
 def main():
-    for dropout in [0.3, 0.5]:
-        for hidden_size_2 in [32, 64]:
-            params = {'hidden_dropout_prob': dropout, 'weight_decay': 1e-5, 'hidden_size_2': hidden_size_2}
-            run(params)
+    #for dropout in [0.3, 0.5]:
+    #    for hidden_size_2 in [32, 64]:
+    params = {'epochs': 5, 'hidden_dropout_prob': 0.5, 'weight_decay': 1e-5, 'hidden_size_2': 256, 'hidden_size_3': 64}
+    run(params)
 
 
 if __name__ == '__main__':
