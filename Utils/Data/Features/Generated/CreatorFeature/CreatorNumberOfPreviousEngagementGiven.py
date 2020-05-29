@@ -64,7 +64,7 @@ class CreatorNumberOfPreviousEngagementGivenAbstract(GeneratedFeaturePickle, ABC
 
         # save column names
         creator_id_col = creator_id_feature.feature_name
-        engager_id_col = engagement_feature.feature_name
+        engager_id_col = engager_id_feature.feature_name
         engagement_col = engagement_feature.feature_name
 
         dataframe = pd.concat([
