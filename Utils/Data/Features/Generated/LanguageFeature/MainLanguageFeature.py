@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 import Utils.Data as data
 from Utils.Data.DatasetUtils import is_test_or_val_set, get_train_set_id_from_test_or_val_set, \
@@ -9,20 +10,25 @@ from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.MappedFeatures import MappedFeatureEngagerId, MappedFeatureCreatorId, \
     MappedFeatureTweetLanguage, MappedFeatureTweetId
 from Utils.Data.Sparse.CSR_SparseMatrix import CSR_SparseMatrix
-import numpy as np
 import scipy.sparse as sps
 import time
 import multiprocessing as mp
 
 def find_and_increase_engager(engager, creator, language, engagement, counter_array):
-    current_count = counter_array[engager][language]
+    if counter_array[engager].sum() < 1:
+        current_count = -1
+    else:
+        current_count = np.argmax(counter_array[engager])
     if engagement:
         counter_array[engager][language] = counter_array[engager][language] + 1
     counter_array[creator][language] = counter_array[creator][language] + 1
     return current_count
 
 def find_and_increase_creator(engager, creator, language, engagement, counter_array):
-    current_count = counter_array[creator][language]
+    if counter_array[creator].sum() < 1:
+        current_count = -1
+    else:
+        current_count = np.argmax(counter_array[creator])
     if engagement:
         counter_array[engager][language] = counter_array[engager][language] + 1
     counter_array[creator][language] = counter_array[creator][language] + 1
@@ -64,16 +70,15 @@ class EngagerMainLanguage(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 100), dtype=int)
-
+        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 71), dtype=np.uint16)
         result = pd.DataFrame(
             [find_and_increase_engager(engager_id, creator_id, language, engagement, engager_counter_array)
              for engager_id, creator_id, language, engagement
-             in zip(dataframe[engagers_feature.feature_name],
+             in tqdm(zip(dataframe[engagers_feature.feature_name],
                     dataframe[creators_feature.feature_name],
                     dataframe[language_feature.feature_name],
                     dataframe[engagement_feature.feature_name]
-                    )],
+                    ))],
             index=dataframe.index
         )
         if not EngagerMainLanguage(train_dataset_id).has_feature():
@@ -147,7 +152,7 @@ class CreatorMainLanguage(GeneratedFeaturePickle):
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
         engager_counter_array = np.zeros(
-            (data.DataStats.get_max_user_id() + 1, 100), dtype=int)
+            (data.DataStats.get_max_user_id() + 1, 71), dtype=int)
 
         result = pd.DataFrame(
             [find_and_increase_creator(engager_id, creator_id, language, engagement, engager_counter_array)
