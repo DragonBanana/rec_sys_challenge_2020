@@ -33,11 +33,22 @@ class TweetFeatureTextTokenDecoded(GeneratedFeaturePickle):
     
     def create_feature(self):
         # Load the tweet ids and tokens
-        tweet_tokens_feature = RawFeatureTweetTextToken(self.dataset_id)
-        tweet_tokens_df = tweet_tokens_feature.load_or_create()
+        #tweet_tokens_feature = RawFeatureTweetTextToken(self.dataset_id)
+        #tweet_tokens_df = tweet_tokens_feature.load_or_create()
+
+        # load the tweet id, token_list dataframe
+        tokens_feature_df_reader = data.Data.get_feature_reader('raw_feature_tweet_text_token', self.dataset_id, chunksize=250000)
+        decoded_tokens_arr = None
+
+        for chunk in tqdm(tokens_feature_df_reader):
+            curr_arr = chunk['raw_feature_tweet_text_token'].apply(self.decode_tokens)
+
+            if decoded_tokens_arr is None:
+                decoded_tokens_arr = curr_arr
+            else:
+                decoded_tokens_arr = np.hstack([decoded_tokens_arr, curr_arr])
         
-        decoded_tokens_df = pd.DataFrame(tweet_tokens_df['raw_feature_tweet_text_token'].apply(self.decode_tokens))
-        #print(decoded_tokens_df)
+        decoded_tokens_df = pd.DataFrame({'tweet_feature_text_token_decoded': decoded_tokens_arr})
 
         # Save the dataframe
         self.save_feature(decoded_tokens_df)
@@ -308,10 +319,24 @@ class TweetFeatureTextTopicWordCount(GeneratedFeaturePickle):
     
     def create_feature(self):
         # Load the tweet ids and tokens
-        tweet_tokens_feature = TweetFeatureTextTokenDecoded(self.dataset_id)
-        tweet_tokens_df = tweet_tokens_feature.load_or_create()
+        #tweet_tokens_feature = TweetFeatureTextTokenDecoded(self.dataset_id)
+        #tweet_tokens_df = tweet_tokens_feature.load_or_create()
+
+        # load the tweet id, token_list dataframe
+        tokens_feature_df_reader = data.Data.get_feature_reader('tweet_feature_text_token_decoded', self.dataset_id, chunksize=250000)
+        word_count_arr = None
+
+        for chunk in tqdm(tokens_feature_df_reader):
+            curr_arr = chunk['tweet_feature_text_token_decoded'].apply(self.decode_tokens)
+
+            if word_count_arr is None:
+                word_count_arr = curr_arr
+            else:
+                word_count_arr = np.hstack([word_count_arr, curr_arr])
         
         words_count_df = pd.DataFrame(tweet_tokens_df['tweet_feature_text_token_decoded'].apply(self.count_contained_words))
+
+        words_count_df = pd.DataFrame({'tweet_feature_text_token_decoded': word_count_arr})
         #print(words_count_df)
         print(f"Number of rows with {self.feature_name} == 0 :", (words_count_df['tweet_feature_text_token_decoded'] == 0).sum())
         
