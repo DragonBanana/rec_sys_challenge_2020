@@ -46,7 +46,7 @@ def main():
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    #test_df = test_df.head(3)
+    test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -58,15 +58,16 @@ def main():
                                      pretrained_model_dict_path=saved_model_path)
     print(f"Prediction time: {time.time() - prediction_start_time} seconds")
 
-    #print(predictions)
+    print(predictions)
+    print(predictions.shape)
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
 
-    #tweets = tweets.head(3).array
-    #users = users.head(3).array
+    tweets = tweets.head(2500).array
+    users = users.head(2500).array
 
-    create_submission_file(tweets, users, predictions, "nn_submission_like.csv")
+    create_submission_file(tweets, users, predictions, "nn_submission_like_2.csv")
 
 
 if __name__ == '__main__':
