@@ -17,7 +17,6 @@ def find_and_increase_engager(eng_id, cre_id, lang, dictionary):
 
 def find_and_increase_creator(eng_id, cre_id, lang, dictionary):
     # Number of time the user_1 has interacted with user_2
-    print(f"{eng_id} {cre_id} {lang}")
     current_count = dictionary.get((eng_id, lang), 0)
     dictionary[(cre_id, lang)] = dictionary.get((cre_id, lang), 0) + 1
     return current_count

@@ -15,14 +15,29 @@ import time
 import multiprocessing as mp
 
 def find_and_increase_engager(engager, creator, language, engagement, counter_array):
-    current_count = counter_array[engager][language]
+    if counter_array[engager].sum() < 1:
+        current_count = -1
+    else:
+        current_count = np.argmax(counter_array[engager])
     if engagement:
         counter_array[engager][language] = counter_array[engager][language] + 1
     counter_array[creator][language] = counter_array[creator][language] + 1
     return current_count
 
 def find_and_increase_creator(engager, creator, language, engagement, counter_array):
-    current_count = counter_array[creator][language]
+    if counter_array[creator].sum() < 1:
+        current_count = -1
+    else:
+        current_count = np.argmax(counter_array[creator])
+    if engagement:
+        counter_array[engager][language] = counter_array[engager][language] + 1
+    counter_array[creator][language] = counter_array[creator][language] + 1
+    return current_count
+
+def find_and_increase_creator(engager, creator, language, engagement, counter_array):
+    if counter_array[creator].sum() < 1:
+        return -1
+    current_count = np.argmax(counter_array[creator])
     if engagement:
         counter_array[engager][language] = counter_array[engager][language] + 1
     counter_array[creator][language] = counter_array[creator][language] + 1
@@ -31,11 +46,11 @@ def find_and_increase_creator(engager, creator, language, engagement, counter_ar
 class EngagerMainGroupedLanguage(GeneratedFeaturePickle):
 
     def __init__(self, dataset_id: str):
-        super().__init__("engager_main_language", dataset_id)
+        super().__init__("engager_main_grouped_language", dataset_id)
         self.pck_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.pck.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.csv.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.csv.gz")
 
     def create_feature(self):
 
@@ -64,7 +79,7 @@ class EngagerMainGroupedLanguage(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 100), dtype=int)
+        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 40), dtype=np.uint16)
 
         result = pd.DataFrame(
             [find_and_increase_engager(engager_id, creator_id, language, engagement, engager_counter_array)
@@ -113,11 +128,11 @@ class EngagerMainGroupedLanguage(GeneratedFeaturePickle):
 class CreatorMainGroupedLanguage(GeneratedFeaturePickle):
 
     def __init__(self, dataset_id: str):
-        super().__init__("creator_main_language", dataset_id)
+        super().__init__("creator_main_grouped_language", dataset_id)
         self.pck_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.pck.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.csv.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.csv.gz")
 
     def create_feature(self):
 
@@ -146,8 +161,7 @@ class CreatorMainGroupedLanguage(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.zeros(
-            (data.DataStats.get_max_user_id() + 1, 100), dtype=int)
+        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 40), dtype=np.uint16)
 
         result = pd.DataFrame(
             [find_and_increase_creator(engager_id, creator_id, language, engagement, engager_counter_array)
@@ -196,11 +210,11 @@ class CreatorMainGroupedLanguage(GeneratedFeaturePickle):
 class CreatorAndEngagerHaveSameMainGroupedLanguage(GeneratedFeaturePickle):
 
     def __init__(self, dataset_id: str):
-        super().__init__("creator_and_engager_have_same_main_language", dataset_id)
+        super().__init__("creator_and_engager_have_same_main_grouped_language", dataset_id)
         self.pck_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.pck.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.csv.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.csv.gz")
 
     def create_feature(self):
         creator_main_language_feature = CreatorMainGroupedLanguage(self.dataset_id)
@@ -223,11 +237,11 @@ class CreatorAndEngagerHaveSameMainGroupedLanguage(GeneratedFeaturePickle):
 class IsTweetInCreatorMainGroupedLanguage(GeneratedFeaturePickle):
 
     def __init__(self, dataset_id: str):
-        super().__init__("is_tweet_in_creator_main_language", dataset_id)
+        super().__init__("is_tweet_in_creator_main_grouped_language", dataset_id)
         self.pck_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.pck.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.csv.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.csv.gz")
 
     def create_feature(self):
         creator_main_language_feature = CreatorMainGroupedLanguage(self.dataset_id)
@@ -249,11 +263,11 @@ class IsTweetInCreatorMainGroupedLanguage(GeneratedFeaturePickle):
 class IsTweetInEngagerMainGroupedLanguage(GeneratedFeaturePickle):
 
     def __init__(self, dataset_id: str):
-        super().__init__("is_tweet_in_engager_main_language", dataset_id)
+        super().__init__("is_tweet_in_engager_main_grouped_language", dataset_id)
         self.pck_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.pck.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/main_language/{self.feature_name}.csv.gz")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/grouped_main_language/{self.feature_name}.csv.gz")
 
     def create_feature(self):
         engager_main_language_feature = EngagerMainGroupedLanguage(self.dataset_id)

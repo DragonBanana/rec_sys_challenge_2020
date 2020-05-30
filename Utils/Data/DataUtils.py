@@ -425,6 +425,7 @@ def cache_dataset_as_svm(filename, X_train, Y_train=None, no_fuck_my_self=False)
                 f=f"{filename}.svm"
             )
         else:
+            print("be careful no fuck yourself is False, be very careful")
             X_chunks = np.array_split(X_train, 1000)
             Y_chunks = np.array_split(Y_train, 1000)
 
