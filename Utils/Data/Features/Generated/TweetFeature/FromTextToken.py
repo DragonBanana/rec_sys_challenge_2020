@@ -311,9 +311,9 @@ class TweetFeatureTextTopicWordCount(GeneratedFeaturePickle):
         tweet_tokens_feature = TweetFeatureTextTokenDecoded(self.dataset_id)
         tweet_tokens_df = tweet_tokens_feature.load_or_create()
         
-        words_count_df = pd.DataFrame(tweet_tokens_df['raw_feature_tweet_text_token'].apply(self.count_contained_words))
+        words_count_df = pd.DataFrame(tweet_tokens_df['tweet_feature_text_token_decoded'].apply(self.count_contained_words))
         #print(words_count_df)
-        print(f"Number of rows with {self.feature_name} == 0 :", (words_count_df['raw_feature_tweet_text_token'] == 0).sum())
+        print(f"Number of rows with {self.feature_name} == 0 :", (words_count_df['tweet_feature_text_token_decoded'] == 0).sum())
         
         # Save the dataframe
         self.save_feature(words_count_df)
