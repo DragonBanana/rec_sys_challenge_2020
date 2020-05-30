@@ -1,19 +1,46 @@
-from tqdm import tqdm
-
 import Utils.Data as data
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
 from Utils.Data.Features.Feature import Feature
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
-from abc import abstractmethod
-import pandas as pd
-import numpy as np
-import gzip
-
 from Utils.Data.Features.MappedFeatures import MappedFeatureTweetId
 from Utils.Data.Features.RawFeatures import RawFeatureTweetTextToken
 
 from BERT.TokenizerWrapper import TokenizerWrapper
+
+from abc import abstractmethod
+import pandas as pd
+import numpy as np
+import gzip
+from tqdm import tqdm
+
+
+class TweetFeatureTextTokenDecoded(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_text_token_decoded", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
+
+        self.tok = TokenizerWrapper("bert-base-multilingual-cased")
+
+    def decode_tokens(self, row):
+        tokens = row.replace('\n','').split('\t')
+        sentence = self.tok.decode(tokens)
+        return sentence
+    
+    def create_feature(self):
+        # Load the tweet ids and tokens
+        tweet_tokens_feature = RawFeatureTweetTextToken(self.dataset_id)
+        tweet_tokens_df = tweet_tokens_feature.load_or_create()
+        
+        decoded_tokens_df = pd.DataFrame(tweet_tokens_df['raw_feature_tweet_text_token'].apply(self.decode_tokens))
+        #print(decoded_tokens_df)
+
+        # Save the dataframe
+        self.save_feature(decoded_tokens_df)
 
 
 class TweetFeatureMappedMentions(GeneratedFeaturePickle):
@@ -259,40 +286,62 @@ class TweetFeatureTokenLengthUnique(GeneratedFeaturePickle):
         self.save_feature(length_df)
 
 
-class TweetFeatureTextContainsAdultContent(GeneratedFeaturePickle):
+class TweetFeatureTextTopicWordCount(GeneratedFeaturePickle):
 
-    def __init__(self, dataset_id: str):
-        super().__init__("tweet_feature_number_of_adult_content_words", dataset_id)
+    def __init__(self, feature_name, dataset_id: str):
+        super().__init__(feature_name, dataset_id)
         self.pck_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/from_text_token/{self.feature_name}.csv.gz")
 
         self.tok = TokenizerWrapper("bert-base-multilingual-cased")
-        
-        self.adult_content_words = ['adult content', 'adult film', 'adult movie', 'adult video', 'anal', 'ass', 'bara', 'barely legal', 'bdsm', 'bestiality', 'bisexual', 'bitch', 'blowjob', 'bondage', 'boob', 'boobs', 'boobies', 'boobys', 'booty', 'bound & gagged', 'bound and gagged', 'breast', 'breasts', 'bukkake', 'butt', 'cameltoe', 'creampie', 'cock', 'condom', 'cuck-old', 'cuckold', 'cum', 'cumshot', 'cunt', 'deep thraot', 'deap throat', 'deep thraoting', 'deap throating', 'deep-thraot', 'deap-throat', 'deep-thraoting', 'deap-throating', 'deepthraot', 'deapthroat', 'deepthraoting', 'deapthroating', 'dick', 'dildo', 'emetophilia', 'erotic', 'erotica', 'erection', 'erections', 'escort', 'facesitting', 'facial', 'felching', 'femdon', 'fetish', 'fisting', 'futanari', 'fuck', 'fucking', 'fucked', 'fucks', 'fucker', 'gangbang', 'gapping', 'gay', 'gentlemens club', 'gloryhole', 'glory hole', 'gonzo', 'gore', 'guro', 'handjob', 'hardon', 'hard-on', 'hentai', 'hermaphrodite', 'hidden camera', 'hump', 'humped', 'humping', 'hustler', 'incest', 'jerk off', 'jerking off', 'kinky', 'lesbian', 'lolicon ', 'masturbate', 'masturbating', 'masturbation', 'mature', 'mens club', 'menstrual', 'menstral', 'menstraul', 'milf', 'milking', 'naked', 'naughty', 'nude', 'orgasm', 'orgy', 'orgie', 'pearl necklace', 'pegging', 'penis', 'penetration', 'playboy', 'playguy', 'playgirl', 'porn', 'pornography', 'pornstar', 'pov', 'pregnant', 'preggo', 'pubic', 'pussy', 'rape', 'rimjob', 'scat', 'semen', 'sex', 'sexual', 'sexy', 'sexting', 'shemale', 'skank', 'slut', 'snuff', 'snuf', 'sperm', 'squirt', 'suck', 'swapping', 'tit', 'trans', 'transman', 'transsexual', 'transgender', 'threesome', 'tube8', 'twink', 'upskirt', 'vagina', 'virgin', 'whore', 'wore', 'xxx', 'yaoi', 'yif', 'yiff', 'yiffy', 'yuri', 'youporn']
+        self.words_list = []
 
-    def check_if_contains_adult_words(self, row):
-        tokens = row.replace('\n','').split('\t')
-        sentence = self.tok.decode(tokens).lower()
+    def count_contained_words(self, row):
+        sentence = row.lower() # maybe remove spaces ???
         count = 0
-        for w in self.adult_content_words:
+        for w in self.words_list:
             if w in sentence:
                 count += 1
         return count
     
     def create_feature(self):
         # Load the tweet ids and tokens
-        tweet_tokens_feature = RawFeatureTweetTextToken(self.dataset_id)
+        tweet_tokens_feature = TweetFeatureTextTokenDecoded(self.dataset_id)
         tweet_tokens_df = tweet_tokens_feature.load_or_create()
-
-        #print(tweet_tokens_df)
-
-        number_of_adult_words_df = pd.DataFrame(tweet_tokens_df['raw_feature_tweet_text_token'].apply(self.check_if_contains_adult_words))
         
-        #print(number_of_adult_words_df)
+        words_count_df = pd.DataFrame(tweet_tokens_df['raw_feature_tweet_text_token'].apply(self.count_contained_words))
+        #print(words_count_df)
+        print(f"Number of rows with {self.feature_name} == 0 :", (words_count_df['raw_feature_tweet_text_token'] == 0).sum())
         
-        print("Number of rows with feature == 0 :", (number_of_adult_words_df['raw_feature_tweet_text_token'] == 0).sum())
-
         # Save the dataframe
-        self.save_feature(number_of_adult_words_df)
+        self.save_feature(words_count_df)
+
+
+class TweetFeatureTextTopicWordCountAdultContent(TweetFeatureTextTopicWordCount):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_text_topic_word_count_adult_content", dataset_id)
+        self.words_list = ['adult content', 'adult film', 'adult movie', 'adult video', 'anal', 'ass', 'bara', 'barely legal', 'bdsm', 'bestiality', 'bisexual', 'bitch', 'blowjob', 'bondage', 'boob', 'boobs', 'boobies', 'boobys', 'booty', 'bound & gagged', 'bound and gagged', 'breast', 'breasts', 'bukkake', 'butt', 'cameltoe', 'creampie', 'cock', 'condom', 'cuck-old', 'cuckold', 'cum', 'cumshot', 'cunt', 'deep thraot', 'deap throat', 'deep thraoting', 'deap throating', 'deep-thraot', 'deap-throat', 'deep-thraoting', 'deap-throating', 'deepthraot', 'deapthroat', 'deepthraoting', 'deapthroating', 'dick', 'dildo', 'emetophilia', 'erotic', 'erotica', 'erection', 'erections', 'escort', 'facesitting', 'facial', 'felching', 'femdon', 'fetish', 'fisting', 'futanari', 'fuck', 'fucking', 'fucked', 'fucks', 'fucker', 'gangbang', 'gapping', 'gay', 'gentlemens club', 'gloryhole', 'glory hole', 'gonzo', 'gore', 'guro', 'handjob', 'hardon', 'hard-on', 'hentai', 'hermaphrodite', 'hidden camera', 'hump', 'humped', 'humping', 'hustler', 'incest', 'jerk off', 'jerking off', 'kinky', 'lesbian', 'lolicon ', 'masturbate', 'masturbating', 'masturbation', 'mature', 'mens club', 'menstrual', 'menstral', 'menstraul', 'milf', 'milking', 'naked', 'naughty', 'nude', 'orgasm', 'orgy', 'orgie', 'pearl necklace', 'pegging', 'penis', 'penetration', 'playboy', 'playguy', 'playgirl', 'porn', 'pornography', 'pornstar', 'pov', 'pregnant', 'preggo', 'pubic', 'pussy', 'rape', 'rimjob', 'scat', 'semen', 'sex', 'sexual', 'sexy', 'sexting', 'shemale', 'skank', 'slut', 'snuff', 'snuf', 'sperm', 'squirt', 'suck', 'swapping', 'tit', 'trans', 'transman', 'transsexual', 'transgender', 'threesome', 'tube8', 'twink', 'upskirt', 'vagina', 'virgin', 'whore', 'wore', 'xxx', 'yaoi', 'yif', 'yiff', 'yiffy', 'yuri', 'youporn']
+
+
+class TweetFeatureTextTopicWordCountKpop(TweetFeatureTextTopicWordCount):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_text_topic_word_count_kpop", dataset_id)
+        self.words_list = ['kpop', 'k pop', 'idol', 'comeback', 'mama', 'mnet', 'gda', 'goldendiscaward', 'golden disc award', '골든 디스크 시상식', '골든디스크시상식', 'gma', 'gaon', 'gaonmusicaward', 'gaon music award', 'music award', 'musicaward', 'nct', 'nct 127', 'nct127', 'bts', 'loona', '이달의소녀', 'gfriend', 'blackpink', 'exo', 'mcnd', 'monsta x', 'monstax', 'got7', 'mamamoo', 'twice', 'ateez', 'big bang', 'bigbang', 'red velvet', 'redvelvet', 'dkb', 'b.o.y', 'h&d', 'aoa', 'exid', 'iz*one', 'izone', 'itzy', 'cravity', 'btob', 'craxy', 'cignature', 'playm girls', 'playmgirls', '2z', 'clc', 'unvs', 'xenex', 'daydream', 'woo!ah!', 'pentagon', 'bandage', 'redsquare', '2nyne', 'trusty']
+
+
+class TweetFeatureTextTopicWordCountCovid(TweetFeatureTextTopicWordCount):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_text_topic_word_count_covid", dataset_id)
+        self.words_list = ['coronavirus', 'covid', 'covid19', 'covid-19', 'virus', 'syndrome', 'respiratory syndrome', 'severe acute respiratory syndrome', 'sars', 'sars 2', 'sars cov2', 'sars-cov2', 'middle east respiratory syndrome', 'mers', 'stay home', 'stayhome', 'distancing', 'socialdistancing', 'social distancing', 'epidemy', 'epidemic', 'pandemy', 'pandemic', 'emergency', 'state of emergency', 'lockdown', 'quarantine', 'self quarantine', 'self-quarantine', 'isolation', 'incubation', 'wuhan', 'china', 'chinavirus', 'china virus', 'bat', 'pangolin', 'pangolino', 'scaly anteaters', 'manis', 'respirator', 'intensive care unit', 'icu', 'fever', 'cough', 'shortness of breath', 'antibody', 'antibodies', 'symptoms', 'asymptomatic', 'world health organization', 'disease', 'containment', 'immunity', 'herd immunity', 'vaccine']
+
+
+class TweetFeatureTextTopicWordCountSport(TweetFeatureTextTopicWordCount):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_text_topic_word_count_sport", dataset_id)
+        self.words_list = ['sport', 'basketball', 'football', 'soccer', 'hockey', 'baseball', 'kobe', 'kobe bryant', 'kobebryant', 'rip kobe', 'ripkobe', 'nba', 'lakers', 'spurs', 'celtics', 'warriors', 'playoff', 'nba playoff', 'nbaplayoff', 'finals', 'nba finals', 'nbafinals', 'bball', 'lebron', 'lebron james', 'lebronjames', 'kingjames', 'nfl', 'nhl', 'mlb', 'epl', 'premiere', 'premiere league', 'premiereleague', 'seriea', 'serie a', 'liga', 'la liga', 'league', 'league1', 'league 1', 'bundesliga', 'efl', 'süper lig', 'super lig', 'süperlig', 'superlig', 'champions', 'champions league', 'espn', 'fox', 'foxnews', 'foxsport', 'sky sport', 'skysport', 'sport news', 'sportnews', 'sportsnews']
