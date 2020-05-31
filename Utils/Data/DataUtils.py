@@ -10,6 +10,8 @@ from Utils.Data.Features.Generated.CreatorFeature.CreatorNumberOfPreviousEngagem
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowsHashtag import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagements import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagementsRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementWithLanguage import *
@@ -189,6 +191,20 @@ def populate_features():
         result[("engager_feature_number_of_previous_positive_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousPositiveEngagement(dataset_id)
         result[("engager_feature_number_of_previous_negative_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousNegativeEngagement(dataset_id)
         result[("engager_feature_number_of_previous_engagement", dataset_id)] = EngagerFeatureNumberOfPreviousEngagement(dataset_id)
+        # NUMBER OF ENGAGEMENTS
+        result[("number_of_engagements_like", dataset_id)] = NumberOfEngagementsLike(dataset_id)
+        result[("number_of_engagements_retweet", dataset_id)] = NumberOfEngagementsRetweet(dataset_id)
+        result[("number_of_engagements_reply", dataset_id)] = NumberOfEngagementsReply(dataset_id)
+        result[("number_of_engagements_comment", dataset_id)] = NumberOfEngagementsComment(dataset_id)
+        result[("number_of_engagements_negative", dataset_id)] = NumberOfEngagementsNegative(dataset_id)
+        result[("number_of_engagements_positive", dataset_id)] = NumberOfEngagementsPositive(dataset_id)
+        # NUMBER OF ENGAGEMENTS RATIO
+        result[("number_of_engagements_ratio_like", dataset_id)] = NumberOfEngagementsRatioLike(dataset_id)
+        result[("number_of_engagements_ratio_retweet", dataset_id)] = NumberOfEngagementsRatioRetweet(dataset_id)
+        result[("number_of_engagements_ratio_reply", dataset_id)] = NumberOfEngagementsRatioReply(dataset_id)
+        result[("number_of_engagements_ratio_comment", dataset_id)] = NumberOfEngagementsRatioComment(dataset_id)
+        result[("number_of_engagements_ratio_negative", dataset_id)] = NumberOfEngagementsRatioNegative(dataset_id)
+        result[("number_of_engagements_ratio_positive", dataset_id)] = NumberOfEngagementsRatioPositive(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS WITH LANGUAGE
         result[("engager_feature_number_of_previous_like_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(dataset_id)
@@ -418,25 +434,25 @@ def cache_dataset_as_svm(filename, X_train, Y_train=None, no_fuck_my_self=False)
     if pathlib.Path(f"{filename}.svm").exists():
         print("file already exists, be careful to overwrite it")
     else:
-        if no_fuck_my_self:
-            skd.dump_svmlight_file(
-                X=X_train,
-                y=Y_train[Y_train.columns[0]].array,
-                f=f"{filename}.svm"
-            )
-        else:
-            print("be careful no fuck yourself is False, be very careful")
-            X_chunks = np.array_split(X_train, 1000)
-            Y_chunks = np.array_split(Y_train, 1000)
+        # if no_fuck_my_self:
+        #     skd.dump_svmlight_file(
+        #         X=X_train,
+        #         y=Y_train[Y_train.columns[0]].array,
+        #         f=f"{filename}.svm"
+        #     )
+        # else:
+        print("be careful no fuck yourself is False, be very careful")
+        X_chunks = np.array_split(X_train, 1000)
+        Y_chunks = np.array_split(Y_train, 1000)
 
-            pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
+        pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
 
-            partial_to_svm = functools.partial(to_svm, filename=filename)
-            with mp.Pool(30) as p:
-                p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
+        partial_to_svm = functools.partial(to_svm, filename=filename)
+        with mp.Pool(30) as p:
+            p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
 
-            cmd = f'cat temp/*{filename}.svm > {filename}.svm'
-            os.system(cmd)
-            cmd = f'rm -r temp'
-            os.system(cmd)
+        cmd = f'cat {"".join([f"temp/{i}_{filename}.svm " for i in range(1000)])}> {filename}.svm'
+        os.system(cmd)
+        cmd = f'rm -r temp'
+        os.system(cmd)
 
