@@ -63,7 +63,7 @@ class NNRec(RecommenderBase, ABC):
 
     def _normalize_features(self, df):
         for col in df.columns:
-            df[col] = df[col].apply(zscore)
+            df[col] = zscore(df[col].to_numpy())
         return df
 
     def load_model(self):
@@ -82,11 +82,16 @@ class NNRec(RecommenderBase, ABC):
 
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
-    
-        assert len(df_train_features.columns) == len(df_val_features.columns), 
-                            "df_train_features and df_val_features have different number of columns"
+
+        #print(df_train_features)
+        #print(df_val_features)
+
+        assert len(df_train_features.columns) == len(df_val_features.columns),"df_train_features and df_val_features have different number of columns"
         df_train_features = self._normalize_features(df_train_features)
         df_val_features = self._normalize_features(df_val_features)
+
+        #print(df_train_features)
+        #print(df_val_features)
 
         # Set the seed value all over the place to make this reproducible.
         seed_val = 42
