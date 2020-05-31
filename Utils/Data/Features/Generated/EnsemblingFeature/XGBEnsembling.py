@@ -41,6 +41,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         random_n = random.random()
         # Initiate XGBoost wrapper
         xgb_wrapper = wrapper.XGBoost(
+            tree_method="gpu_hist",
             num_rounds=self.param_dict['num_rounds'],
             max_depth=self.param_dict['max_depth'],
             min_child_weight=self.param_dict['min_child_weight'],
@@ -58,7 +59,8 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         # Cache the train matrix as libsvm
         data.DataUtils.cache_dataset_as_svm(f"temp_ensembling_{random_n}", self.df_train, self.df_train_label)
         # Load the train matrix + external memory
-        train = xgb.DMatrix(f"temp_ensembling_{random_n}.svm#temp_ensembling_{random_n}.cache")
+        # train = xgb.DMatrix(f"temp_ensembling_{random_n}.svm#temp_ensembling_{random_n}.cache")
+        train = xgb.DMatrix(f"temp_ensembling_{random_n}.svm")
         # Overwrite the feature names for consistency
         train.feature_names = self.df_train.columns
         # Fit the model
@@ -74,7 +76,7 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         # Generate a random number
         random_n = random.random()
         # Cache the train matrix as libsvm
-        data.DataUtils.cache_dataset_as_svm(f"temp_ensembling_test_{random_n}", self.df_to_predict)
+        data.DataUtils.cache_dataset_as_svm(f"temp_ensembling_test_{random_n}", self.df_to_predict, no_fuck_my_self=True)
         # Load the train matrix + external memory
         test = xgb.DMatrix(f"temp_ensembling_test_{random_n}.svm")
         # Overwrite the feature names for consistency

@@ -79,7 +79,7 @@ class EngagerMainGroupedLanguage(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 40), dtype=np.uint16)
+        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 70), dtype=np.uint16)
 
         result = pd.DataFrame(
             [find_and_increase_engager(engager_id, creator_id, language, engagement, engager_counter_array)
@@ -161,7 +161,7 @@ class CreatorMainGroupedLanguage(GeneratedFeaturePickle):
 
         dataframe.sort_values(creation_timestamps_feature.feature_name, inplace=True)
 
-        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 40), dtype=np.uint16)
+        engager_counter_array = np.zeros((data.DataStats.get_max_user_id() + 1, 70), dtype=np.uint16)
 
         result = pd.DataFrame(
             [find_and_increase_creator(engager_id, creator_id, language, engagement, engager_counter_array)
