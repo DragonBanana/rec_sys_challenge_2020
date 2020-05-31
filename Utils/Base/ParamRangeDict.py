@@ -184,10 +184,10 @@ def catRange(kind):
                         Real(0.0001, 70),                   # random_strenght
                         Real(0.1, 1),                       # colsample_bylevel
                         Integer(5,300),                     # leaf_estimation_iterations
-                        Real(0.2,5),                          # scale_pos_weight
+                        #Real(0.2,5),                          # scale_pos_weight
                         Real(0.00001,2.1, 'log_uniform')]      # model_shrink_rate
 
-    
+    '''
     # PERSONALIZED SCALE_POS_WEIGHT
     # From documentation put it to neg_samples/pos_samples 
     if kind in LIKE:
@@ -198,6 +198,7 @@ def catRange(kind):
         param_range_dict[8] = Real(15, 55)
     elif kind in COMMENT:
         param_range_dict[8] = Real(80, 170)
+    '''
 
     return param_range_dict
 
@@ -210,6 +211,6 @@ def catName():
                        "random_strenght",
                        "colsample_bylevel",
                        "leaf_estimation_iterations",
-                       "scale_pos_weight",
+                       #"scale_pos_weight",
                        "model_shrink_rate"]
     return param_name_dict

@@ -8,6 +8,7 @@ import random
 import time
 from tqdm import tqdm
 import pandas as pd
+from scipy.stats import zscore
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
 
@@ -60,6 +61,11 @@ class NNRec(RecommenderBase, ABC):
 
         return device
 
+    def _normalize_features(self, df):
+        for col in df.columns:
+            df[col] = zscore(df[col].to_numpy())
+        return df
+
     def load_model(self):
         pass
 
@@ -76,6 +82,16 @@ class NNRec(RecommenderBase, ABC):
 
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
+
+        #print(df_train_features)
+        #print(df_val_features)
+
+        assert len(df_train_features.columns) == len(df_val_features.columns),"df_train_features and df_val_features have different number of columns"
+        df_train_features = self._normalize_features(df_train_features)
+        df_val_features = self._normalize_features(df_val_features)
+
+        #print(df_train_features)
+        #print(df_val_features)
 
         # Set the seed value all over the place to make this reproducible.
         seed_val = 42
@@ -187,8 +203,8 @@ class NNRec(RecommenderBase, ABC):
             bot_string = bot_string + "\n".join([key+": "+str(curr_stats[key]) for key in curr_stats])
             telegram_bot_send_update(bot_string)
 
-            #torch.save(self.model.state_dict(), f"./saved_models/saved_model_epoch{epoch_i + 1}_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size3}")
-            #torch.save(optimizer.state_dict(), f"./saved_models/optimizer_epoch{epoch_i + 1}_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size3}")
+            torch.save(self.model.state_dict(), f"./saved_models/saved_model_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size_3}_epoch_{epoch_i + 1}")
+            torch.save(optimizer.state_dict(), f"./saved_models/optimizer_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size_3}_epoch_{epoch_i + 1}")
 
         print("")
         print("Training complete!")
@@ -283,8 +299,8 @@ class NNRec(RecommenderBase, ABC):
             else:
                 labels = np.hstack([labels, curr_labels])
 
-            print(f"batch {step} RCE: {rce}")
-            print(f"batch {step} PRAUC: {prauc}")
+            #print(f"batch {step} RCE: {rce}")
+            #print(f"batch {step} PRAUC: {prauc}")
 
             # Perform a backward pass to calculate the gradients.
             loss.backward()
@@ -485,6 +501,9 @@ class NNRec(RecommenderBase, ABC):
                        df_test_tokens_reader: pd.io.parsers.TextFileReader,
                        pretrained_model_dict_path: str = None
                        ):
+
+        df_test_features = self._normalize_features(df_test_features)
+
         if pretrained_model_dict_path is None:
             assert self.model is not None, "You are trying to predict without training."
         else:
@@ -528,19 +547,23 @@ class NNRec(RecommenderBase, ABC):
                 # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
                 # Get the "logits" output by the model. The "logits" are the output
                 # values prior to applying an activation function like the softmax.
-                curr_preds = self.model(input_ids=b_input_ids,
+                curr_logits = self.model(input_ids=b_input_ids,
                                         input_features=b_features,
-                                        #token_type_ids=None, --> missing in distilbert?
+                                        #token_type_ids=None, --> missing in distilbert
                                         attention_mask=b_input_mask)
 
-            #print(curr_preds)
+            #print(curr_logits)
 
-            curr_preds = curr_preds[0].detach().cpu().numpy()[:,0]
+            curr_logits = curr_logits[0][:,0]
+
+            curr_preds = torch.sigmoid(curr_logits)
+
+            curr_preds = curr_preds.detach().cpu().numpy()
 
             if preds is None:
                 preds = curr_preds
             else:
-                preds = np.vstack([preds, curr_preds])
+                preds = np.hstack([preds, curr_preds])
 
         return preds
 
