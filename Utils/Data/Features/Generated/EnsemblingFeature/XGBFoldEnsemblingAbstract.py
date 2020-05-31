@@ -41,8 +41,8 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
 
             # Load the dataset and shuffle it
             import Utils.Data.Data as data
-            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id).sample(frac=1)
-            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id).sample(frac=1)
+            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id)
+            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id)
 
             # Compute the folds
             X_train_folds = np.array_split(X_train, self.number_of_folds)
@@ -55,8 +55,8 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             # Train multiple models with 1-fold out strategy
             for i in range(self.number_of_folds):
                 # Compute the train set
-                X_train = pd.concat([X_train_folds[x] for x in range(self.number_of_folds) if x is not i]).sample(frac=0.05)
-                Y_train = pd.concat([Y_train_folds[x] for x in range(self.number_of_folds) if x is not i]).sample(frac=0.05)
+                X_train = pd.concat([X_train_folds[x].sample(frac=0.05, random_state=8) for x in range(self.number_of_folds) if x is not i])
+                Y_train = pd.concat([Y_train_folds[x].sample(frac=0.05, random_state=8) for x in range(self.number_of_folds) if x is not i])
 
                 # Compute the test set
                 X_test = X_train_folds[i]
@@ -80,11 +80,10 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
         else:
             test_dataset_id = self.dataset_id
             train_dataset_id = get_train_set_id_from_test_or_val_set(test_dataset_id)
-
             # Load the train dataset
             import Utils.Data.Data as data
-            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id).sample(frac=0.05)
-            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id).sample(frac=0.05)
+            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id).sample(frac=0.05, random_state=8)
+            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id).sample(frac=0.05, random_state=8)
 
             # Load the test dataset
             X_test = data.get_dataset(features=self.features, dataset_id=test_dataset_id)

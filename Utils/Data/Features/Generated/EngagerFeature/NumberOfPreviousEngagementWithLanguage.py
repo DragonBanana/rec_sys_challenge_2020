@@ -92,7 +92,7 @@ class EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(GeneratedFeatureP
                         dataframe[language_feature.feature_name])],
                 index=dataframe.index
             )
-            dataframe.sort_index(inplace=True)
+            result.sort_index(inplace=True)
             EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(test_dataset_id).save_feature(result)
 
 class EngagerFeatureNumberOfPreviousRetweetEngagementWithLanguage(GeneratedFeaturePickle):
@@ -178,7 +178,7 @@ class EngagerFeatureNumberOfPreviousRetweetEngagementWithLanguage(GeneratedFeatu
                         dataframe[language_feature.feature_name])],
                 index=dataframe.index
             )
-            dataframe.sort_index(inplace=True)
+            result.sort_index(inplace=True)
 
             EngagerFeatureNumberOfPreviousRetweetEngagementWithLanguage(test_dataset_id).save_feature(result)
 
@@ -265,7 +265,7 @@ class EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(GeneratedFeature
                         dataframe[language_feature.feature_name])],
                 index=dataframe.index
             )
-            dataframe.sort_index(inplace=True)
+            result.sort_index(inplace=True)
 
             EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(test_dataset_id).save_feature(result)
 
@@ -353,7 +353,7 @@ class EngagerFeatureNumberOfPreviousCommentEngagementWithLanguage(GeneratedFeatu
                         dataframe[language_feature.feature_name])],
                 index=dataframe.index
             )
-            dataframe.sort_index(inplace=True)
+            result.sort_index(inplace=True)
 
             EngagerFeatureNumberOfPreviousCommentEngagementWithLanguage(test_dataset_id).save_feature(result)
 
@@ -440,7 +440,7 @@ class EngagerFeatureNumberOfPreviousPositiveEngagementWithLanguage(GeneratedFeat
                         dataframe[language_feature.feature_name])],
                 index=dataframe.index
             )
-            dataframe.sort_index(inplace=True)
+            result.sort_index(inplace=True)
 
             EngagerFeatureNumberOfPreviousPositiveEngagementWithLanguage(test_dataset_id).save_feature(result)
 
@@ -527,6 +527,6 @@ class EngagerFeatureNumberOfPreviousNegativeEngagementWithLanguage(GeneratedFeat
                         dataframe[language_feature.feature_name])],
                 index=dataframe.index
             )
-            dataframe.sort_index(inplace=True)
+            result.sort_index(inplace=True)
 
             EngagerFeatureNumberOfPreviousNegativeEngagementWithLanguage(test_dataset_id).save_feature(result)
