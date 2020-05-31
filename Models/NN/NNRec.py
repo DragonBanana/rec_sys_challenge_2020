@@ -8,6 +8,7 @@ import random
 import time
 from tqdm import tqdm
 import pandas as pd
+from scipy.stats import zscore
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
 
@@ -60,6 +61,11 @@ class NNRec(RecommenderBase, ABC):
 
         return device
 
+    def _normalize_features(self, df):
+        for col in df.columns:
+            df[col] = df[col].apply(zscore)
+        return df
+
     def load_model(self):
         pass
 
@@ -76,6 +82,11 @@ class NNRec(RecommenderBase, ABC):
 
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
+    
+        assert len(df_train_features.columns) == len(df_val_features.columns), 
+                            "df_train_features and df_val_features have different number of columns"
+        df_train_features = self._normalize_features(df_train_features)
+        df_val_features = self._normalize_features(df_val_features)
 
         # Set the seed value all over the place to make this reproducible.
         seed_val = 42
@@ -485,6 +496,9 @@ class NNRec(RecommenderBase, ABC):
                        df_test_tokens_reader: pd.io.parsers.TextFileReader,
                        pretrained_model_dict_path: str = None
                        ):
+
+        df_test_features = self._normalize_features(df_test_features)
+
         if pretrained_model_dict_path is None:
             assert self.model is not None, "You are trying to predict without training."
         else:
@@ -530,7 +544,7 @@ class NNRec(RecommenderBase, ABC):
                 # values prior to applying an activation function like the softmax.
                 curr_logits = self.model(input_ids=b_input_ids,
                                         input_features=b_features,
-                                        #token_type_ids=None, --> missing in distilbert?
+                                        #token_type_ids=None, --> missing in distilbert
                                         attention_mask=b_input_mask)
 
             #print(curr_logits)
