@@ -96,10 +96,10 @@ def main():
     OP = Optimizer(model_name, 
                    kind,
                    mode=0,
-                   path="CatBoostHoldoutGLHF",
-                   path_log="CatBoostHoldoutGLHF",
+                   path="CatBoostHoldoutLike",
+                   path_log="CatBoostHoldoutLike",
                    make_log=True, 
-                   make_save=False, 
+                   make_save=True, 
                    auto_save=True)
 
     print("checkpoint 2")
