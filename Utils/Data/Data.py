@@ -116,21 +116,26 @@ def get_dataset_xgb_default_test():
     return get_dataset_xgb(dataset_id=train_dataset, X_label=X_label, Y_label=Y_label)
 
 
-def get_dataset(features: list, dataset_id: str):
+def get_dataset(features: list, dataset_id: str, nthread:int=-1):
     dataframe = pd.DataFrame()
-    for feature_name in tqdm(features):
-        if (feature_name, dataset_id) in FEATURES.keys():
-            f = FEATURES[(feature_name, dataset_id)]
-            df = f.load_or_create()
-            if len(df.columns) == 1:
-                dataframe[feature_name] = df[f.feature_name]
-            else:
-                if len(dataframe) > 0:
-                    dataframe = pd.concat([dataframe, df], axis=1)
+    if nthread > 0:
+        with mp.Pool(16) as p:
+            partial_create_features = functools.partial(get_feature, dataset_id=dataset_id)
+            dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
+    else:
+        for feature_name in tqdm(features):
+            if (feature_name, dataset_id) in FEATURES.keys():
+                f = FEATURES[(feature_name, dataset_id)]
+                df = f.load_or_create()
+                if len(df.columns) == 1:
+                    dataframe[feature_name] = df[f.feature_name]
                 else:
-                    dataframe = df
-        else:
-            raise Exception(f"Feature {feature_name} not found ")
+                    if len(dataframe) > 0:
+                        dataframe = pd.concat([dataframe, df], axis=1)
+                    else:
+                        dataframe = df
+            else:
+                raise Exception(f"Feature {feature_name} not found ")
     # dataframe = pd.concat([get_feature(feature_name, dataset_id) for feature_name in features], axis=1)
     # Some columns are not in the format XGB expects, so the following block of code will cast them to the right format
     for column in dataframe.columns:
