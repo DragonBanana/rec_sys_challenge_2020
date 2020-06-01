@@ -12,6 +12,8 @@ from ParamTuning.ModelInterface import ModelInterface
 from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 
+from Utils.Data.Data import oversample
+
 
 def main():  
     # Defining the dataset used
@@ -65,11 +67,11 @@ def main():
             "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",                        #42                                                                            
             # "engager_main_language",                      #43 CATEGORICAL    
             # "creator_main_language",                      #44 CATEGORICAL    
-            "creator_and_engager_have_same_main_language",                      #45 CATEGORICAL       - 43                 
-            "is_tweet_in_creator_main_language",                        #46 CATEGORICAL                -44
-            "is_tweet_in_engager_main_language",                        #47 CATEGORICAL                45
-            "statistical_probability_main_language_of_engager_engage_tweet_language_1",                     #48     46                                               
-            "statistical_probability_main_language_of_engager_engage_tweet_language_2",                     #49     47                                              
+            #"creator_and_engager_have_same_main_language",                      #45 CATEGORICAL       - 43                 
+            #"is_tweet_in_creator_main_language",                        #46 CATEGORICAL                -44
+            #"is_tweet_in_engager_main_language",                        #47 CATEGORICAL                45
+            #"statistical_probability_main_language_of_engager_engage_tweet_language_1",                     #48     46                                               
+            #"statistical_probability_main_language_of_engager_engage_tweet_language_2",                     #49     47                                              
             # "tweet_feature_token_length",                     #50 CATEGORICAL     
             # "tweet_feature_token_length_unique",                  
             # "engager_feature_knows_hashtag_positive",                 
@@ -80,9 +82,9 @@ def main():
             "hashtag_similarity_fold_ensembling_positive",                  #48
             "link_similarity_fold_ensembling_positive",                 #49
             "domain_similarity_fold_ensembling_positive",               #50
-            "tweet_feature_creation_timestamp_hour_shifted",            #51 CATEGORICAL
-            "tweet_feature_creation_timestamp_day_phase",               #52 CATEGORICAL
-            "tweet_feature_creation_timestamp_day_phase_shifted"        #53 CATEGORICAL
+            "tweet_feature_creation_timestamp_hour_shifted",            #51 
+            "tweet_feature_creation_timestamp_day_phase",               #52 
+            "tweet_feature_creation_timestamp_day_phase_shifted"        #53 
 
     ]                                                                           
     # Define the Y label
@@ -99,25 +101,50 @@ def main():
 
     # Load test data
     X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
-    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
+    # If oversample is set
+    # Oversample the cold users
+    use_oversample = True
+    os_column_name = "engager_feature_number_of_previous_positive_engagement_ratio_1"
+    os_value = -1
+    os_percentage = 0.3                      #in order to have the 23% of cold users in the validation set
+    if use_oversample is True:
+        df = pd.concat([X_val, Y_val], axis=1)
+        oversampled_df = oversample(df, os_column_name, os_value, os_percentage)
+        X_val = oversampled_df[X_label]
+        Y_val = oversampled_df[Y_label]
+        del df, oversampled_df
 
+    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
+    # If oversample is set
+    # Oversample the cold users
+    use_oversample = True
+    os_column_name = "engager_feature_number_of_previous_positive_engagement_ratio_1"
+    os_value = -1
+    os_percentage = 0.3                      #in order to have the 23% of cold users in the validation set
+    if use_oversample is True:
+        df = pd.concat([X_test, Y_test], axis=1)
+        oversampled_df = oversample(df, os_column_name, os_value, os_percentage)
+        X_test = oversampled_df[X_label]
+        Y_test = oversampled_df[Y_label]
+        del df, oversampled_df
+    
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
     OP = Optimizer(model_name, 
                    kind,
                    mode=0,
                    path="like",
-                   path_log="LGBM-like-opt-latest",
+                   path_log="LGBM-like-freschi-sovracampione",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
 
-    OP.setParameters(n_calls=90, n_random_starts=30)
+    OP.setParameters(n_calls=40, n_random_starts=15)
     OP.loadTrainData(X_train, Y_train)
     OP.loadTestData(X_test, Y_test)
     OP.loadValData(X_val, Y_val)
     OP.setParamsLGB(objective='binary',early_stopping_rounds=15, eval_metric="binary",is_unbalance=False)
-    OP.setCategoricalFeatures(set([4,5,6,11,12,13,43,44,45,46,47,51,52,53]))
+    OP.setCategoricalFeatures(set([4,5,6,11,12,13]))
     #OP.loadModelHardCoded()
     res=OP.optimize()
 
