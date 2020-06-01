@@ -540,8 +540,8 @@ class ModelInterface(object):
                          random_strenght=            param[5],
                          colsample_bylevel=          param[6],
                          leaf_estimation_iterations= param[7],
-                         scale_pos_weight =          param[8],
-                         model_shrink_rate =         param[9],
+                         #scale_pos_weight =          param[8],
+                         model_shrink_rate =         param[8],
                          # ES parameters
                          early_stopping_rounds = self.early_stopping_rounds)
 
@@ -606,8 +606,8 @@ class ModelInterface(object):
                          random_strenght=            param[5],
                          colsample_bylevel=          param[6],
                          leaf_estimation_iterations= param[7],
-                         scale_pos_weight =          param[8],
-                         model_shrink_rate =         param[9],
+                         #scale_pos_weight =          param[8],
+                         model_shrink_rate =         param[8],
                          # ES parameters
                          early_stopping_rounds = self.early_stopping_rounds)
 
@@ -731,8 +731,8 @@ class ModelInterface(object):
                          random_strenght=            param[5],
                          colsample_bylevel=          param[6],
                          leaf_estimation_iterations= param[7],
-                         scale_pos_weight =          param[8],
-                         model_shrink_rate =         param[9],
+                         #scale_pos_weight =          param[8],
+                         model_shrink_rate =         param[8],
                          # ES parameters
                          early_stopping_rounds = self.early_stopping_rounds)
 
