@@ -11,6 +11,7 @@ from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage impor
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowsHashtag import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagements import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagementsBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagementsRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagementsWithLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
@@ -213,6 +214,13 @@ def populate_features():
         result[("number_of_engagements_with_language_comment", dataset_id)] = NumberOfEngagementsWithLanguageComment(dataset_id)
         result[("number_of_engagements_with_language_negative", dataset_id)] = NumberOfEngagementsWithLanguageNegative(dataset_id)
         result[("number_of_engagements_with_language_positive", dataset_id)] = NumberOfEngagementsWithLanguagePositive(dataset_id)
+        # NUMBER OF ENGAGEMENTS BETWEEN CREATOR AND ENGAGER
+        result[("number_of_engagements_between_creator_and_engager_like", dataset_id)] = NumberOfEngagementsBetweenCreatorAndEngagerLike(dataset_id)
+        result[("number_of_engagements_between_creator_and_engager_retweet", dataset_id)] = NumberOfEngagementsBetweenCreatorAndEngagerRetweet(dataset_id)
+        result[("number_of_engagements_between_creator_and_engager_reply", dataset_id)] = NumberOfEngagementsBetweenCreatorAndEngagerReply(dataset_id)
+        result[("number_of_engagements_between_creator_and_engager_comment", dataset_id)] = NumberOfEngagementsBetweenCreatorAndEngagerComment(dataset_id)
+        result[("number_of_engagements_between_creator_and_engager_negative", dataset_id)] = NumberOfEngagementsBetweenCreatorAndEngagerNegative(dataset_id)
+        result[("number_of_engagements_between_creator_and_engager_positive", dataset_id)] = NumberOfEngagementsBetweenCreatorAndEngagerPositive(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS WITH LANGUAGE
         result[("engager_feature_number_of_previous_like_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(dataset_id)
