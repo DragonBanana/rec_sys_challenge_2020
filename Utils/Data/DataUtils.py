@@ -12,6 +12,7 @@ from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowsHashtag import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagements import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagementsRatio import *
+from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagementsWithLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementWithLanguage import *
@@ -205,6 +206,13 @@ def populate_features():
         result[("number_of_engagements_ratio_comment", dataset_id)] = NumberOfEngagementsRatioComment(dataset_id)
         result[("number_of_engagements_ratio_negative", dataset_id)] = NumberOfEngagementsRatioNegative(dataset_id)
         result[("number_of_engagements_ratio_positive", dataset_id)] = NumberOfEngagementsRatioPositive(dataset_id)
+        # NUMBER OF ENGAGEMENTS WITH LANGUAGE
+        result[("number_of_engagements_with_language_like", dataset_id)] = NumberOfEngagementsWithLanguageLike(dataset_id)
+        result[("number_of_engagements_with_language_retweet", dataset_id)] = NumberOfEngagementsWithLanguageRetweet(dataset_id)
+        result[("number_of_engagements_with_language_reply", dataset_id)] = NumberOfEngagementsWithLanguageReply(dataset_id)
+        result[("number_of_engagements_with_language_comment", dataset_id)] = NumberOfEngagementsWithLanguageComment(dataset_id)
+        result[("number_of_engagements_with_language_negative", dataset_id)] = NumberOfEngagementsWithLanguageNegative(dataset_id)
+        result[("number_of_engagements_with_language_positive", dataset_id)] = NumberOfEngagementsWithLanguagePositive(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS WITH LANGUAGE
         result[("engager_feature_number_of_previous_like_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementWithLanguage(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_with_language",dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementWithLanguage(dataset_id)
