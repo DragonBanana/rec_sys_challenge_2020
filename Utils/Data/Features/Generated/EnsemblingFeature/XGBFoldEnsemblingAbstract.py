@@ -41,8 +41,8 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
 
             # Load the dataset and shuffle it
             import Utils.Data.Data as data
-            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id)
-            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id)
+            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id, nthread=32)
+            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id, nthread=32)
 
             # Compute the folds
             X_train_folds = np.array_split(X_train, self.number_of_folds)
@@ -82,11 +82,11 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             train_dataset_id = get_train_set_id_from_test_or_val_set(test_dataset_id)
             # Load the train dataset
             import Utils.Data.Data as data
-            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id).sample(frac=0.05, random_state=8)
-            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id).sample(frac=0.05, random_state=8)
+            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id, nthread=32).sample(frac=0.05, random_state=8)
+            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id, nthread=32).sample(frac=0.05, random_state=8)
 
             # Load the test dataset
-            X_test = data.get_dataset(features=self.features, dataset_id=test_dataset_id)
+            X_test = data.get_dataset(features=self.features, dataset_id=test_dataset_id, nthread=32)
 
             fold_dataset_id = f"{self.feature_name}_{self.dataset_id}"
 
