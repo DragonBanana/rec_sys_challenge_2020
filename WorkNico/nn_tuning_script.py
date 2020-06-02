@@ -1,55 +1,67 @@
-# from Models.NN.NNRecNew import NNRecNew
 from Models.NN.NNRec import DistilBertRec
+from Utils.NN.TorchModels import FFNN2, FFNN1
 from Utils.Data.Data import get_dataset, get_feature, get_feature_reader
 from Utils.Submission.Submission import create_submission_file
 # from sklearn.model_selection import train_test_split
 import numpy as np
 import time
 
-def run(params):
-
-    rec = DistilBertRec(**params)
+def main():
 
     feature_list = [
-        #        "raw_feature_creator_follower_count",  # 0
-        #        "raw_feature_creator_following_count",  # 1
-        #        "raw_feature_engager_follower_count",  # 2
-        #        "raw_feature_engager_following_count",  # 3
-        #        "tweet_feature_number_of_photo",  # 4
-        #        "tweet_feature_number_of_video",  # 5
-        #        "tweet_feature_number_of_gif",  # 6
-        #        "tweet_feature_number_of_hashtags",  # 7
-        #        "tweet_feature_creation_timestamp_hour",  # 8
-        #        "tweet_feature_creation_timestamp_week_day",  # 9
-        #        "tweet_feature_number_of_mentions",  # 10
-        #        "engager_feature_number_of_previous_like_engagement",  # 11
-        #        "engager_feature_number_of_previous_reply_engagement",  # 12
-        #        "engager_feature_number_of_previous_retweet_engagement",  # 13
-        #        "engager_feature_number_of_previous_comment_engagement",  # 14
-        #        "engager_feature_number_of_previous_positive_engagement",  # 15
-        #        "engager_feature_number_of_previous_negative_engagement",  # 16
-        #"engager_feature_number_of_previous_engagement",  # 17 ciao nico :-)
-        "engager_feature_number_of_previous_like_engagement_ratio",  # 18
-        "engager_feature_number_of_previous_reply_engagement_ratio",  # 19
-        "engager_feature_number_of_previous_retweet_engagement_ratio",  # 20
-        "engager_feature_number_of_previous_comment_engagement_ratio",  # 21
-        "engager_feature_number_of_previous_positive_engagement_ratio",  # 22
-        "engager_feature_number_of_previous_negative_engagement_ratio"  # 23
+                "raw_feature_creator_follower_count",  # 0
+                "raw_feature_creator_following_count",  # 1
+                "raw_feature_engager_follower_count",  # 2
+                "raw_feature_engager_following_count",  # 3
+                "tweet_feature_number_of_photo",  # 4
+                "tweet_feature_number_of_video",  # 5
+                "tweet_feature_number_of_gif",  # 6
+                "tweet_feature_number_of_hashtags",  # 7
+                "tweet_feature_creation_timestamp_hour",  # 8
+                "tweet_feature_creation_timestamp_week_day",  # 9
+                "tweet_feature_number_of_mentions",  # 10
+                "engager_feature_number_of_previous_like_engagement",  # 11
+                "engager_feature_number_of_previous_reply_engagement",  # 12
+                "engager_feature_number_of_previous_retweet_engagement",  # 13
+                "engager_feature_number_of_previous_comment_engagement",  # 14
+                "engager_feature_number_of_previous_positive_engagement",  # 15
+                "engager_feature_number_of_previous_negative_engagement",  # 16
+                "engager_feature_number_of_previous_engagement",  # 17 ciao nico :-)
+                "engager_feature_number_of_previous_like_engagement_ratio",  # 18
+                "engager_feature_number_of_previous_reply_engagement_ratio",  # 19
+                "engager_feature_number_of_previous_retweet_engagement_ratio",  # 20
+                "engager_feature_number_of_previous_comment_engagement_ratio",  # 21
+                "engager_feature_number_of_previous_positive_engagement_ratio",  # 22
+                "engager_feature_number_of_previous_negative_engagement_ratio"  # 23
     ]
 
-    chunksize = 100
-    n_data_train = 1000
-    n_data_val = 1000
+    '''
+    feature_list = [
+        "raw_feature_creator_follower_count",  # 0
+        "raw_feature_creator_following_count",  # 1
+    ]
+    '''
+
+    chunksize = 2000
+    n_data_train = 20000000
+    n_data_val = 20000000
 
     train_dataset = "holdout/train"
     val_dataset = "holdout/test"
     test_dataset = "test"
 
+    class_label = "retweet"   # retweet, reply, like, comment
+
+    ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
+    rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
+
+    rec = DistilBertRec(**rec_params)
+
     print(f"n_data_train: {n_data_train}")
     print(f"n_data_val: {n_data_val}")
 
-    print("params:")
-    print(params)
+    print(f"ffnn_params: {ffnn_params}")
+    print(f"bert_params: {bert_params}")
 
     print(f"train_dataset: {train_dataset}")
     print(f"val_dataset: {val_dataset}")
@@ -58,7 +70,7 @@ def run(params):
     #   feature_train_df, _ = train_test_split(feature_train_df, train_size=0.2)
     feature_train_df = feature_train_df.head(n_data_train)
 
-    label_train_df = get_feature(feature_name="tweet_feature_engagement_is_like", dataset_id=train_dataset)
+    label_train_df = get_feature(feature_name=f"tweet_feature_engagement_is_{class_label}", dataset_id=train_dataset)
     label_train_df = label_train_df.head(n_data_train)
 
     text_train_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=train_dataset,
@@ -69,7 +81,7 @@ def run(params):
     feature_val_df = get_dataset(features=feature_list, dataset_id=val_dataset)
     feature_val_df = feature_val_df.head(n_data_val)
 
-    label_val_df = get_feature(feature_name="tweet_feature_engagement_is_like", dataset_id=val_dataset)
+    label_val_df = get_feature(feature_name=f"tweet_feature_engagement_is_{class_label}", dataset_id=val_dataset)
     label_val_df = label_val_df.head(n_data_val)
 
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
@@ -91,36 +103,6 @@ def run(params):
         for s in stats:
             f.write(str(s) + '\n')
 
-    ###   PREDICTION
-    test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    #test_df = test_df.head(3)
-
-    prediction_start_time = time.time()
-
-    text_test_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token",
-                                            dataset_id=test_dataset,
-                                            chunksize=chunksize)
-    predictions = rec.get_prediction(test_df, text_test_reader_df)
-    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
-
-    print(predictions)
-
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
-
-    #tweets = tweets.head(3).array
-    #users = users.head(3).array
-
-    create_submission_file(tweets, users, predictions, "nn_submission_like.csv")
-
-
-def main():
-    #for dropout in [0.3, 0.5]:
-    #    for hidden_size_2 in [32, 64]:
-    params = {'epochs': 5, 'hidden_dropout_prob': 0.5, 'weight_decay': 1e-5, 'hidden_size_2': 256, 'hidden_size_3': 64}
-    run(params)
-
 
 if __name__ == '__main__':
     main()
-

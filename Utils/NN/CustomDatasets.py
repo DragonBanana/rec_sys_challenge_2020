@@ -124,7 +124,8 @@ class CustomTestDatasetCap(Dataset):
 
 
 class CustomDatasetCap(Dataset):
-    def __init__(self, df_features: pd.DataFrame,
+    def __init__(self, class_label : str, 
+                 df_features: pd.DataFrame,
                  df_tokens_reader: pd.io.parsers.TextFileReader,
                  df_label: pd.DataFrame,
                  cap: int = 128):
@@ -135,6 +136,7 @@ class CustomDatasetCap(Dataset):
         self.df_label = df_label
         self.count = -1
         self.cap = cap
+        self.class_label = class_label
 
     def __len__(self):
         return len(self.df_features)
@@ -236,7 +238,7 @@ class CustomDatasetCap(Dataset):
             text_tensor = torch.tensor(text_np_mat, dtype=torch.int64)
             attention_masks = torch.tensor(attention_masks, dtype=torch.int8)
             #print(df_label_cache['tweet_feature_engagement_is_like'])
-            labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
+            labels = torch.tensor(df_label_cache[f'tweet_feature_engagement_is_{self.class_label}']
                                   .map(lambda x: 1 if x else 0).values, dtype=torch.int8)
             features = torch.tensor(feature_mat.T)
             self.tensors = [text_tensor, attention_masks, features, labels]
@@ -245,7 +247,8 @@ class CustomDatasetCap(Dataset):
 
 
 class CustomDatasetCapSubsample(Dataset):
-    def __init__(self, df_features: pd.DataFrame,
+    def __init__(self, class_label : str, 
+                 df_features: pd.DataFrame,
                  df_tokens_reader: pd.io.parsers.TextFileReader,
                  df_label: pd.DataFrame,
                  cap: int = 128,
@@ -258,6 +261,7 @@ class CustomDatasetCapSubsample(Dataset):
         self.count = -1
         self.cap = cap
         self.batch_subsample = batch_subsample
+        self.class_label = class_label
 
         #self.subsampled_batch_size = int(self.df_tokens_reader_original.chunksize * self.batch_subsample)
 
@@ -397,7 +401,7 @@ class CustomDatasetCapSubsample(Dataset):
             text_tensor = torch.tensor(text_np_mat, dtype=torch.int64)
             attention_masks = torch.tensor(attention_masks, dtype=torch.int8)
             #print(df_label_cache['tweet_feature_engagement_is_like'])
-            labels = torch.tensor(df_label_cache['tweet_feature_engagement_is_like']
+            labels = torch.tensor(df_label_cache[f'tweet_feature_engagement_is_{self.class_label}']
                                   .map(lambda x: 1 if x else 0).values, dtype=torch.int8)
             features = torch.tensor(feature_mat.T)
             self.tensors = [text_tensor, attention_masks, features, labels]
