@@ -11,7 +11,7 @@ import pandas as pd
 from scipy.stats import zscore
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
-
+from Utils.NN.NNUtils import HIDDEN_SIZE_BERT
 from Utils.Base.RecommenderBase import RecommenderBase
 from Utils.NN.CustomDatasets import *
 from Utils.NN.NNUtils import flat_accuracy, create_data_loaders, format_time
@@ -24,23 +24,31 @@ from Utils.TelegramBot import telegram_bot_send_update
 class NNRec(RecommenderBase, ABC):
 
     # TODO add support for Early Stopping
-    def __init__(self, hidden_dropout_prob=0.1, weight_decay=0.0, lr=2e-5, eps=1e-8, num_warmup_steps=0, epochs=4, hidden_size_2=128, hidden_size_3=32):
+    def __init__(self, weight_decay: float = 0.0,
+                    lr : float = 2e-5,
+                    cap_length : int = 128,
+                    eps : float = 1e-8,
+                    num_warmup_steps : int = 0,
+                    epochs : int = 4,
+                    ffnn_params : dict = None,
+                    class_label : str = "like"):
         super().__init__()
         self.device = None
         self.device = self._find_device()
-        self.hidden_dropout_prob = hidden_dropout_prob
         self.weight_decay = weight_decay
         self.lr = lr
         self.eps = eps
         self.num_warmup_steps = num_warmup_steps
         self.epochs = epochs
-        self.hidden_size_2 = hidden_size_2
-        self.hidden_size_3 = hidden_size_3
+        self.class_label = class_label
+        self.cap_length = cap_length
+
+        self.ffnn_params = ffnn_params
 
         self.model = None
 
     @abstractmethod
-    def _get_model(self, input_size_2, hidden_size_2, hidden_size_3):
+    def _get_model(self, ffnn_input_size):
         pass
 
     def _find_device(self):
@@ -103,7 +111,8 @@ class NNRec(RecommenderBase, ABC):
         if gpu:
             torch.cuda.manual_seed_all(seed_val)
 
-        self.model = self._get_model(input_size_2=df_train_features.shape[1], hidden_size_2=self.hidden_size_2, hidden_size_3=self.hidden_size_3)
+        ffnn_input_size = HIDDEN_SIZE_BERT + df_train_features.shape[1]
+        self.model = self._get_model(ffnn_input_size=ffnn_input_size)
 
         if gpu:
             self.model.cuda()
@@ -113,10 +122,10 @@ class NNRec(RecommenderBase, ABC):
         #     param.requires_grad = False
 
         # Combine the training inputs into a TensorDataset.
-        train_dataset = CustomDatasetCapSubsample(df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
-                                         df_label=df_train_label, batch_subsample=subsample)
-        val_dataset = CustomDatasetCapSubsample(df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
-                                       df_label=df_val_label, batch_subsample=subsample)
+        train_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+                                         df_label=df_train_label, cap=self.cap_length, batch_subsample=subsample)
+        val_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
+                                       df_label=df_val_label, cap=self.cap_length, batch_subsample=subsample)
 
         train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
                                                                       batch_size=int(df_train_tokens_reader.chunksize * subsample))
@@ -193,18 +202,20 @@ class NNRec(RecommenderBase, ABC):
                 }
             training_stats.append(curr_stats)
 
-            bot_string = "DistilBertDoubleInput NN \n ---------------- \n"
-            bot_string = bot_string + "Hidden size 2: " + str(self.hidden_size_2) + "\n"
-            bot_string = bot_string + "Hidden size 3: " + str(self.hidden_size_3) + "\n"
-            bot_string = bot_string + "Dropout: " + str(self.hidden_dropout_prob) + "\n"
+            model_path = f"./saved_models/saved_model_{self.class_label}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
+            optimizer_path = f"./saved_models/saved_optimizer_{self.class_label}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
+
+            torch.save(self.model.state_dict(), model_path)
+            torch.save(optimizer.state_dict(), optimizer_path)
+
+            bot_string = f"DistilBertDoubleInput NN - {self.class_label} \n ---------------- \n"
+            bot_string = bot_string + str(self.model)
             bot_string = bot_string + "Weight decay: " + str(self.weight_decay) + "\n"
             bot_string = bot_string + "Learning rate: " + str(self.lr) + "\n"
             bot_string = bot_string + "Epsilon: " + str(self.eps) + "\n ---------------- \n"
-            bot_string = bot_string + "\n".join([key+": "+str(curr_stats[key]) for key in curr_stats])
+            bot_string = bot_string + "\n".join([key+": "+str(curr_stats[key]) for key in curr_stats]) + "\n\n"
+            bot_string = bot_string + "Saved to : " + model_path
             telegram_bot_send_update(bot_string)
-
-            torch.save(self.model.state_dict(), f"./saved_models/saved_model_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size_3}_epoch_{epoch_i + 1}")
-            torch.save(optimizer.state_dict(), f"./saved_models/optimizer_{self.hidden_dropout_prob}_{self.hidden_size_2}_{self.hidden_size_3}_epoch_{epoch_i + 1}")
 
         print("")
         print("Training complete!")
@@ -507,7 +518,8 @@ class NNRec(RecommenderBase, ABC):
         if pretrained_model_dict_path is None:
             assert self.model is not None, "You are trying to predict without training."
         else:
-            self.model = self._get_model(input_size_2=df_test_features.shape[1], hidden_size_2=self.hidden_size_2, hidden_size_3=self.hidden_size_3)
+            ffnn_input_size = HIDDEN_SIZE_BERT + df_test_features.shape[1]
+            self.model = self._get_model(ffnn_input_size=ffnn_input_size)
             self.model.load_state_dict(torch.load(pretrained_model_dict_path))
 
         self.model.cuda()
@@ -515,7 +527,7 @@ class NNRec(RecommenderBase, ABC):
 
         preds = None
 
-        test_dataset = CustomTestDatasetCap(df_features=df_test_features, df_tokens_reader=df_test_tokens_reader)
+        test_dataset = CustomTestDatasetCap(df_features=df_test_features, df_tokens_reader=df_test_tokens_reader, cap=self.cap_length)
         test_dataloader = DataLoader(test_dataset,  # The test samples.
                                      sampler=SequentialSampler(test_dataset),  # Select batches sequentially
                                      batch_size=df_test_tokens_reader.chunksize  # Generates predictions with this batch size.
@@ -568,15 +580,15 @@ class NNRec(RecommenderBase, ABC):
         return preds
 
 
-class BertRec(NNRec):
-
-    def _get_model(self, input_size_2, hidden_size_2, hidden_size_3):
-        return BertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2, hidden_size_3=hidden_size_3,
-                                                hidden_dropout_prob=self.hidden_dropout_prob)
-
-
 class DistilBertRec(NNRec):
 
-    def _get_model(self, input_size_2, hidden_size_2, hidden_size_3):
-        return DistilBertClassifierDoubleInput(input_size_2=input_size_2, hidden_size_2=hidden_size_2, hidden_size_3=hidden_size_3, 
-                                                hidden_dropout_prob=self.hidden_dropout_prob)
+    def _get_model(self, ffnn_input_size):
+        self.ffnn_params['input_size'] = ffnn_input_size
+        return DistilBertClassifierDoubleInput(self.ffnn_params)
+
+
+class BertRec(NNRec):
+
+    def _get_model(self, ffnn_input_size):
+        self.ffnn_params['input_size'] = ffnn_input_size
+        return BertClassifierDoubleInput(self.ffnn_params)

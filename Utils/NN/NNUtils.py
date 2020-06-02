@@ -1,6 +1,7 @@
 import numpy as np
 from torch.utils.data import DataLoader, SequentialSampler
 
+HIDDEN_SIZE_BERT = 768
 
 def flat_accuracy(preds, labels):
     preds = preds.squeeze()
