@@ -9,6 +9,13 @@ from Utils.Eval.Metrics import ComputeMetrics as CoMe
 class FFNN2(nn.Module):
     def __init__(self, input_size, hidden_size_1, hidden_size_2, hidden_dropout_prob_1, hidden_dropout_prob_2):
         super(FFNN2, self).__init__()
+
+        self.input_size = input_size
+        self.hidden_size_1 = hidden_size_1
+        self.hidden_size_2 = hidden_size_2
+        self.hidden_dropout_prob_1 = hidden_dropout_prob_1
+        self.hidden_dropout_prob_2 = hidden_dropout_prob_2
+
         self.dropout_1 = nn.Dropout(hidden_dropout_prob_1)
         self.dropout_2 = nn.Dropout(hidden_dropout_prob_2)
         self.first_layer = nn.Linear(input_size, hidden_size_1)
@@ -35,6 +42,11 @@ class FFNN2(nn.Module):
 class FFNN1(nn.Module):
     def __init__(self, input_size, hidden_size, hidden_dropout_prob):
         super(FFNN1, self).__init__()
+
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.hidden_dropout_prob = hidden_dropout_prob
+
         self.dropout = nn.Dropout(hidden_dropout_prob)
         self.first_layer = nn.Linear(input_size, hidden_size)
         self.classifier = nn.Linear(hidden_size, 1)

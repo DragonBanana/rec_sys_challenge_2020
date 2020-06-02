@@ -5,10 +5,10 @@ from Utils.Submission.Submission import create_submission_file
 # from sklearn.model_selection import train_test_split
 import numpy as np
 import time
-from Utils.TelegramBot import 
+from Utils.TelegramBot import telegram_bot_send_update
 
 def main():
-
+    '''
     feature_list = [
         "raw_feature_creator_follower_count",  # 0
         "raw_feature_creator_following_count",  # 1
@@ -41,11 +41,10 @@ def main():
         "raw_feature_creator_follower_count",  # 0
         "raw_feature_creator_following_count",  # 1
     ]
-    '''
 
     class_label = "retweet"
 
-    ip = '34.240.194.211'
+    ip = '54.77.210.115'
     submission_filename = f"nn_submission_{class_label}.csv"
 
     chunksize = 2048
@@ -55,13 +54,13 @@ def main():
     ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
     rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
 
-    saved_model_path = "saved_models/saved_model_0.5_128_64_epoch_4"
+    saved_model_path = "saved_models/saved_model_retweet_770_128_64_0.5_0.5_epoch_5"
 
     rec = DistilBertRec(**rec_params)
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    #test_df = test_df.head(2500)
+    test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -76,16 +75,16 @@ def main():
     print(predictions)
     print(predictions.shape)
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
 
-    #tweets = tweets.head(2500).array
-    #users = users.head(2500).array
+    tweets = tweets.head(2500).array
+    users = users.head(2500).array
 
     create_submission_file(tweets, users, predictions, submission_filename)
 
     bot_string = f"DistilBertDoubleInput NN - {class_label} \n ---------------- \n"
-    bot_string = bot_string + f"@lucaconterio la submission è pronta! \nIP: {ip} \nFile: {submission_filename}"
+    bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
     telegram_bot_send_update(bot_string)
 
 

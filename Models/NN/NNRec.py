@@ -24,14 +24,14 @@ from Utils.TelegramBot import telegram_bot_send_update
 class NNRec(RecommenderBase, ABC):
 
     # TODO add support for Early Stopping
-    def __init__(self, weight_decay=0.0 : float, 
-                    lr=2e-5 : float, 
-                    cap_length=128 : int, 
-                    eps=1e-8 : float, 
-                    num_warmup_steps=0 : int, 
-                    epochs=4 : int, 
-                    ffnn_params : dict, 
-                    class_label : str):
+    def __init__(self, weight_decay: float = 0.0,
+                    lr : float = 2e-5,
+                    cap_length : int = 128,
+                    eps : float = 1e-8,
+                    num_warmup_steps : int = 0,
+                    epochs : int = 4,
+                    ffnn_params : dict = None,
+                    class_label : str = "like"):
         super().__init__()
         self.device = None
         self.device = self._find_device()
@@ -122,9 +122,9 @@ class NNRec(RecommenderBase, ABC):
         #     param.requires_grad = False
 
         # Combine the training inputs into a TensorDataset.
-        train_dataset = CustomDatasetCapSubsample(class_label=class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+        train_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
                                          df_label=df_train_label, cap=self.cap_length, batch_subsample=subsample)
-        val_dataset = CustomDatasetCapSubsample(class_label=class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
+        val_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
                                        df_label=df_val_label, cap=self.cap_length, batch_subsample=subsample)
 
         train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
@@ -584,11 +584,11 @@ class DistilBertRec(NNRec):
 
     def _get_model(self, ffnn_input_size):
         self.ffnn_params['input_size'] = ffnn_input_size
-        return DistilBertClassifierDoubleInput(ffnn_params)
+        return DistilBertClassifierDoubleInput(self.ffnn_params)
 
 
 class BertRec(NNRec):
 
     def _get_model(self, ffnn_input_size):
         self.ffnn_params['input_size'] = ffnn_input_size
-        return BertClassifierDoubleInput(ffnn_params)
+        return BertClassifierDoubleInput(self.ffnn_params)
