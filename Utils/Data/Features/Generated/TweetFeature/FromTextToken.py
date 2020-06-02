@@ -344,7 +344,7 @@ class TweetFeatureTextTopicWordCount(GeneratedFeaturePickle):
         #tweet_tokens_df = tweet_tokens_feature.load_or_create()
 
         # load the tweet id, token_list dataframe
-        tokens_feature_df_reader = data.Data.get_feature_reader('tweet_feature_text_token_decoded', self.dataset_id, chunksize=1000000)
+        tokens_feature_df_reader = data.get_feature_reader('tweet_feature_text_token_decoded', self.dataset_id, chunksize=1000000)
 
         with mp.Pool(16) as p:
             process_chunk_partial = functools.partial(process_chunk, words_list=self.words_list)

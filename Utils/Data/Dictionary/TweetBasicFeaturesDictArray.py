@@ -45,10 +45,14 @@ class HashtagsTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         # Load the index column
         train_tweet_id_feature = MappedFeatureTweetId("train")
         test_tweet_id_feature = MappedFeatureTweetId("test")
+        last_test_tweet_id_feature = MappedFeatureTweetId("last_test")
 
         # Find the mask of uniques one
         train_df = train_tweet_id_feature.load_or_create()
         test_df = test_tweet_id_feature.load_or_create()
+        last_test_df = last_test_tweet_id_feature.load_or_create()
+
+        test_df = pd.concat([test_df, last_test_df])
 
         unique = ~train_df[train_tweet_id_feature.feature_name].append(
             test_df[test_tweet_id_feature.feature_name]).duplicated()
@@ -61,8 +65,11 @@ class HashtagsTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         column = "hashtags"
         train_target_feature = MappedFeatureTweetHashtags("train")
         test_target_feature = MappedFeatureTweetHashtags("test")
+        last_test_target_feature = MappedFeatureTweetHashtags("last_test")
         train_df = train_target_feature.load_or_create()
         test_df = test_target_feature.load_or_create()
+        last_test_df = last_test_target_feature.load_or_create()
+        test_df = pd.concat([test_df, last_test_df])
         df[column] = train_df[train_target_feature.feature_name].append(test_df[test_target_feature.feature_name])[
             unique]
         df[column] = df[column].map(lambda array: [int(x) for x in array] if array is not None else None)
@@ -84,10 +91,14 @@ class MediaTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         # Load the index column
         train_tweet_id_feature = MappedFeatureTweetId("train")
         test_tweet_id_feature = MappedFeatureTweetId("test")
+        last_test_tweet_id_feature = MappedFeatureTweetId("last_test")
 
         # Find the mask of uniques one
         train_df = train_tweet_id_feature.load_or_create()
         test_df = test_tweet_id_feature.load_or_create()
+        last_test_df = last_test_tweet_id_feature.load_or_create()
+
+        test_df = pd.concat([test_df, last_test_df])
 
         unique = ~train_df[train_tweet_id_feature.feature_name].append(
             test_df[test_tweet_id_feature.feature_name]).duplicated()
@@ -100,8 +111,11 @@ class MediaTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         column = "media"
         train_target_feature = MappedFeatureTweetMedia("train")
         test_target_feature = MappedFeatureTweetMedia("test")
+        last_test_target_feature = MappedFeatureTweetMedia("last_test")
         train_df = train_target_feature.load_or_create()
         test_df = test_target_feature.load_or_create()
+        last_test_df = last_test_target_feature.load_or_create()
+        test_df = pd.concat([test_df, last_test_df])
         df[column] = train_df[train_target_feature.feature_name].append(test_df[test_target_feature.feature_name])[
             unique]
         df[column] = df[column].map(lambda array: [int(x) for x in array] if array is not None else None)
@@ -123,10 +137,14 @@ class LinksTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         # Load the index column
         train_tweet_id_feature = MappedFeatureTweetId("train")
         test_tweet_id_feature = MappedFeatureTweetId("test")
+        last_test_tweet_id_feature = MappedFeatureTweetId("last_test")
 
         # Find the mask of uniques one
         train_df = train_tweet_id_feature.load_or_create()
         test_df = test_tweet_id_feature.load_or_create()
+        last_test_df = last_test_tweet_id_feature.load_or_create()
+
+        test_df = pd.concat([test_df, last_test_df])
 
         unique = ~train_df[train_tweet_id_feature.feature_name].append(
             test_df[test_tweet_id_feature.feature_name]).duplicated()
@@ -139,8 +157,11 @@ class LinksTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         column = "links"
         train_target_feature = MappedFeatureTweetLinks("train")
         test_target_feature = MappedFeatureTweetLinks("test")
+        last_test_target_feature = MappedFeatureTweetLinks("last_test")
         train_df = train_target_feature.load_or_create()
         test_df = test_target_feature.load_or_create()
+        last_test_df = last_test_target_feature.load_or_create()
+        test_df = pd.concat([test_df, last_test_df])
         df[column] = train_df[train_target_feature.feature_name].append(test_df[test_target_feature.feature_name])[
             unique]
         df[column] = df[column].map(lambda array: [int(x) for x in array] if array is not None else None)
@@ -162,10 +183,14 @@ class DomainsTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         # Load the index column
         train_tweet_id_feature = MappedFeatureTweetId("train")
         test_tweet_id_feature = MappedFeatureTweetId("test")
+        last_test_tweet_id_feature = MappedFeatureTweetId("last_test")
 
         # Find the mask of uniques one
         train_df = train_tweet_id_feature.load_or_create()
         test_df = test_tweet_id_feature.load_or_create()
+        last_test_df = last_test_tweet_id_feature.load_or_create()
+
+        test_df = pd.concat([test_df, last_test_df])
 
         unique = ~train_df[train_tweet_id_feature.feature_name].append(
             test_df[test_tweet_id_feature.feature_name]).duplicated()
@@ -178,8 +203,11 @@ class DomainsTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         column = "domains"
         train_target_feature = MappedFeatureTweetDomains("train")
         test_target_feature = MappedFeatureTweetDomains("test")
+        last_test_target_feature = MappedFeatureTweetDomains("last_test")
         train_df = train_target_feature.load_or_create()
         test_df = test_target_feature.load_or_create()
+        last_test_df = last_test_target_feature.load_or_create()
+        test_df = pd.concat([test_df, last_test_df])
         df[column] = train_df[train_target_feature.feature_name].append(test_df[test_target_feature.feature_name])[
             unique]
         df[column] = df[column].map(lambda array: [int(x) for x in array] if array is not None else None)
@@ -201,10 +229,14 @@ class TypeTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         # Load the index column
         train_tweet_id_feature = MappedFeatureTweetId("train")
         test_tweet_id_feature = MappedFeatureTweetId("test")
+        last_test_tweet_id_feature = MappedFeatureTweetId("last_test")
 
         # Find the mask of uniques one
         train_df = train_tweet_id_feature.load_or_create()
         test_df = test_tweet_id_feature.load_or_create()
+        last_test_df = last_test_tweet_id_feature.load_or_create()
+
+        test_df = pd.concat([test_df, last_test_df])
 
         unique = ~train_df[train_tweet_id_feature.feature_name].append(
             test_df[test_tweet_id_feature.feature_name]).duplicated()
@@ -217,8 +249,11 @@ class TypeTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         column = "type"
         train_target_feature = RawFeatureTweetType("train")
         test_target_feature = RawFeatureTweetType("test")
+        last_test_target_feature = RawFeatureTweetType("last_test")
         train_df = train_target_feature.load_or_create()
         test_df = test_target_feature.load_or_create()
+        last_test_df = last_test_target_feature.load_or_create()
+        test_df = pd.concat([test_df, last_test_df])
         df[column] = train_df[train_target_feature.feature_name].append(test_df[test_target_feature.feature_name])[
             unique]
 
@@ -239,10 +274,14 @@ class TimestampTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         # Load the index column
         train_tweet_id_feature = MappedFeatureTweetId("train")
         test_tweet_id_feature = MappedFeatureTweetId("test")
+        last_test_tweet_id_feature = MappedFeatureTweetId("last_test")
 
         # Find the mask of uniques one
         train_df = train_tweet_id_feature.load_or_create()
         test_df = test_tweet_id_feature.load_or_create()
+        last_test_df = last_test_tweet_id_feature.load_or_create()
+
+        test_df = pd.concat([test_df, last_test_df])
 
         unique = ~train_df[train_tweet_id_feature.feature_name].append(
             test_df[test_tweet_id_feature.feature_name]).duplicated()
@@ -255,8 +294,11 @@ class TimestampTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         column = "timestamp"
         train_target_feature = RawFeatureTweetTimestamp("train")
         test_target_feature = RawFeatureTweetTimestamp("test")
+        last_test_target_feature = RawFeatureTweetTimestamp("last_test")
         train_df = train_target_feature.load_or_create()
         test_df = test_target_feature.load_or_create()
+        last_test_df = last_test_target_feature.load_or_create()
+        test_df = pd.concat([test_df, last_test_df])
         df[column] = train_df[train_target_feature.feature_name].append(test_df[test_target_feature.feature_name])[
             unique]
 
@@ -277,10 +319,14 @@ class CreatorIdTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         # Load the index column
         train_tweet_id_feature = MappedFeatureTweetId("train")
         test_tweet_id_feature = MappedFeatureTweetId("test")
+        last_test_tweet_id_feature = MappedFeatureTweetId("last_test")
 
         # Find the mask of uniques one
         train_df = train_tweet_id_feature.load_or_create()
         test_df = test_tweet_id_feature.load_or_create()
+        last_test_df = last_test_tweet_id_feature.load_or_create()
+
+        test_df = pd.concat([test_df, last_test_df])
 
         unique = ~train_df[train_tweet_id_feature.feature_name].append(
             test_df[test_tweet_id_feature.feature_name]).duplicated()
@@ -293,8 +339,11 @@ class CreatorIdTweetBasicFeatureDictArray(TweetBasicFeatureDictArrayNumpy):
         column = "creator_id"
         train_target_feature = MappedFeatureCreatorId("train")
         test_target_feature = MappedFeatureCreatorId("test")
+        last_test_target_feature = MappedFeatureCreatorId("last_test")
         train_df = train_target_feature.load_or_create()
         test_df = test_target_feature.load_or_create()
+        last_test_df = last_test_target_feature.load_or_create()
+        test_df = pd.concat([test_df, last_test_df])
         df[column] = train_df[train_target_feature.feature_name].append(test_df[test_target_feature.feature_name])[
             unique]
 

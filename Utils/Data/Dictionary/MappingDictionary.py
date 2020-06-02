@@ -63,9 +63,11 @@ class MappingTweetIdDictionary(MappingDictionary):
     def create_dictionary(self):
         train_feature = RawFeatureTweetId("train")
         test_feature = RawFeatureTweetId("test")
+        last_test_feature = RawFeatureTweetId("last_test")
         data = pd.concat([
             train_feature.load_or_create()[train_feature.feature_name],
-            test_feature.load_or_create()[test_feature.feature_name]
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         dictionary = pd.DataFrame(data.unique()).to_dict()[0]
 
@@ -80,13 +82,17 @@ class MappingUserIdDictionary(MappingDictionary):
     def create_dictionary(self):
         train_feature_creator = RawFeatureCreatorId("train")
         test_feature_creator = RawFeatureCreatorId("test")
+        last_test_feature_creator = RawFeatureCreatorId("last_test")
         train_feature_engager = RawFeatureEngagerId("train")
         test_feature_engager = RawFeatureEngagerId("test")
+        last_test_feature_engager = RawFeatureEngagerId("last_test")
         data = pd.concat([
             train_feature_creator.load_or_create()[train_feature_creator.feature_name],
             test_feature_creator.load_or_create()[test_feature_creator.feature_name],
+            last_test_feature_creator.load_or_create()[last_test_feature_creator.feature_name],
             train_feature_engager.load_or_create()[train_feature_engager.feature_name],
-            test_feature_engager.load_or_create()[test_feature_engager.feature_name]
+            test_feature_engager.load_or_create()[test_feature_engager.feature_name],
+            last_test_feature_engager.load_or_create()[last_test_feature_engager.feature_name]
         ])
         dictionary = pd.DataFrame(data.unique()).to_dict()[0]
 
@@ -101,9 +107,11 @@ class MappingLanguageDictionary(MappingDictionary):
     def create_dictionary(self):
         train_feature = RawFeatureTweetLanguage("train")
         test_feature = RawFeatureTweetLanguage("test")
+        last_test_feature = RawFeatureTweetLanguage("last_test")
         data = pd.concat([
             train_feature.load_or_create()[train_feature.feature_name],
-            test_feature.load_or_create()[test_feature.feature_name]
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         dictionary = pd.DataFrame(data.unique()).to_dict()[0]
 
@@ -118,9 +126,11 @@ class MappingDomainDictionary(MappingDictionary):
     def create_dictionary(self):
         train_feature = RawFeatureTweetDomains("train")
         test_feature = RawFeatureTweetDomains("test")
+        last_test_feature = RawFeatureTweetDomains("last_test")
         data = pd.concat([
             train_feature.load_or_create()[train_feature.feature_name],
-            test_feature.load_or_create()[test_feature.feature_name]
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         data = pd.DataFrame([y for x in data.dropna() for y in x.split('\t')])
         data = data[data.columns[0]]
@@ -137,9 +147,11 @@ class MappingLinkDictionary(MappingDictionary):
     def create_dictionary(self):
         train_feature = RawFeatureTweetLinks("train")
         test_feature = RawFeatureTweetLinks("test")
+        last_test_feature = RawFeatureTweetLinks("last_test")
         data = pd.concat([
             train_feature.load_or_create()[train_feature.feature_name],
-            test_feature.load_or_create()[test_feature.feature_name]
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         data = pd.DataFrame([y for x in data.dropna() for y in x.split('\t')])
         data = data[data.columns[0]]
@@ -156,9 +168,11 @@ class MappingHashtagDictionary(MappingDictionary):
     def create_dictionary(self):
         train_feature = RawFeatureTweetHashtags("train")
         test_feature = RawFeatureTweetHashtags("test")
+        last_test_feature = RawFeatureTweetHashtags("last_test")
         data = pd.concat([
             train_feature.load_or_create()[train_feature.feature_name],
-            test_feature.load_or_create()[test_feature.feature_name]
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         data = pd.DataFrame([y for x in data.dropna() for y in x.split('\t')])
         data = data[data.columns[0]]
@@ -175,9 +189,11 @@ class MappingMediaDictionary(MappingDictionary):
     def create_dictionary(self):
         train_feature = RawFeatureTweetMedia("train")
         test_feature = RawFeatureTweetMedia("test")
+        last_test_feature = RawFeatureTweetMedia("last_test")
         data = pd.concat([
             train_feature.load_or_create()[train_feature.feature_name],
-            test_feature.load_or_create()[test_feature.feature_name]
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         data = pd.DataFrame([y for x in data.dropna() for y in x.split('\t')])
         data = data[data.columns[0]]
