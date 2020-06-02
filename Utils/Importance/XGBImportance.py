@@ -26,7 +26,6 @@ class XGBImportance:
         X_test = xgb.DMatrix(X_test, missing=0, silent=False)
         predictions = self.model.get_prediction(dmat_test=X_test)
         cm = ComputeMetrics(predictions, Y_test.to_numpy())
-        os.system("rm perm_importance/*")
         # Evaluating
         rce = cm.compute_rce()
 
