@@ -22,8 +22,8 @@ class XGBImportance:
         print(params)
 
     def score(self, X_test, Y_test):
-        cache_dataset_as_svm(f"/home/ubuntu/data/rec_sys_challenge_2020/perm_importance/remote_val", X_test, Y_test, no_fuck_my_self=True)
-        X_test = xgb.DMatrix(f"/home/ubuntu/data/rec_sys_challenge_2020/perm_importance/remote_val.svm")
+        # cache_dataset_as_svm(f"/home/ubuntu/data/rec_sys_challenge_2020/perm_importance/remote_val", X_test, Y_test, no_fuck_my_self=True)
+        X_test = xgb.DMatrix(X_test, missing=0, silent=False)
         predictions = self.model.get_prediction(dmat_test=X_test)
         cm = ComputeMetrics(predictions, Y_test.to_numpy())
         os.system("rm perm_importance/*")
