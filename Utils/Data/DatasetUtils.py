@@ -46,11 +46,11 @@ def is_test_or_val_set(dataset_id: str):
 
 def get_train_set_id_from_test_or_val_set(dataset_id: str):
     assert is_test_or_val_set(dataset_id)
+    if dataset_id == "last_test":
+        return "new_train"
     return TEST_TRAIN_SET_PARIS[dataset_id]
 
 def get_test_or_val_set_id_from_train(dataset_id: str):
     assert not is_test_or_val_set(dataset_id)
-    if dataset_id == "last_test":
-        return "new_train"
     return TRAIN_TEST_SET_PAIRS[dataset_id]
 
