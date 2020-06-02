@@ -19,7 +19,7 @@ class XGBImportance:
         print(params)
 
     def score(self, X_test, Y_test):
-        predictions = self.model.get_prediction(dmat_test=xgb.DMatrix(X_test))
+        predictions = self.model.get_prediction(dmat_test=X_test)
         cm = ComputeMetrics(predictions, Y_test.to_numpy())
 
         # Evaluating

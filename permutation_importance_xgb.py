@@ -224,14 +224,16 @@ Y_label = [
 if __name__ == '__main__':
 
     # Loading XGB model
-    xgb_importance = XGBImportance(f"xgb_reply_hold_model.model")
+    xgb_importance = XGBImportance(f"xgb_model_reply_hold.model")
 
 
     # XGB Loading test
     X_remote_val = get_dataset_batch(X_label, val_dataset_id, 2, 1, 0.3)
     Y_remote_val = get_dataset_batch(Y_label, val_dataset_id, 2, 1, 0.3)
+    cache_dataset_as_svm(f"{svm_filename}_importance", X_remote_val, Y_remote_val, no_fuck_my_self=True)
+    remote_val = xgb.DMatrix(f"{svm_filename}_importance.svm")
 
-    perm = PermutationImportance(xgb_importance, random_state=1).fit(X_remote_val, Y_remote_val)
+    perm = PermutationImportance(xgb_importance, random_state=1).fit(remote_val, Y_remote_val)
     result = eli5.show_weights(perm, top=None, feature_names=X_label)
     with open(f"permutation_importance_{label}.html", "w") as file:
         file.write(result.data)
