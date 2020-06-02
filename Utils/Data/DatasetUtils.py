@@ -8,8 +8,7 @@ TRAIN_SET_IDS = [
     "train_days_12345",
     "train_days_123456",
     "holdout/train",
-    "new_train",
-    "last_test"
+    "new_train"
 ]
 
 TEST_SET_IDS = [
