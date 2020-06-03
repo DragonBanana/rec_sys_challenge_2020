@@ -35,9 +35,9 @@ REPLY = "replyREPLYReply"
 def xgbRange(kind):
     param_range_dict = [Categorical([1001]),                 #num_rounds
                         Integer(2, 16),                    #max_depth
-                        Integer(1, 50),                    #min_child_weight
+                        Integer(1, 100),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree
-                        Real(0.005, 0.5, 'log-uniform'),      #learning rate
+                        Real(0.025, 0.5, 'log-uniform'),      #learning rate
                         Real(0.0001, 1, 'log-uniform'),    #alpha_reg
                         Real(0.0001, 1, 'log-uniform'),    #lambda_reg
                         # SCALE POS WEIGHT FOR LIKE
@@ -52,19 +52,19 @@ def xgbRange(kind):
     if kind in LIKE:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[10] = Categorical([0.4392])            #base_score
-        param_range_dict[11] = Real(0, 20)                      #max_delta_step
+        param_range_dict[11] = Real(0, 50)                      #max_delta_step
     elif kind in RETWEET:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[10] = Categorical([0.1131])            #base_score
-        param_range_dict[11] = Real(0, 50)                      #max_delta_step
+        param_range_dict[11] = Real(0, 100)                      #max_delta_step
     elif kind in REPLY:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[10] = Categorical([0.0274])            #base_score
-        param_range_dict[11] = Real(0, 200)                      #max_delta_step
+        param_range_dict[11] = Real(0, 400)                      #max_delta_step
     elif kind in COMMENT:
         param_range_dict[7] = Categorical([1])                  #scale_pos_weight
         param_range_dict[10] = Categorical([0.0078])            #base_score
-        param_range_dict[11] = Real(0, 400)                      #max_delta_step
+        param_range_dict[11] = Real(0, 1000)                      #max_delta_step
 
     return param_range_dict
     #scale_pos_weight ---> good for ranking, bad for predicting probability,

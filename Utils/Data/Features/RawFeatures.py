@@ -213,7 +213,7 @@ class RawFeatureEngagementLikeTimestamp(RawFeaturePickle):
 
 
 def _get_raw_column(column, dataset_id):
-    if dataset_id == "test" or dataset_id == "new_test":
+    if dataset_id == "test" or dataset_id == "new_test" or dataset_id == "last_test":
         return pd.read_csv(f"{RootPath.get_dataset_path()}/{dataset_id}.csv.gz",
                            compression='gzip',
                            sep='',

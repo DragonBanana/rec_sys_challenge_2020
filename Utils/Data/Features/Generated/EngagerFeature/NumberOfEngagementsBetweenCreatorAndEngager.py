@@ -56,7 +56,7 @@ class NumberOfEngagementsBetweenCreatorAndEngagerAbstract(GeneratedFeaturePickle
         # Check if the dataset id is train or test
         if is_test_or_val_set(self.dataset_id):
             train_dataset_id = get_train_set_id_from_test_or_val_set(self.dataset_id)
-            test_dataset_id = get_test_or_val_set_id_from_train(train_dataset_id)
+            test_dataset_id = self.dataset_id
         else:
             train_dataset_id = self.dataset_id
             test_dataset_id = get_test_or_val_set_id_from_train(train_dataset_id)

@@ -13,7 +13,8 @@ TRAIN_SET_IDS = [
 
 TEST_SET_IDS = [
     "test",
-    "new_test"
+    "new_test",
+    "last_test"
 ]
 
 VAL_SET_IDS = [
@@ -35,7 +36,7 @@ TRAIN_TEST_SET_PAIRS = {
     "train_days_12345": "val_days_6",
     "train_days_123456": "val_days_7",
     "holdout/train": "holdout/test",
-    "new_train": "new_test"
+    "new_train": "new_test",
 }
 
 TEST_TRAIN_SET_PARIS = {v: k for k, v in TRAIN_TEST_SET_PAIRS.items()}
@@ -49,5 +50,7 @@ def get_train_set_id_from_test_or_val_set(dataset_id: str):
 
 def get_test_or_val_set_id_from_train(dataset_id: str):
     assert not is_test_or_val_set(dataset_id)
+    if dataset_id == "last_test":
+        return "new_train"
     return TRAIN_TEST_SET_PAIRS[dataset_id]
 
