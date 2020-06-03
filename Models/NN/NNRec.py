@@ -9,6 +9,7 @@ import time
 from tqdm import tqdm
 import pandas as pd
 from scipy.stats import zscore
+from sklearn.preprocessing import StandardScaler
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
 from Utils.NN.NNUtils import HIDDEN_SIZE_BERT
@@ -43,6 +44,8 @@ class NNRec(RecommenderBase, ABC):
         self.class_label = class_label
         self.cap_length = cap_length
 
+        self.scaler = StandardScaler()
+
         self.ffnn_params = ffnn_params
 
         self.model = None
@@ -69,10 +72,12 @@ class NNRec(RecommenderBase, ABC):
 
         return device
 
-    def _normalize_features(self, df):
-        for col in df.columns:
-            df[col] = zscore(df[col].to_numpy())
-        return df
+    def _normalize_features(self, df, is_train=False):
+        if is_train == True:
+            print("Fitting standard scaler")
+            self.scaler.fit(df)
+            #print(self.scaler.scale_, self.scaler.mean_, self.scaler.var_, self.scaler.n_samples_seen_)
+        return pd.DataFrame(self.scaler.transform(df), columns=df.columns)
 
     def load_model(self):
         pass
@@ -91,15 +96,15 @@ class NNRec(RecommenderBase, ABC):
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
 
-        #print(df_train_features)
-        #print(df_val_features)
+        print(df_train_features)
+        print(df_val_features)
 
         assert len(df_train_features.columns) == len(df_val_features.columns),"df_train_features and df_val_features have different number of columns"
-        df_train_features = self._normalize_features(df_train_features)
+        df_train_features = self._normalize_features(df_train_features, is_train=True)
         df_val_features = self._normalize_features(df_val_features)
 
-        #print(df_train_features)
-        #print(df_val_features)
+        print(df_train_features)
+        print(df_val_features)
 
         # Set the seed value all over the place to make this reproducible.
         seed_val = 42
