@@ -51,16 +51,8 @@ def main():
 
     class_label = "retweet"   # retweet, reply, like, comment
 
-    ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
-    rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
-
-    rec = DistilBertRec(**rec_params)
-
     print(f"n_data_train: {n_data_train}")
     print(f"n_data_val: {n_data_val}")
-
-    print(f"ffnn_params: {ffnn_params}")
-    print(f"bert_params: {rec_params}")
 
     print(f"train_dataset: {train_dataset}")
     print(f"val_dataset: {val_dataset}")
@@ -86,8 +78,18 @@ def main():
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
 
-    ###   TRAINING
-    stats = rec.fit(df_train_features=feature_train_df,
+    for dropout in [0.1, 0.3]:
+        for lr in [1e-3, 1e-4]:
+            ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': dropout, 'hidden_dropout_prob_2': dropout}
+            rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': lr, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
+
+            print(f"ffnn_params: {ffnn_params}")
+            print(f"bert_params: {rec_params}")
+
+            rec = DistilBertRec(**rec_params)
+
+            ###   TRAINING
+            stats = rec.fit(df_train_features=feature_train_df,
                     df_train_tokens_reader=text_train_reader_df,
                     df_train_label=label_train_df,
                     df_val_features=feature_val_df,
@@ -96,11 +98,12 @@ def main():
                     cat_feature_set=set([]),
                     subsample=0.1) # subsample percentage of each batch
 
-    print("STATS: \n")
-    print(stats)
-    with open('stats.txt', 'w+') as f:
-        for s in stats:
-            f.write(str(s) + '\n')
+
+            print("STATS: \n")
+            print(stats)
+            with open('stats.txt', 'w+') as f:
+                for s in stats:
+                    f.write(str(s) + '\n')
 
 
 if __name__ == '__main__':

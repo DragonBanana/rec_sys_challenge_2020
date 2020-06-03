@@ -202,8 +202,8 @@ class NNRec(RecommenderBase, ABC):
                 }
             training_stats.append(curr_stats)
 
-            model_path = f"./saved_models/saved_model_{self.class_label}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
-            optimizer_path = f"./saved_models/saved_optimizer_{self.class_label}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
+            model_path = f"./saved_models/saved_model_{self.class_label}_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
+            optimizer_path = f"./saved_models/saved_optimizer_{self.class_label}_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
 
             torch.save(self.model.state_dict(), model_path)
             torch.save(optimizer.state_dict(), optimizer_path)
