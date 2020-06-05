@@ -72,6 +72,7 @@ DATASET_IDS = [
     "holdout/test",
     "new_train",
     "new_test",
+    "new_val",
     "last_test"
 ]
 #---------------------------------------------------

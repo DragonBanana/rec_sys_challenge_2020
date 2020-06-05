@@ -89,9 +89,9 @@ class MappingUserIdDictionary(MappingDictionary):
         data = pd.concat([
             train_feature_creator.load_or_create()[train_feature_creator.feature_name],
             test_feature_creator.load_or_create()[test_feature_creator.feature_name],
-            last_test_feature_creator.load_or_create()[last_test_feature_creator.feature_name],
             train_feature_engager.load_or_create()[train_feature_engager.feature_name],
             test_feature_engager.load_or_create()[test_feature_engager.feature_name],
+            last_test_feature_creator.load_or_create()[last_test_feature_creator.feature_name],
             last_test_feature_engager.load_or_create()[last_test_feature_engager.feature_name]
         ])
         dictionary = pd.DataFrame(data.unique()).to_dict()[0]

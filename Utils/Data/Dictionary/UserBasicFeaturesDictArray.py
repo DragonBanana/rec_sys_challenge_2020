@@ -46,14 +46,20 @@ class FollowerCountUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
         # Load the index column
         train_engager_id_feature = MappedFeatureEngagerId("train")
         test_engager_id_feature = MappedFeatureEngagerId("test")
+        last_test_engager_id_feature = MappedFeatureEngagerId("last_test")
         train_creator_id_feature = MappedFeatureCreatorId("train")
         test_creator_id_feature = MappedFeatureCreatorId("test")
+        last_test_creator_id_feature = MappedFeatureCreatorId("last_test")
 
         # Find the mask of uniques one
         engager_train_df = train_engager_id_feature.load_or_create()
         engager_test_df = test_engager_id_feature.load_or_create()
+        engager_last_test_df = last_test_engager_id_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, engager_last_test_df])
         creator_train_df = train_creator_id_feature.load_or_create()
         creator_test_df = test_creator_id_feature.load_or_create()
+        creator_last_test_df = last_test_creator_id_feature.load_or_create()
+        creator_test_df = pd.concat([creator_test_df, creator_last_test_df])
 
         unique = ~engager_train_df[train_engager_id_feature.feature_name].append(
             engager_test_df[test_engager_id_feature.feature_name]).append(
@@ -72,10 +78,16 @@ class FollowerCountUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
         engager_test_target_feature = RawFeatureEngagerFollowerCount("test")
         creator_train_target_feature = RawFeatureCreatorFollowerCount("train")
         creator_test_target_feature = RawFeatureCreatorFollowerCount("test")
+        engager_last_test_target_feature = RawFeatureEngagerFollowerCount("last_test")
+        creator_last_test_target_feature = RawFeatureCreatorFollowerCount("last_test")
         engager_train_df = engager_train_target_feature.load_or_create()
         engager_test_df = engager_test_target_feature.load_or_create()
         creator_train_df = creator_train_target_feature.load_or_create()
         creator_test_df = creator_test_target_feature.load_or_create()
+        last_engager_test_df = engager_last_test_target_feature.load_or_create()
+        last_creator_test_df = creator_last_test_target_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, last_engager_test_df])
+        creator_test_df = pd.concat([creator_test_df, last_creator_test_df])
         df[column] = engager_train_df[engager_train_target_feature.feature_name].append(
             engager_test_df[engager_test_target_feature.feature_name]).append(
             creator_train_df[creator_train_target_feature.feature_name]).append(
@@ -98,14 +110,20 @@ class FollowingCountUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
         # Load the index column
         train_engager_id_feature = MappedFeatureEngagerId("train")
         test_engager_id_feature = MappedFeatureEngagerId("test")
+        last_test_engager_id_feature = MappedFeatureEngagerId("last_test")
         train_creator_id_feature = MappedFeatureCreatorId("train")
         test_creator_id_feature = MappedFeatureCreatorId("test")
+        last_test_creator_id_feature = MappedFeatureCreatorId("last_test")
 
         # Find the mask of uniques one
         engager_train_df = train_engager_id_feature.load_or_create()
         engager_test_df = test_engager_id_feature.load_or_create()
+        engager_last_test_df = last_test_engager_id_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, engager_last_test_df])
         creator_train_df = train_creator_id_feature.load_or_create()
         creator_test_df = test_creator_id_feature.load_or_create()
+        creator_last_test_df = last_test_creator_id_feature.load_or_create()
+        creator_test_df = pd.concat([creator_test_df, creator_last_test_df])
 
         unique = ~engager_train_df[train_engager_id_feature.feature_name].append(
             engager_test_df[test_engager_id_feature.feature_name]).append(
@@ -124,10 +142,16 @@ class FollowingCountUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
         engager_test_target_feature = RawFeatureEngagerFollowingCount("test")
         creator_train_target_feature = RawFeatureCreatorFollowingCount("train")
         creator_test_target_feature = RawFeatureCreatorFollowingCount("test")
+        engager_last_test_target_feature = RawFeatureCreatorFollowingCount("last_test")
+        creator_last_test_target_feature = RawFeatureCreatorFollowingCount("last_test")
         engager_train_df = engager_train_target_feature.load_or_create()
         engager_test_df = engager_test_target_feature.load_or_create()
         creator_train_df = creator_train_target_feature.load_or_create()
         creator_test_df = creator_test_target_feature.load_or_create()
+        last_engager_test_df = engager_last_test_target_feature.load_or_create()
+        last_creator_test_df = creator_last_test_target_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, last_engager_test_df])
+        creator_test_df = pd.concat([creator_test_df, last_creator_test_df])
         df[column] = engager_train_df[engager_train_target_feature.feature_name].append(
             engager_test_df[engager_test_target_feature.feature_name]).append(
             creator_train_df[creator_train_target_feature.feature_name]).append(
@@ -150,14 +174,20 @@ class IsVerifiedUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
         # Load the index column
         train_engager_id_feature = MappedFeatureEngagerId("train")
         test_engager_id_feature = MappedFeatureEngagerId("test")
+        last_test_engager_id_feature = MappedFeatureEngagerId("last_test")
         train_creator_id_feature = MappedFeatureCreatorId("train")
         test_creator_id_feature = MappedFeatureCreatorId("test")
+        last_test_creator_id_feature = MappedFeatureCreatorId("last_test")
 
         # Find the mask of uniques one
         engager_train_df = train_engager_id_feature.load_or_create()
         engager_test_df = test_engager_id_feature.load_or_create()
+        engager_last_test_df = last_test_engager_id_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, engager_last_test_df])
         creator_train_df = train_creator_id_feature.load_or_create()
         creator_test_df = test_creator_id_feature.load_or_create()
+        creator_last_test_df = last_test_creator_id_feature.load_or_create()
+        creator_test_df = pd.concat([creator_test_df, creator_last_test_df])
 
         unique = ~engager_train_df[train_engager_id_feature.feature_name].append(
             engager_test_df[test_engager_id_feature.feature_name]).append(
@@ -176,10 +206,14 @@ class IsVerifiedUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy):
         engager_test_target_feature = RawFeatureEngagerIsVerified("test")
         creator_train_target_feature = RawFeatureCreatorIsVerified("train")
         creator_test_target_feature = RawFeatureCreatorIsVerified("test")
+        engager_last_test_target_feature = RawFeatureCreatorIsVerified("last_test")
+        creator_last_test_target_feature = RawFeatureCreatorIsVerified("last_test")
         engager_train_df = engager_train_target_feature.load_or_create()
         engager_test_df = engager_test_target_feature.load_or_create()
-        creator_train_df = creator_train_target_feature.load_or_create()
-        creator_test_df = creator_test_target_feature.load_or_create()
+        last_engager_test_df = engager_last_test_target_feature.load_or_create()
+        last_creator_test_df = creator_last_test_target_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, last_engager_test_df]).reset_index()
+        creator_test_df = pd.concat([creator_test_df, last_creator_test_df]).reset_index()
         df[column] = engager_train_df[engager_train_target_feature.feature_name].append(
             engager_test_df[engager_test_target_feature.feature_name]).append(
             creator_train_df[creator_train_target_feature.feature_name]).append(
@@ -202,14 +236,20 @@ class CreationTimestampUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy)
         # Load the index column
         train_engager_id_feature = MappedFeatureEngagerId("train")
         test_engager_id_feature = MappedFeatureEngagerId("test")
+        last_test_engager_id_feature = MappedFeatureEngagerId("last_test")
         train_creator_id_feature = MappedFeatureCreatorId("train")
         test_creator_id_feature = MappedFeatureCreatorId("test")
+        last_test_creator_id_feature = MappedFeatureCreatorId("last_test")
 
         # Find the mask of uniques one
         engager_train_df = train_engager_id_feature.load_or_create()
         engager_test_df = test_engager_id_feature.load_or_create()
+        engager_last_test_df = last_test_engager_id_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, engager_last_test_df])
         creator_train_df = train_creator_id_feature.load_or_create()
         creator_test_df = test_creator_id_feature.load_or_create()
+        creator_last_test_df = last_test_creator_id_feature.load_or_create()
+        creator_test_df = pd.concat([creator_test_df, creator_last_test_df])
 
         unique = ~engager_train_df[train_engager_id_feature.feature_name].append(
             engager_test_df[test_engager_id_feature.feature_name]).append(
@@ -228,10 +268,16 @@ class CreationTimestampUserBasicFeatureDictArray(UserBasicFeatureDictArrayNumpy)
         engager_test_target_feature = RawFeatureEngagerCreationTimestamp("test")
         creator_train_target_feature = RawFeatureCreatorCreationTimestamp("train")
         creator_test_target_feature = RawFeatureCreatorCreationTimestamp("test")
+        engager_last_test_target_feature = RawFeatureCreatorCreationTimestamp("last_test")
+        creator_last_test_target_feature = RawFeatureCreatorCreationTimestamp("last_test")
         engager_train_df = engager_train_target_feature.load_or_create()
         engager_test_df = engager_test_target_feature.load_or_create()
         creator_train_df = creator_train_target_feature.load_or_create()
         creator_test_df = creator_test_target_feature.load_or_create()
+        last_engager_test_df = engager_last_test_target_feature.load_or_create()
+        last_creator_test_df = creator_last_test_target_feature.load_or_create()
+        engager_test_df = pd.concat([engager_test_df, last_engager_test_df])
+        creator_test_df = pd.concat([creator_test_df, last_creator_test_df])
         df[column] = engager_train_df[engager_train_target_feature.feature_name].append(
             engager_test_df[engager_test_target_feature.feature_name]).append(
             creator_train_df[creator_train_target_feature.feature_name]).append(
