@@ -68,8 +68,7 @@ class LightGBM(RecommenderGBM):
                 'lambda_l2':lambda_l2,
                 'colsample_bytree':colsample_bytree,
                 'colsample_bynode':colsample_bynode,
-                'pos_subsample':pos_subsample,       
-                'neg_subsample':neg_subsample,       
+                'bagging_fraction':bagging_fraction,       
                 'bagging_freq':bagging_freq,         
                 'max_bin':max_bin,
                 'boost_from_average': True,             #default: True
@@ -147,8 +146,7 @@ class LightGBM(RecommenderGBM):
                                'colsample_bynode': (0,1),
                                'colsample_bytree': (0,1),
                                'subsample': (0,1),
-                               'pos_subsample': (0,1),          #with these two parameters we can regulate the unbalanced problems
-                               'neg_subsample': (0,1),          #so we may set the ranges differently for every problem
+                               'bagging_fraction',          #so we may set the ranges differently for every problem
                                'bagging_freq': (0,1),
                                'bagging_fraction': (0,1)}
 

@@ -121,8 +121,7 @@ def lgbmRange(kind):
                         Real(1,50),                             #lambda_l2
                         Real(0.4, 1),                           #colsample_bynode
                         Real(0.4, 1),                           #colsample_bytree
-                        Real(0.1, 1),                           #pos_subsample
-                        Real(0.1, 1),                           #neg_subsample
+                        Real(0.1, 1),                           #bagging fraction
                         #Real(0.1, 1),                          #bagging_positive_over_total_ratio
                         #Real(0.1, 1),                          #dominant_bagging
                         Integer(0, 10),                         #bagging_freq
