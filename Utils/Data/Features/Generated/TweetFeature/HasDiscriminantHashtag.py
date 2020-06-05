@@ -74,25 +74,23 @@ class UtilityMethodsClass():
         neg_search = c_df_n[c_df_n["h"] > threshold/unbalancement_ratio]
 
         # Populate the lists of "unbalanced" hashtags for both the positive and the negative class
-
-        ret_pos = []
+        max_id = int(max(pos_max_id,neg_max_id))
+        ret_pos = [0 for i in range(0, int(max_id))]
         for i in list(pos_search.index):
             i = int(i)
             if pos_search["h"][i]/c_df_n["h"][i] > param_pos*unbalancement_ratio:
-                ret_pos.append(i)
+                ret_pos[i] = 1
 
-        ret_neg = []
+        ret_neg = [0 for i in range(0, int(max_id))]
         for i in list(neg_search.index):
             i = int(i)
             if c_df_p["h"][i]/neg_search["h"][i] < unbalancement_ratio/param_neg:
-                ret_neg.append(i)
+                ret_neg[i] = 1
 
         # Save the obtained list of hashtags for in order to retrieve them when computing
         # the feature for the test set
 
         write_file = rp.get_dataset_path().joinpath(f"Dictionary/discriminative_hashtags/{kind}_pos.gz")
-
-        print(rp.get_dataset_path().joinpath(f"Dictionary/discriminative_hashtags/{kind}_pos.gz"))
 
         with gzip.open(write_file, 'wt', encoding="utf-8") as zipfile:
            json.dump(ret_pos, zipfile)
@@ -223,16 +221,139 @@ class HasDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
                 
         self.save_feature(kind_disc_df)
 
+        
+class NumberOfDiscriminativeHashtag_Like(GeneratedFeaturePickle, UtilityMethodsClass):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_number_of_discriminative_hashtag_like", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.csv.gz")
+
+    def create_feature(self):
+        kind = "like"
+        # Load the hashtags column
+        feature = MappedFeatureTweetHashtags(self.dataset_id)
+        feature_df = feature.load_or_create()
+        # Load the list of discriminative for the like class
+        if "train" in self.dataset_id:
+            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
+        elif "test" in self.dataset_id:
+            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        # Create the feature
+        kind_disc_df = pd.DataFrame()
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df = kind_disc_df.astype(int)   
+                
+        self.save_feature(kind_disc_df)
+
+class NumberOfDiscriminativeHashtag_Reply(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_number_of_discriminative_hashtag_reply", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.csv.gz")
+
+    def create_feature(self):
+        kind = "reply"
+        # Load the hashtags column
+        feature = MappedFeatureTweetHashtags(self.dataset_id)
+        feature_df = feature.load_or_create()
+        # Load the list of discriminative for the like class
+        if "train" in self.dataset_id:
+            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3,3)
+        elif "test" in self.dataset_id:
+            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        # Create the feature
+        kind_disc_df = pd.DataFrame()
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df = kind_disc_df.astype(int)   
+                
+        self.save_feature(kind_disc_df)
+
+class NumberOfDiscriminativeHashtag_Retweet(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_number_of_discriminative_hashtag_retweet", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.csv.gz")
+
+    def create_feature(self):
+        kind = "retweet"
+        # Load the hashtags column
+        feature = MappedFeatureTweetHashtags(self.dataset_id)
+        feature_df = feature.load_or_create()
+        # Load the list of discriminative for the like class
+        if "train" in self.dataset_id:
+            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
+        elif "test" in self.dataset_id:
+            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        # Create the feature
+        kind_disc_df = pd.DataFrame()
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df = kind_disc_df.astype(int)   
+                
+        self.save_feature(kind_disc_df)
+
+class NumberOfDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
+
+    def __init__(self, dataset_id: str):
+        super().__init__("tweet_feature_number_of_discriminative_hashtag_comment", dataset_id)
+        self.pck_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.pck.gz")
+        self.csv_path = pl.Path(
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/discriminative_hashtags/{self.feature_name}.csv.gz")
+
+    def create_feature(self):
+        kind = "comment"
+        # Load the hashtags column
+        feature = MappedFeatureTweetHashtags(self.dataset_id)
+        feature_df = feature.load_or_create()
+        # Load the list of discriminative for the like class
+        if "train" in self.dataset_id:
+            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
+        elif "test" in self.dataset_id:
+            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        # Create the feature
+        kind_disc_df = pd.DataFrame()
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df = kind_disc_df.astype(int)   
+                
+        self.save_feature(kind_disc_df)        
+        
+
 def containsHashtag(lst, disc_pos):
     for hashtag in lst:
-        if hashtag in disc_pos:
-            return True
+        try:
+            if disc_pos[hashtag] == 1:
+                return True
+        except:
+            continue
     return False
+        
+def numberOfHashtags(lst, disc_pos):
+    count = 0
+    for hashtag in lst:
+        try:
+            if disc_pos[hashtag] == 1:
+                count+=1
+        except:
+            continue
+    return count    
 
 def getMax(x):
     if x is not None:
         return max(np.array(x))
-
+    
 def loadPosAndNegLists(kind):
     readfile = rp.get_dataset_path().joinpath(f"Dictionary/discriminative_hashtags/{kind}_pos.gz")
     with gzip.GzipFile(readfile, 'r') as fin:                               # 4. gzip
