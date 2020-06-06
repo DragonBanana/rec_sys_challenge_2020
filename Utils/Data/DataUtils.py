@@ -73,6 +73,8 @@ DATASET_IDS = [
     "new_train",
     "new_test",
     "new_val",
+    "holdout_new_train",
+    "holdout_new_test",
     "last_test"
 ]
 #---------------------------------------------------
@@ -167,8 +169,8 @@ def populate_features():
         result[("tweet_feature_creation_timestamp_day_phase", dataset_id)] = TweetFeatureCreationTimestampDayPhase(dataset_id)
         result[("tweet_feature_creation_timestamp_day_phase_shifted", dataset_id)] = TweetFeatureCreationTimestampDayPhase_Shifted(dataset_id)
         # FROM TEXT TOKEN FEATURES
-        result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
-        result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
+        #result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
+        #result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
         #result[("text_embeddings_clean_PCA_32", dataset_id)] = TweetFeatureTextEmbeddingsPCA32(dataset_id)
         #result[("text_embeddings_clean_PCA_10", dataset_id)] = TweetFeatureTextEmbeddingsPCA10(dataset_id)
         #result[("text_embeddings_hashtags_mentions_LDA_15", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(dataset_id)

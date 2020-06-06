@@ -8,6 +8,7 @@ TRAIN_SET_IDS = [
     "train_days_12345",
     "train_days_123456",
     "holdout/train",
+    "holdout_new_train",
     "new_train"
 ]
 
@@ -25,6 +26,7 @@ VAL_SET_IDS = [
     "val_days_6",
     "val_days_7",
     "holdout/test",
+    "holdout_new_test",
     "new_val"
 ]
 
@@ -37,6 +39,7 @@ TRAIN_TEST_SET_PAIRS = {
     "train_days_12345": "val_days_6",
     "train_days_123456": "val_days_7",
     "holdout/train": "holdout/test",
+    "holdout_new_train": "holdout_new_test",
     "new_train": "new_test",
 }
 
