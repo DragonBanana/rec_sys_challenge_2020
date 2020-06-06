@@ -7,6 +7,9 @@ import json
 
 from Utils.Data.Features.RawFeatures import *
 
+from Utils.Text.TextUtils import *
+from Utils.Text.TokenizerWrapper import TokenizerWrapper
+
 
 class MappingDictionary(Dictionary):
     """
@@ -200,3 +203,64 @@ class MappingMediaDictionary(MappingDictionary):
         dictionary = pd.DataFrame(data.unique()).to_dict()[0]
 
         self.save_dictionary(dictionary)
+
+
+class MappingMentionsDictionary(MappingDictionary):
+
+    def __init__(self, inverse: bool = False):
+        super().__init__("mapping_mentions_id_dictionary", inverse)
+        self.direct_path_csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/mapping/{self.dictionary_name}/direct.csv.gz")
+        self.tokens_df = None
+        self.mentions_ids_dict = {} 
+        self.current_mapping_mentions = 0
+        self.tok = None
+        
+    def get_mentions(self, tokens):
+        #tokens = replace_escaped_chars(tokens)
+        mentions_tokens = []
+        
+        tokens_list = tokens.split('\t')
+
+        if tokens_list[1] == special_tokens['RT'] and tokens_list[2] == special_tokens['@']:
+            tokens_list, mentions_tokens = get_RT_mentions(tokens_list, mentions_tokens)
+
+        tokens_list, mentions_tokens, _ = get_remove_mentions_hashtags(self.tok, tokens_list, mentions_tokens, [])
+        mentions_count = len(mentions_tokens)
+        mentions_strings = decode_hashtags_mentions(self.tok, mentions_tokens)
+        mapped_mentions, self.current_mapping_mentions = map_to_unique_ids(mentions_strings, self.mentions_ids_dict, self.current_mapping_mentions)
+
+        for i in range(len(mentions_tokens)):
+            mentions_tokens[i] = '\t'.join(map(str, mentions_tokens[i]))
+
+        # each mention is separated by a ";"
+        # each token in a mention is separated by a "\t"
+        # each mapped mention is separated by a "\t"
+        return str(mentions_count), ';'.join(mentions_tokens), ';'.join(mentions_strings), '\t'.join(map(str, mapped_mentions))
+
+    def create_dictionary(self):
+        self.tok = TokenizerWrapper("bert-base-multilingual-cased")
+        train_feature = RawFeatureTweetTextToken("train")
+        test_feature = RawFeatureTweetTextToken("test")
+        last_test_feature = RawFeatureTweetTextToken("last_test")
+        data = pd.concat([
+            train_feature.load_or_create()[train_feature.feature_name],
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
+        ])
+        self.tokens_df = pd.DataFrame(data.unique())[0]
+        
+        #print(self.tokens_df)
+        
+        result = pd.DataFrame(columns=['mentions_count', 'mentions_tokens', 'mentions_text', 'mentions_mapped'])
+        result['mentions_count'], result['mentions_tokens'], result['mentions_text'], result['mentions_mapped'] = zip(*self.tokens_df.map(lambda x: self.get_mentions(x)))
+
+        #print(result)
+
+        self.save_dictionary(result)
+        
+    def load_dictionary(self):
+        self.direct_path_csv_path.parent.mkdir(parents=True, exist_ok=True)
+        return pd.read_csv(self.direct_path_csv_path, compression="gzip", sep="\x01", index_col=0)
+    
+    def save_dictionary(self, dictionary):
+        dictionary.to_csv(self.direct_path_csv_path, header=True, index=True, sep='\x01')
