@@ -10,75 +10,37 @@ from tqdm import tqdm
 import scipy.sparse as sps
 
 
+def compute_sparse_matrix(train, test, max_id):
 
-def find_similarity(engager, creator, dictionary: dict, eng_cre_dict: dict, cre_eng_dict: dict):
+    dictionary = pd.DataFrame({"count": train.groupby(["mapped_feature_engager_id", "mapped_feature_creator_id"]).size()
+                              .map(lambda x: 1 if x > 0 else 0)}).to_dict()["count"]
 
-    engager_set = eng_cre_dict.get(engager, set())
-    # if len(engager_set) > 3:
-    #     print(f"engager: {engager}")
-    #     print(f"engager set: {engager_set}")
+    ktup = tuple(dictionary.keys())
+    memo = {}
+    for (k1, k2) in ktup:
+        if k1 > k2:
+            tmp = k1
+            k1 = k2
+            k2 = tmp
+        curr_memo = memo.get((k1, k2), False)
+        if not curr_memo:
+            if dictionary.get((k1, k2), 0) == 1:
+                dictionary[(k2, k1)] = 1
+            elif dictionary.get((k2, k1), 0) == 1:
+                dictionary[(k1, k2)] = 1
+            memo[(k1, k2)] = True
 
-    engager_set = set.union(engager_set, cre_eng_dict.get(engager, set()))
-    # if len(engager_set) != 0:
-    #     print(f"engager: {engager}")
-    #     print(f"engager set: {engager_set}")
+    mat = sps.dok_matrix((max_id+1, max_id+1), dtype=np.int8)
 
-    creator_set = eng_cre_dict.get(creator, set())
-    # if len(creator_set) > 2:
-    #     print(f"creator: {creator}")
-    #     print(f"creator set: {creator_set}")
+    mat._update(dictionary)
 
-    creator_set = set.union(creator_set, cre_eng_dict.get(creator, set()))
-    # if len(creator_set) != 0:
-    #     print(f"creator: {creator}")
-    #     print(f"creator set: {creator_set}")
+    mat = sps.csc_matrix(mat)
 
-    intersection = set.intersection(engager_set, creator_set)
-
-    count = 0
-    for u_id in intersection:
-        val1 = dictionary.get((engager, u_id), 0) + dictionary.get((u_id, engager), 0)
-        val2 = dictionary.get((u_id, creator), 0) + dictionary.get((creator, u_id), 0)
-        count += val1 + val2
-
-    return count
-
-
-
-def compute(train, test):
-
-    dictionary = pd.DataFrame({"count": train.groupby(["mapped_feature_engager_id", "mapped_feature_creator_id"]).size()}).to_dict()["count"]
-
-    eng_cre_dict = {}
-    cre_eng_dict = {}
-    for engager, creator in zip(train[f"mapped_feature_engager_id"], train[f"mapped_feature_creator_id"]):
-        # if creator == 64592 or creator == 90362:
-        #     print("ehi")
-        creator_set = eng_cre_dict.get(engager, set())
-        creator_set.add(creator)
-        eng_cre_dict[engager] = creator_set
-
-        # if len(creator_set) > 2:
-        #     print(f"engager: {engager}")
-        #     print(f"engager set: {creator_set}")
-
-        engager_set = cre_eng_dict.get(creator, set())
-        engager_set.add(engager)
-        cre_eng_dict[creator] = engager_set
-
-    # eng_cre_dict = pd.DataFrame(
-    #     {'set_of_creators': train.groupby(['mapped_feature_engager_id'])['mapped_feature_creator_id']\
-    #                         .apply(set)}).to_dict()['set_of_creators']
-    # eng_cre_dict = {}
-    # cre_eng_dict = {}
-    # cre_eng_dict = pd.DataFrame(
-    #     {'set_of_engagers': train.groupby(['mapped_feature_creator_id'])['mapped_feature_engager_id'] \
-    #         .apply(set)}).to_dict()['set_of_engagers']
+    mat = mat.dot(mat)
 
     result = pd.DataFrame(
         [
-            find_similarity(engager=engager, creator=creator, dictionary=dictionary,
-                            eng_cre_dict=eng_cre_dict, cre_eng_dict=cre_eng_dict)
+            mat[(engager, creator)]
             for engager, creator
             in zip(test[f"mapped_feature_engager_id"], test[f"mapped_feature_creator_id"])
         ],
@@ -86,11 +48,11 @@ def compute(train, test):
     return result
 
 
-class GraphTwoStepsAbstract(GeneratedFeaturePickle, ABC):
+class GraphTwoStepsSparseAdjacencyAbstract(GeneratedFeaturePickle, ABC):
 
     def __init__(self, dataset_id: str):
 
-        super().__init__("graph_two_steps_" + self._get_suffix(), dataset_id)
+        super().__init__("graph_two_steps_sparse_adjacency_" + self._get_suffix(), dataset_id)
         self.pck_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/graph_two_steps/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
@@ -135,14 +97,19 @@ class GraphTwoStepsAbstract(GeneratedFeaturePickle, ABC):
             f"tweet_feature_engagement_is_{self._get_suffix()}"
         ], train_dataset_id)
 
+        max_id_train = max(train_df['mapped_feature_engager_id'].max(), train_df['mapped_feature_creator_id'].max())
+
         if is_test_or_val_set(self.dataset_id):
             test_df = data.get_dataset([
                 f"mapped_feature_engager_id",
                 f"mapped_feature_creator_id"
             ], test_dataset_id)
 
+            max_id_test = max(test_df['mapped_feature_engager_id'].max(), test_df['mapped_feature_creator_id'].max())
+            max_id = max(max_id_train, max_id_test)
+
             train_df = train_df[train_df[f"tweet_feature_engagement_is_{self._get_suffix()}"] == True]
-            res = compute(train_df, test_df)
+            res = compute_sparse_matrix(train_df, test_df, max_id)
             res.sort_index(inplace=True)
             self._save_test_result(res, test_dataset_id)
         else:
@@ -156,7 +123,7 @@ class GraphTwoStepsAbstract(GeneratedFeaturePickle, ABC):
                 local_train = local_train[local_train[f"tweet_feature_engagement_is_{self._get_suffix()}"] == True]
                 local_test = X_train_folds[i]
 
-                res = compute(local_train, local_test)
+                res = compute_sparse_matrix(local_train, local_test, max_id_train)
 
                 if result is None:
                     result = res
@@ -166,7 +133,7 @@ class GraphTwoStepsAbstract(GeneratedFeaturePickle, ABC):
             self._save_train_result_if_not_present(result, train_dataset_id)
 
 
-class GraphTwoStepsPositive(GraphTwoStepsAbstract):
+class GraphTwoStepsSparseAdjacencyPositive(GraphTwoStepsSparseAdjacencyAbstract):
 
     def _get_suffix(self) -> str:
         return "positive"
@@ -175,7 +142,7 @@ class GraphTwoStepsPositive(GraphTwoStepsAbstract):
         return TweetFeatureEngagementIsPositive(dataset_id=dataset_id)
 
 
-class GraphTwoStepsNegative(GraphTwoStepsAbstract):
+class GraphTwoStepsSparseAdjacencyNegative(GraphTwoStepsSparseAdjacencyAbstract):
 
     def _get_suffix(self) -> str:
         return "negative"
@@ -184,7 +151,7 @@ class GraphTwoStepsNegative(GraphTwoStepsAbstract):
         return TweetFeatureEngagementIsNegative(dataset_id=dataset_id)
 
 
-class GraphTwoStepsLike(GraphTwoStepsAbstract):
+class GraphTwoStepsSparseAdjacencyLike(GraphTwoStepsSparseAdjacencyAbstract):
 
     def _get_suffix(self) -> str:
         return "like"
@@ -193,7 +160,7 @@ class GraphTwoStepsLike(GraphTwoStepsAbstract):
         return TweetFeatureEngagementIsLike(dataset_id=dataset_id)
 
 
-class GraphTwoStepsRetweet(GraphTwoStepsAbstract):
+class GraphTwoStepsSparseAdjacencyRetweet(GraphTwoStepsSparseAdjacencyAbstract):
 
     def _get_suffix(self) -> str:
         return "retweet"
@@ -202,7 +169,7 @@ class GraphTwoStepsRetweet(GraphTwoStepsAbstract):
         return TweetFeatureEngagementIsRetweet(dataset_id=dataset_id)
 
 
-class GraphTwoStepsReply(GraphTwoStepsAbstract):
+class GraphTwoStepsSparseAdjacencyReply(GraphTwoStepsSparseAdjacencyAbstract):
 
     def _get_suffix(self) -> str:
         return "reply"
@@ -211,7 +178,7 @@ class GraphTwoStepsReply(GraphTwoStepsAbstract):
         return TweetFeatureEngagementIsReply(dataset_id=dataset_id)
 
 
-class GraphTwoStepsComment(GraphTwoStepsAbstract):
+class GraphTwoStepsSparseAdjacencyComment(GraphTwoStepsSparseAdjacencyAbstract):
 
     def _get_suffix(self) -> str:
         return "comment"
