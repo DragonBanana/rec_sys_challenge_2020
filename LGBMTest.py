@@ -5,6 +5,8 @@ import time
 from Utils.Data import Data
 from Utils.Submission.Submission import create_submission_file
 from Utils.Data.Data import oversample
+from Utils.TelegramBot import telegram_bot_send_update
+
 if __name__ == '__main__':
     train_dataset = "holdout/train"
     val_dataset = "holdout/test"
@@ -100,7 +102,7 @@ if __name__ == '__main__':
         X_val = oversampled_df[X_label]
         Y_val = oversampled_df[Y_label]
         del df, oversampled_df
-        
+
     # Load local_test data
     X_local, Y_local = Data.get_dataset_xgb_batch(2, 1, val_dataset, X_label, Y_label, 1)
     # If oversample is set
@@ -170,4 +172,8 @@ if __name__ == '__main__':
     #Uncomment to plot feature importance at the end of training
     LGBM.plot_fimportance()
 
-    create_submission_file(tweets, users, predictions, "lgbm_like_submission_fresco_sovracampione.csv")
+    submission_filename = "lgbm_like_submission_fresco_sovracampione.csv"
+    create_submission_file(tweets, users, predictions, submission_filename)
+    
+    ip="3.250.69.182"
+    telegram_bot_send_update(f"@lucaconterio la submission è pronta! IP: {ip}, nome del file: {submission_filename}")

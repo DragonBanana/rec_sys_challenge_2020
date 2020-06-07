@@ -158,8 +158,17 @@ def populate_features():
         result[("tweet_feature_number_of_video", dataset_id)] = TweetFeatureNumberOfVideo(dataset_id)
         result[("tweet_feature_number_of_gif", dataset_id)] = TweetFeatureNumberOfGif(dataset_id)
         result[("tweet_feature_number_of_media", dataset_id)] = TweetFeatureNumberOfMedia(dataset_id)
-        # NUMBER OF HASHTAGS
+        # HASHTAGS
         result[("tweet_feature_number_of_hashtags", dataset_id)] = TweetFeatureNumberOfHashtags(dataset_id)
+        result[("tweet_feature_has_discriminative_hashtag_like", dataset_id)] = HasDiscriminativeHashtag_Like(dataset_id)
+        result[("tweet_feature_has_discriminative_hashtag_reply", dataset_id)] = HasDiscriminativeHashtag_Reply(dataset_id)
+        result[("tweet_feature_has_discriminative_hashtag_retweet", dataset_id)] = HasDiscriminativeHashtag_Retweet(dataset_id)
+        result[("tweet_feature_has_discriminative_hashtag_comment", dataset_id)] = HasDiscriminativeHashtag_Comment(dataset_id)
+        result[("tweet_feature_number_of_discriminative_hashtag_like", dataset_id)] = NumberOfDiscriminativeHashtag_Like(dataset_id)
+        result[("tweet_feature_number_of_discriminative_hashtag_reply", dataset_id)] = NumberOfDiscriminativeHashtag_Reply(dataset_id)
+        result[("tweet_feature_number_of_discriminative_hashtag_retweet", dataset_id)] = NumberOfDiscriminativeHashtag_Retweet(dataset_id)
+        result[("tweet_feature_number_of_discriminative_hashtag_comment", dataset_id)] = NumberOfDiscriminativeHashtag_Comment(dataset_id)
+
         # IS TWEET TYPE
         result[("tweet_feature_is_reply", dataset_id)] = TweetFeatureIsReply(dataset_id)
         result[("tweet_feature_is_retweet", dataset_id)] = TweetFeatureIsRetweet(dataset_id)
