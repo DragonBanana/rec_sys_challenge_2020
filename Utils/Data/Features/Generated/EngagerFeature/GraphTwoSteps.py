@@ -10,39 +10,19 @@ from tqdm import tqdm
 import scipy.sparse as sps
 
 
-
 def find_similarity(engager, creator, dictionary: dict, eng_cre_dict: dict, cre_eng_dict: dict):
 
-    engager_set = eng_cre_dict.get(engager, set())
-    # if len(engager_set) > 3:
-    #     print(f"engager: {engager}")
-    #     print(f"engager set: {engager_set}")
-
-    engager_set = set.union(engager_set, cre_eng_dict.get(engager, set()))
-    # if len(engager_set) != 0:
-    #     print(f"engager: {engager}")
-    #     print(f"engager set: {engager_set}")
-
-    creator_set = eng_cre_dict.get(creator, set())
-    # if len(creator_set) > 2:
-    #     print(f"creator: {creator}")
-    #     print(f"creator set: {creator_set}")
-
-    creator_set = set.union(creator_set, cre_eng_dict.get(creator, set()))
-    # if len(creator_set) != 0:
-    #     print(f"creator: {creator}")
-    #     print(f"creator set: {creator_set}")
-
-    intersection = set.intersection(engager_set, creator_set)
+    intersection = set.intersection(set.union(eng_cre_dict.get(engager, set()), cre_eng_dict.get(engager, set())),
+                                    set.union(eng_cre_dict.get(creator, set()), cre_eng_dict.get(creator, set())))
 
     count = 0
     for u_id in intersection:
-        val1 = dictionary.get((engager, u_id), 0) + dictionary.get((u_id, engager), 0)
-        val2 = dictionary.get((u_id, creator), 0) + dictionary.get((creator, u_id), 0)
-        count += val1 + val2
+        count += dictionary.get((engager, u_id), 0) + \
+                 dictionary.get((u_id, engager), 0) + \
+                 dictionary.get((u_id, creator), 0) + \
+                 dictionary.get((creator, u_id), 0)
 
     return count
-
 
 
 def compute(train, test):
@@ -57,6 +37,7 @@ def compute(train, test):
         creator_set = eng_cre_dict.get(engager, set())
         creator_set.add(creator)
         eng_cre_dict[engager] = creator_set
+        del creator_set
 
         # if len(creator_set) > 2:
         #     print(f"engager: {engager}")
@@ -65,6 +46,7 @@ def compute(train, test):
         engager_set = cre_eng_dict.get(creator, set())
         engager_set.add(engager)
         cre_eng_dict[creator] = engager_set
+        del engager_set
 
     # eng_cre_dict = pd.DataFrame(
     #     {'set_of_creators': train.groupby(['mapped_feature_engager_id'])['mapped_feature_creator_id']\
