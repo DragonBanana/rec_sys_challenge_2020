@@ -12,9 +12,12 @@ from Utils.Data.Features.Generated.CreatorFeature.CreatorNumberOfEngagementGiven
 from Utils.Data.Features.Generated.CreatorFeature.CreatorNumberOfEngagementReceived import *
 from Utils.Data.Features.Generated.CreatorFeature.CreatorNumberOfPreviousEngagementGiven import *
 from Utils.Data.Features.Generated.CreatorFeature.CreatorNumberOfPreviousEngagementReceived import *
+from Utils.Data.Features.Generated.EngagerFeature.AdjacencyBetweenCreatorAndEngager import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowTweetLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerKnowsHashtag import *
 from Utils.Data.Features.Generated.EngagerFeature.EngagerNumberOfEngagementsReceived import *
+from Utils.Data.Features.Generated.EngagerFeature.GraphTwoSteps import *
+from Utils.Data.Features.Generated.EngagerFeature.GraphTwoStepsAdjacency import *
 from Utils.Data.Features.Generated.EngagerFeature.KnownEngagementCount import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagements import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfEngagementsBetweenCreatorAndEngager import *
@@ -342,7 +345,28 @@ def populate_features():
         result[("link_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
         result[("domain_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
 
+        # GRAPH
+        result[("graph_two_steps_positive", dataset_id)] = GraphTwoStepsPositive(dataset_id)
+        result[("graph_two_steps_negative", dataset_id)] = GraphTwoStepsNegative(dataset_id)
+        result[("graph_two_steps_like", dataset_id)] = GraphTwoStepsLike(dataset_id)
+        result[("graph_two_steps_reply", dataset_id)] = GraphTwoStepsReply(dataset_id)
+        result[("graph_two_steps_retweet", dataset_id)] = GraphTwoStepsRetweet(dataset_id)
+        result[("graph_two_steps_comment", dataset_id)] = GraphTwoStepsComment(dataset_id)
 
+        # ADJACENCY
+        result[("graph_two_steps_adjacency_positive", dataset_id)] = GraphTwoStepsAdjacencyPositive(dataset_id)
+        result[("graph_two_steps_adjacency_negative", dataset_id)] = GraphTwoStepsAdjacencyNegative(dataset_id)
+        result[("graph_two_steps_adjacency_like", dataset_id)] = GraphTwoStepsAdjacencyLike(dataset_id)
+        result[("graph_two_steps_adjacency_reply", dataset_id)] = GraphTwoStepsAdjacencyReply(dataset_id)
+        result[("graph_two_steps_adjacency_retweet", dataset_id)] = GraphTwoStepsAdjacencyRetweet(dataset_id)
+        result[("graph_two_steps_adjacency_comment", dataset_id)] = GraphTwoStepsAdjacencyComment(dataset_id)
+
+        result[("adjacency_between_creator_and_engager_positive", dataset_id)] = AdjacencyBetweenCreatorAndEngagerPositive(dataset_id)
+        result[("adjacency_between_creator_and_engager_negative", dataset_id)] = AdjacencyBetweenCreatorAndEngagerNegative(dataset_id)
+        result[("adjacency_between_creator_and_engager_like", dataset_id)] = AdjacencyBetweenCreatorAndEngagerLike(dataset_id)
+        result[("adjacency_between_creator_and_engager_reply", dataset_id)] = AdjacencyBetweenCreatorAndEngagerReply(dataset_id)
+        result[("adjacency_between_creator_and_engager_retweet", dataset_id)] = AdjacencyBetweenCreatorAndEngagerRetweet(dataset_id)
+        result[("adjacency_between_creator_and_engager_comment", dataset_id)] = AdjacencyBetweenCreatorAndEngagerComment(dataset_id)
 
         # IS ENGAGEMENT TYPE
         if dataset_id != "test" and dataset_id != "new_test" and dataset_id != "last_test":
