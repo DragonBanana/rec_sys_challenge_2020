@@ -59,7 +59,7 @@ DATASET_IDS = [
     # "train_days_123",
     # "train_days_1234",
     # "train_days_12345",
-    "train_days_123456",
+    #"train_days_123456",
     "test",
     # Removing those datasets to speed up the generation of features
     # "val_days_2",
@@ -67,7 +67,7 @@ DATASET_IDS = [
     # "val_days_4",
     # "val_days_5",
     # "val_days_6",
-    "val_days_7",
+    #"val_days_7",
     "holdout/train",
     "holdout/test",
     "new_train",
@@ -75,6 +75,8 @@ DATASET_IDS = [
     "new_val",
     "holdout_new_train",
     "holdout_new_test",
+    "cherry_train",
+    "cherry_val",
     "last_test"
 ]
 #---------------------------------------------------
@@ -275,19 +277,19 @@ def populate_features():
         result[("engager_feature_number_of_positive_engagements_received",dataset_id)] = EngagerNumberOfEngagementReceivedPositive(dataset_id)
         result[("engager_feature_number_of_negative_engagements_received",dataset_id)] = EngagerNumberOfEngagementReceivedNegative(dataset_id)
         # NUMBER OF ENGAGEMENTS A TWEET HAS RECEIVED
-        result[("tweet_feature_number_of_like_engagements", dataset_id)] = TweetNumberOfEngagementLike(dataset_id)
-        result[("tweet_feature_number_of_reply_engagements", dataset_id)] = TweetNumberOfEngagementReply(dataset_id)
-        result[("tweet_feature_number_of_retweet_engagements", dataset_id)] = TweetNumberOfEngagementRetweet(dataset_id)
-        result[("tweet_feature_number_of_comment_engagements", dataset_id)] = TweetNumberOfEngagementComment(dataset_id)
-        result[("tweet_feature_number_of_positive_engagements", dataset_id)] = TweetNumberOfEngagementPositive(dataset_id)
-        result[("tweet_feature_number_of_negative_engagements", dataset_id)] = TweetNumberOfEngagementNegative(dataset_id)
+        # result[("tweet_feature_number_of_like_engagements", dataset_id)] = TweetNumberOfEngagementLike(dataset_id)
+        # result[("tweet_feature_number_of_reply_engagements", dataset_id)] = TweetNumberOfEngagementReply(dataset_id)
+        # result[("tweet_feature_number_of_retweet_engagements", dataset_id)] = TweetNumberOfEngagementRetweet(dataset_id)
+        # result[("tweet_feature_number_of_comment_engagements", dataset_id)] = TweetNumberOfEngagementComment(dataset_id)
+        # result[("tweet_feature_number_of_positive_engagements", dataset_id)] = TweetNumberOfEngagementPositive(dataset_id)
+        # result[("tweet_feature_number_of_negative_engagements", dataset_id)] = TweetNumberOfEngagementNegative(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS A TWEET HAS RECEIVED
-        result[("tweet_feature_number_of_previous_like_engagements",dataset_id)] = TweetNumberOfPreviousEngagementLike(dataset_id)
-        result[("tweet_feature_number_of_previous_reply_engagements",dataset_id)] = TweetNumberOfPreviousEngagementReply(dataset_id)
-        result[("tweet_feature_number_of_previous_retweet_engagements",dataset_id)] = TweetNumberOfPreviousEngagementRetweet(dataset_id)
-        result[("tweet_feature_number_of_previous_comment_engagements",dataset_id)] = TweetNumberOfPreviousEngagementComment(dataset_id)
-        result[("tweet_feature_number_of_previous_positive_engagements",dataset_id)] = TweetNumberOfPreviousEngagementPositive(dataset_id)
-        result[("tweet_feature_number_of_previous_negative_engagements",dataset_id)] = TweetNumberOfPreviousEngagementNegative(dataset_id)
+        # result[("tweet_feature_number_of_previous_like_engagements",dataset_id)] = TweetNumberOfPreviousEngagementLike(dataset_id)
+        # result[("tweet_feature_number_of_previous_reply_engagements",dataset_id)] = TweetNumberOfPreviousEngagementReply(dataset_id)
+        # result[("tweet_feature_number_of_previous_retweet_engagements",dataset_id)] = TweetNumberOfPreviousEngagementRetweet(dataset_id)
+        # result[("tweet_feature_number_of_previous_comment_engagements",dataset_id)] = TweetNumberOfPreviousEngagementComment(dataset_id)
+        # result[("tweet_feature_number_of_previous_positive_engagements",dataset_id)] = TweetNumberOfPreviousEngagementPositive(dataset_id)
+        # result[("tweet_feature_number_of_previous_negative_engagements",dataset_id)] = TweetNumberOfPreviousEngagementNegative(dataset_id)
         # NUMBER OF PREVIOUS ENGAGEMENTS RATIO
         result[("engager_feature_number_of_previous_like_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousLikeEngagementRatio(dataset_id)
         result[("engager_feature_number_of_previous_reply_engagement_ratio", dataset_id)] = EngagerFeatureNumberOfPreviousReplyEngagementRatio(dataset_id)
