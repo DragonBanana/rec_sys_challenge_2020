@@ -20,7 +20,7 @@ class XGBoost(RecommenderGBM):
     def __init__(self,
                  kind="NO_KIND_GIVEN",
                  # Not in tuning dict
-                 verbosity=1,
+                 verbosity=2,
                  process_type="default",
                  tree_method="hist",
                  objective="binary:logistic",  # outputs the binary classification probability

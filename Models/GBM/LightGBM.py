@@ -146,7 +146,6 @@ class LightGBM(RecommenderGBM):
                                'colsample_bynode': (0,1),
                                'colsample_bytree': (0,1),
                                'subsample': (0,1),
-                               'bagging_fraction',          #so we may set the ranges differently for every problem
                                'bagging_freq': (0,1),
                                'bagging_fraction': (0,1)}
 
