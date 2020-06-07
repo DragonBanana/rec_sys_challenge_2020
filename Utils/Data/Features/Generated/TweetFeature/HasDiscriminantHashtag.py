@@ -1,3 +1,4 @@
+from Utils.Data.DatasetUtils import is_test_or_val_set
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
@@ -128,9 +129,9 @@ class HasDiscriminativeHashtag_Like(GeneratedFeaturePickle, UtilityMethodsClass)
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
@@ -155,9 +156,9 @@ class HasDiscriminativeHashtag_Reply(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3,3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
@@ -182,9 +183,9 @@ class HasDiscriminativeHashtag_Retweet(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
@@ -209,9 +210,9 @@ class HasDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
@@ -237,9 +238,9 @@ class NumberOfDiscriminativeHashtag_Like(GeneratedFeaturePickle, UtilityMethodsC
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
@@ -264,9 +265,9 @@ class NumberOfDiscriminativeHashtag_Reply(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3,3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
@@ -291,9 +292,9 @@ class NumberOfDiscriminativeHashtag_Retweet(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
@@ -318,9 +319,9 @@ class NumberOfDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if "train" in self.dataset_id:
+        if not is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif "test" in self.dataset_id:
+        elif is_test_or_val_set(self.dataset_id):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
