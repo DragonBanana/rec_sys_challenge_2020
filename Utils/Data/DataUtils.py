@@ -55,7 +55,7 @@ import billiard as mp
 import os
 
 DATASET_IDS = [
-    "train",
+    #"train",
     # Removing those datasets to speed up the generation of features
     # "train_days_1",
     # "train_days_12",
@@ -63,7 +63,7 @@ DATASET_IDS = [
     # "train_days_1234",
     # "train_days_12345",
     #"train_days_123456",
-    "test",
+    #"test",
     # Removing those datasets to speed up the generation of features
     # "val_days_2",
     # "val_days_3",
@@ -71,13 +71,13 @@ DATASET_IDS = [
     # "val_days_5",
     # "val_days_6",
     #"val_days_7",
-    "holdout/train",
-    "holdout/test",
+    #"holdout/train",
+    #"holdout/test",
     "new_train",
     "new_test",
-    "new_val",
-    "holdout_new_train",
-    "holdout_new_test",
+    #"new_val",
+    #"holdout_new_train",
+    #"holdout_new_test",
     "cherry_train",
     "cherry_val",
     "last_test"

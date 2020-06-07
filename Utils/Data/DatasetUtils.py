@@ -43,7 +43,7 @@ TRAIN_TEST_SET_PAIRS = {
     "holdout/train": "holdout/test",
     "holdout_new_train": "holdout_new_test",
     "new_train": "new_test",
-    "cherry_train": "cherry_test"
+    "cherry_train": "cherry_val"
 }
 
 TEST_TRAIN_SET_PARIS = {v: k for k, v in TRAIN_TEST_SET_PAIRS.items()}
