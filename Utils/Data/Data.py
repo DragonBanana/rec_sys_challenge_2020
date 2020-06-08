@@ -120,7 +120,7 @@ def get_dataset(features: list, dataset_id: str, nthread:int=-1):
     all_features = features
     dataframe = pd.DataFrame()
     if nthread > 0:
-        for features in np.array_split(all_features, nthread):
+        for features in np.array_split(all_features, int(len(all_features)/nthread)):
             with mp.Pool(nthread) as p:
                 partial_create_features = functools.partial(get_feature, dataset_id=dataset_id)
                 # dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
