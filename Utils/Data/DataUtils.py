@@ -29,7 +29,8 @@ from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementWith
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
 from Utils.Data.Features.Generated.EnsemblingFeature.SimilarityFoldEnsembling import *
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike1, \
-    XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1, XGBFoldEnsemblingLike2
+    XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1, XGBFoldEnsemblingLike2, \
+    XGBFoldEnsemblingRetweet2
 from Utils.Data.Features.Generated.LanguageFeature.MainGroupedLanguageFeature import *
 from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
@@ -55,7 +56,7 @@ import billiard as mp
 import os
 
 DATASET_IDS = [
-    #"train",
+    "train",
     # Removing those datasets to speed up the generation of features
     # "train_days_1",
     # "train_days_12",
@@ -350,6 +351,7 @@ def populate_features():
         result[("xgb_fold_ensembling_reply_1", dataset_id)] = XGBFoldEnsemblingReply1(dataset_id)
         result[("xgb_fold_ensembling_comment_1", dataset_id)] = XGBFoldEnsemblingComment1(dataset_id)
         result[("xgb_fold_ensembling_like_2", dataset_id)] = XGBFoldEnsemblingLike2(dataset_id)
+        result[("xgb_fold_ensembling_retweet_2", dataset_id)] = XGBFoldEnsemblingRetweet2(dataset_id)
         # SIMILARITY FOLD ENSEMBLING
         result[("hashtag_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
         result[("link_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
