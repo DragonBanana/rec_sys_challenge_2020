@@ -141,8 +141,8 @@ class DistilBertMultiClassifier(nn.Module):
             labels_arr = labels.detach().cpu().numpy()
             output_list = []
             for i in range(4):
-                print(preds_arr[:, i])
-                print(labels_arr[:, i])
+                #print(preds_arr[:, i])
+                #print(labels_arr[:, i])
 
                 outputs = (loss, logits[:, i], preds_arr[:, i],)
                 output_list.append(outputs)
