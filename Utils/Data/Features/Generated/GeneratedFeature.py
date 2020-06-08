@@ -37,7 +37,7 @@ class GeneratedFeaturePickle(Feature):
             # Changing column name
             dataframe.columns = [self.feature_name]
         self.pck_path.parent.mkdir(parents=True, exist_ok=True)
-        dataframe.to_pickle(self.pck_path, compression='gzip')
+        dataframe.to_pickle(self.pck_path, compression='gzip', protocol=4)
         # For backup reason
         # self.csv_path.parent.mkdir(parents=True, exist_ok=True)
         # dataframe.to_csv(self.csv_path, compression='gzip', index=True)
