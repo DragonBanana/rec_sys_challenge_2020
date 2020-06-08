@@ -304,10 +304,13 @@ class LightGBM(RecommenderGBM):
     def plot_fimportance(self):
         model = self.model
         import matplotlib.pyplot as plt
+
         lgb.plot_importance(model,importance_type="split")
+        plt.rcParams["figure.figsize"] = (20,5)
         plt.title("Feature Importance: SPLIT")
         plt.savefig("fimportance_split.png")
         lgb.plot_importance(model,importance_type="gain")
+        plt.rcParams["figure.figsize"] = (20,5)
         plt.title("Feature Importance: GAIN")
         plt.savefig("fimportance_gain.png")
 
