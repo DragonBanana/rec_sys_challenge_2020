@@ -141,7 +141,7 @@ def lgbmName():
                        "lambda_l2",
                        "colsample_bynode",
                        "colsample_bytree",
-                       "bagging_fraction"
+                       "bagging_fraction",
                        #"bagging_positive_over_total_ratio",
                        #"dominant_bagging",
                        "bagging_freq",
