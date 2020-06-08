@@ -289,12 +289,12 @@ class MultiNNRec(RecommenderBase, ABC):
         for step, batch in tqdm(enumerate(train_dataloader), total=len(train_dataloader)):
 
             # Progress update every 40 batches.
-            if step % 40 == 0 and not step == 0:
-                # Calculate elapsed time in minutes.
-                elapsed = format_time(time.time() - t0)
-
-                # Report progress.
-                print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
+            #if step % 40 == 0 and not step == 0:
+            #    # Calculate elapsed time in minutes.
+            #    elapsed = format_time(time.time() - t0)
+            #
+            #    # Report progress.
+            #    print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
 
             # Unpack this training batch from our dataloader.
             #
@@ -311,9 +311,9 @@ class MultiNNRec(RecommenderBase, ABC):
             b_features = batch[2].to(self.device)
             b_labels = batch[3].to(self.device)
 
-            print("b_labels")
-            print(b_labels)
-            print(b_labels.shape)
+            #print("b_labels")
+            #print(b_labels)
+            #print(b_labels.shape)
 
             # print("b_labels:",b_labels.shape)
 
@@ -342,7 +342,6 @@ class MultiNNRec(RecommenderBase, ABC):
             # from the tensor.
             loss = output_list[0][0]
             total_train_loss += loss.item()
-
 
             for i in range(4):
                 curr_preds = output_list[i][2]
@@ -380,19 +379,19 @@ class MultiNNRec(RecommenderBase, ABC):
         # Calculate the average loss over all of the batches.
         avg_train_loss = total_train_loss / len(train_dataloader)
 
+        print(f"TRAINING STATISTICS FOR EPOCH")
         for i in range(4):
             prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds_list[i], labels=labels_list[i])
             if i == 0:
-                print("LIKE")
+                print("\n------- LIKE -------")
             elif i == 1:
-                print("RETWEET")
+                print("\n------- RETWEET -------")
             elif i == 2:
-                print("REPLY")
+                print("\n------- REPLY -------")
             elif i == 3:
-                print("COMMENT")
+                print("\n------- COMMENT -------")
 
-            print(f"STATS FOR CURRENT EPOCH"
-                  f"\nPRAUC : {prauc}"
+            print(f"PRAUC : {prauc}"
                   f"\nRCE : {rce}"
                   f"\nMIN : {min_pred}"
                   f"\nMAX : {max_pred}"
@@ -403,8 +402,6 @@ class MultiNNRec(RecommenderBase, ABC):
 
         print("")
         print("  Average training loss: {0:.2f}".format(avg_train_loss))
-
-
         print("  Training epoch took: {:}".format(training_time))
 
         return avg_train_loss, training_time
@@ -428,12 +425,12 @@ class MultiNNRec(RecommenderBase, ABC):
         for step, batch in tqdm(enumerate(validation_dataloader), total=len(validation_dataloader)):
 
             # Progress update every 40 batches.
-            if step % 40 == 0 and not step == 0:
-                # Calculate elapsed time in minutes.
-                elapsed = format_time(time.time() - t0)
-
-                # Report progress.
-                print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(validation_dataloader), elapsed))
+            #if step % 40 == 0 and not step == 0:
+            #    # Calculate elapsed time in minutes.
+            #    elapsed = format_time(time.time() - t0)
+            #
+            #    # Report progress.
+            #    print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(validation_dataloader), elapsed))
 
             # Unpack this training batch from our dataloader.
             #
@@ -488,20 +485,19 @@ class MultiNNRec(RecommenderBase, ABC):
         # Calculate the average loss over all of the batches.
         avg_val_loss = total_eval_loss / len(validation_dataloader)
 
-        # print("debug")
+        print(f"VALIDATION STATISTICS FOR EPOCH")
         for i in range(4):
             prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds_list[i], labels=labels_list[i])
             if i == 0:
-                print("LIKE")
+                print("\n------- LIKE -------")
             elif i == 1:
-                print("RETWEET")
+                print("\n------- RETWEET -------")
             elif i == 2:
-                print("REPLY")
+                print("\n------- REPLY -------")
             elif i == 3:
-                print("COMMENT")
+                print("\n------- COMMENT -------")
 
-            print(f"STATS FOR CURRENT EPOCH"
-                  f"\nPRAUC : {prauc}"
+            print(f"PRAUC : {prauc}"
                   f"\nRCE : {rce}"
                   f"\nMIN : {min_pred}"
                   f"\nMAX : {max_pred}"
@@ -511,8 +507,6 @@ class MultiNNRec(RecommenderBase, ABC):
         validation_time = format_time(time.time() - t0)
 
         print("  Validation Loss: {0:.2f}".format(avg_val_loss))
-
-
         print("  Validation took: {:}".format(validation_time))
 
         return avg_val_loss, validation_time
@@ -532,12 +526,13 @@ class MultiNNRec(RecommenderBase, ABC):
             print("No model trained, cannot to perform evaluation.")
 
         else:
-            print("preds")
-            print(preds)
-            print(preds.shape)
-            print("labels")
-            print(labels)
-            print(labels.shape)
+            #print("preds")
+            #print(preds)
+            #print(preds.shape)
+            #print("labels")
+            #print(labels)
+            #print(labels.shape)
+
             # Declaring the class containing the metrics
             cm = CoMe(preds, labels)
 
