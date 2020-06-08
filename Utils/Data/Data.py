@@ -117,11 +117,20 @@ def get_dataset_xgb_default_test():
 
 
 def get_dataset(features: list, dataset_id: str, nthread:int=-1):
+    all_features = features
     dataframe = pd.DataFrame()
     if nthread > 0:
-        with mp.Pool(16) as p:
-            partial_create_features = functools.partial(get_feature, dataset_id=dataset_id)
-            dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
+        for features in np.array_split(all_features, int(len(all_features)/nthread) + 1):
+            with mp.Pool(nthread) as p:
+                partial_create_features = functools.partial(get_feature, dataset_id=dataset_id)
+                # dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
+                dataframes = p.map(partial_create_features, features)
+                for df in dataframes:
+                    if len(dataframe) > 0:
+                        dataframe = df
+                    else:
+                        dataframe[df.columns[0]] = df[df.columns[0]]
+                del dataframes
     else:
         for feature_name in tqdm(features):
             if (feature_name, dataset_id) in FEATURES.keys():
