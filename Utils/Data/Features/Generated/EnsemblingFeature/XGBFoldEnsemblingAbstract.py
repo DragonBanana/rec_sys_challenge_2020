@@ -7,6 +7,7 @@ import pathlib as pl
 import numpy as np
 import pandas as pd
 import hashlib
+from sklearn.model_selection import KFold
 
 class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
 
@@ -51,24 +52,24 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             # Declare list of scores (of each folds)
             # used for aggregating results
             scores = []
-
+            kf = KFold(n_splits=4, shuffle=True, random_state=8)
             # Train multiple models with 1-fold out strategy
-            for i in range(self.number_of_folds):
-                # Compute the train set
-                X_train = pd.concat([X_train_folds[x].sample(frac=0.05, random_state=8) for x in range(self.number_of_folds) if x is not i])
-                Y_train = pd.concat([Y_train_folds[x].sample(frac=0.05, random_state=8) for x in range(self.number_of_folds) if x is not i])
+            for train_index, test_index in kf.split(X_train):
+                train_index = np.random.choice(train_index, int(len(train_index)/20), replace=True)
+                local_X_train = X_train.iloc[train_index]
+                local_Y_train = Y_train.iloc[train_index]
 
                 # Compute the test set
-                X_test = X_train_folds[i]
+                local_X_test = X_train.iloc[test_index]
 
                 # Generate the dataset id for this fold
-                fold_dataset_id = f"{self.feature_name}_{self.dataset_id}_fold_{i}"
+                fold_dataset_id = f"{self.feature_name}_{self.dataset_id}_fold_{len(scores)}"
 
                 # Create the sub-feature
-                feature = XGBEnsembling(fold_dataset_id, X_train, Y_train, X_test, self.param_dict)
+                feature = XGBEnsembling(fold_dataset_id, local_X_train, local_Y_train, local_X_test, self.param_dict)
 
                 # Retrieve the scores
-                scores.append(pd.DataFrame(feature.load_or_create(), index=X_test.index))
+                scores.append(pd.DataFrame(feature.load_or_create(), index=local_X_test.index))
                 print(scores)
 
             # Compute the resulting dataframe and sort the results
