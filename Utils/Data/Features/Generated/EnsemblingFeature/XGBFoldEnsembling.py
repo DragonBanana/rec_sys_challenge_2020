@@ -228,19 +228,19 @@ class XGBFoldEnsemblingLike2(XGBFoldEnsemblingAbstract):
         ]
         Y_label = [f"tweet_feature_engagement_is_{label}"]
         xgb_parameters = {
-            'num_rounds': 1000,
-            'max_depth': 15,
-            'min_child_weight': 48,
-            'colsample_bytree': 0.6686372658935652,
-            'learning_rate': 0.08643458398278793,
-            'reg_alpha': 0.0037793354464627812,
-            'reg_lambda': 0.0007101634591379154,
+            'num_rounds': 740,
+            'max_depth': 12,
+            'min_child_weight': 8,
+            'colsample_bytree': 0.5061342342153339,
+            'learning_rate': 0.07445195010651855,
+            'reg_alpha': 0.03845714736115001,
+            'reg_lambda': 0.006126524544308775,
             'scale_pos_weight': 1,
-            'gamma': 1.4499129276201115,
-            'subsample': 0.9254329432712624,
+            'gamma': 1.567696726803047,
+            'subsample': 0.8634723191706059,
             'base_score': 0.4392,
-            'max_delta_step': 32.47945890085462,
-            'num_parallel_tree': 7
+            'max_delta_step': 40.69001101277949,
+            'num_parallel_tree': 3
         }
         super().__init__(dataset_id, X_label, Y_label, xgb_parameters)
 
