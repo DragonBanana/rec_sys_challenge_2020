@@ -584,6 +584,102 @@ class XGBFoldEnsemblingReply1(XGBFoldEnsemblingAbstract):
         }
         super().__init__(dataset_id, X_label, Y_label, xgb_parameters)
 
+class XGBFoldEnsemblingReply2(XGBFoldEnsemblingAbstract):
+
+    def __init__(self, dataset_id: str):
+        label = "reply"
+        dataset_id = dataset_id
+        X_label = [
+            "raw_feature_creator_follower_count",
+            "raw_feature_creator_following_count",
+            "raw_feature_engager_follower_count",
+            "raw_feature_engager_following_count",
+            "raw_feature_creator_is_verified",
+            "raw_feature_engager_is_verified",
+            "raw_feature_engagement_creator_follows_engager",
+            "tweet_feature_number_of_photo",
+            "tweet_feature_number_of_video",
+            "tweet_feature_number_of_gif",
+            "tweet_feature_number_of_media",
+            "tweet_feature_is_retweet",
+            "tweet_feature_is_quote",
+            "tweet_feature_is_top_level",
+            "tweet_feature_number_of_hashtags",
+            "tweet_feature_creation_timestamp_hour",
+            "tweet_feature_creation_timestamp_week_day",
+            "tweet_feature_number_of_mentions",
+            "engager_feature_number_of_previous_like_engagement",
+            "engager_feature_number_of_previous_reply_engagement",
+            "engager_feature_number_of_previous_retweet_engagement",
+            "engager_feature_number_of_previous_comment_engagement",
+            "engager_feature_number_of_previous_positive_engagement",
+            "engager_feature_number_of_previous_negative_engagement",
+            "engager_feature_number_of_previous_engagement",
+            "engager_feature_number_of_previous_like_engagement_ratio_1",
+            "engager_feature_number_of_previous_reply_engagement_ratio_1",
+            "engager_feature_number_of_previous_retweet_engagement_ratio_1",
+            "engager_feature_number_of_previous_comment_engagement_ratio_1",
+            "engager_feature_number_of_previous_positive_engagement_ratio_1",
+            "engager_feature_number_of_previous_negative_engagement_ratio_1",
+            "engager_feature_number_of_previous_like_engagement_ratio",
+            "engager_feature_number_of_previous_reply_engagement_ratio",
+            "engager_feature_number_of_previous_retweet_engagement_ratio",
+            "engager_feature_number_of_previous_comment_engagement_ratio",
+            "engager_feature_number_of_previous_positive_engagement_ratio",
+            "engager_feature_number_of_previous_negative_engagement_ratio",
+            "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_creator",
+            "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_creator",
+            "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_creator",
+            "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_creator",
+            "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_creator",
+            "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_creator",
+            "engager_feature_number_of_previous_like_engagement_between_creator_and_engager_by_engager",
+            "engager_feature_number_of_previous_reply_engagement_between_creator_and_engager_by_engager",
+            "engager_feature_number_of_previous_retweet_engagement_between_creator_and_engager_by_engager",
+            "engager_feature_number_of_previous_comment_engagement_between_creator_and_engager_by_engager",
+            "engager_feature_number_of_previous_negative_engagement_between_creator_and_engager_by_engager",
+            "engager_feature_number_of_previous_positive_engagement_between_creator_and_engager_by_engager",
+            "tweet_feature_number_of_previous_like_engagements",
+            "tweet_feature_number_of_previous_reply_engagements",
+            "tweet_feature_number_of_previous_retweet_engagements",
+            "tweet_feature_number_of_previous_comment_engagements",
+            "tweet_feature_number_of_previous_positive_engagements",
+            "tweet_feature_number_of_previous_negative_engagements",
+            "creator_feature_number_of_previous_like_engagements_given",
+            "creator_feature_number_of_previous_reply_engagements_given",
+            "creator_feature_number_of_previous_retweet_engagements_given",
+            "creator_feature_number_of_previous_comment_engagements_given",
+            "creator_feature_number_of_previous_positive_engagements_given",
+            "creator_feature_number_of_previous_negative_engagements_given",
+            "creator_feature_number_of_previous_like_engagements_received",
+            "creator_feature_number_of_previous_reply_engagements_received",
+            "creator_feature_number_of_previous_retweet_engagements_received",
+            "creator_feature_number_of_previous_comment_engagements_received",
+            "creator_feature_number_of_previous_positive_engagements_received",
+            "creator_feature_number_of_previous_negative_engagements_received",
+            "tweet_feature_creation_timestamp_hour_shifted",
+            "tweet_feature_creation_timestamp_day_phase",
+            "tweet_feature_creation_timestamp_day_phase_shifted"
+        ]
+
+        Y_label = [f"tweet_feature_engagement_is_{label}"]
+        xgb_parameters = {
+            'num_rounds': 1000,
+            'max_depth': 11,
+            'min_child_weight': 81,
+            'colsample_bytree': 0.2649064567045216,
+            'learning_rate': 0.1188611713303711,
+            'reg_alpha': 0.0004715390726558292,
+            'reg_lambda': 0.04540853259670264,
+            'scale_pos_weight': 1,
+            'gamma': 1.3335093029765577,
+            'subsample': 0.5882432665783615,
+            'base_score': 0.0274,
+            'max_delta_step': 264.97035696830164,
+            'num_parallel_tree': 8
+        }
+        super().__init__(dataset_id, X_label, Y_label, xgb_parameters)
+
 
 class XGBFoldEnsemblingComment1(XGBFoldEnsemblingAbstract):
 
