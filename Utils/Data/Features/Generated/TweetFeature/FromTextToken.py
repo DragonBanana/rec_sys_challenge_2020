@@ -9,7 +9,7 @@ from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickl
 from Utils.Data.Features.MappedFeatures import MappedFeatureTweetId
 from Utils.Data.Features.RawFeatures import RawFeatureTweetTextToken
 import billiard as mp
-from BERT.TokenizerWrapper import TokenizerWrapper
+from Utils.Text.TokenizerWrapper import TokenizerWrapper
 
 from abc import abstractmethod
 import pandas as pd

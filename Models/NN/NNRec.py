@@ -1,3 +1,4 @@
+import pathlib
 import torch
 from transformers import AdamW
 # from torchviz import make_dot
@@ -9,7 +10,7 @@ import time
 from tqdm import tqdm
 import pandas as pd
 from scipy.stats import zscore
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, PowerTransformer
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
 from Utils.NN.NNUtils import HIDDEN_SIZE_BERT
@@ -44,7 +45,7 @@ class NNRec(RecommenderBase, ABC):
         self.class_label = class_label
         self.cap_length = cap_length
 
-        self.scaler = StandardScaler()
+        self.scaler = PowerTransformer(method='yeo-johnson')
 
         self.ffnn_params = ffnn_params
 
@@ -74,7 +75,7 @@ class NNRec(RecommenderBase, ABC):
 
     def _normalize_features(self, df, is_train=False):
         if is_train == True:
-            print("Fitting standard scaler")
+            print("Fitting yeo-jhonson scaler")
             self.scaler.fit(df)
             #print(self.scaler.scale_, self.scaler.mean_, self.scaler.var_, self.scaler.n_samples_seen_)
         return pd.DataFrame(self.scaler.transform(df), columns=df.columns)
@@ -91,7 +92,10 @@ class NNRec(RecommenderBase, ABC):
             df_val_tokens_reader: pd.io.parsers.TextFileReader,
             df_val_label: pd.DataFrame,
             cat_feature_set: set,
-            subsample=None):
+            subsample : float = None,
+            normalize : bool = True,
+            pretrained_model_dict_path=None,
+            pretrained_optimizer_dict_path=None):
 
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
@@ -100,11 +104,12 @@ class NNRec(RecommenderBase, ABC):
         print(df_val_features)
 
         assert len(df_train_features.columns) == len(df_val_features.columns),"df_train_features and df_val_features have different number of columns"
-        df_train_features = self._normalize_features(df_train_features, is_train=True)
-        df_val_features = self._normalize_features(df_val_features)
 
-        print(df_train_features)
-        print(df_val_features)
+        if normalize:
+            df_train_features = self._normalize_features(df_train_features, is_train=True)
+            df_val_features = self._normalize_features(df_val_features)
+            print(df_train_features)
+            print(df_val_features)
 
         # Set the seed value all over the place to make this reproducible.
         seed_val = 42
@@ -117,7 +122,12 @@ class NNRec(RecommenderBase, ABC):
             torch.cuda.manual_seed_all(seed_val)
 
         ffnn_input_size = HIDDEN_SIZE_BERT + df_train_features.shape[1]
+
         self.model = self._get_model(ffnn_input_size=ffnn_input_size)
+
+        if pretrained_model_dict_path is not None:
+            print(f"Loading pretrained model : {pretrained_model_dict_path}")
+            self.model.load_state_dict(torch.load(pretrained_model_dict_path))
 
         if gpu:
             self.model.cuda()
@@ -127,13 +137,22 @@ class NNRec(RecommenderBase, ABC):
         #     param.requires_grad = False
 
         # Combine the training inputs into a TensorDataset.
-        train_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
-                                         df_label=df_train_label, cap=self.cap_length, batch_subsample=subsample)
-        val_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
-                                       df_label=df_val_label, cap=self.cap_length, batch_subsample=subsample)
+        if subsample is not None:
+            train_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+                                            df_label=df_train_label, cap=self.cap_length, batch_subsample=subsample)
+            val_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
+                                        df_label=df_val_label, cap=self.cap_length, batch_subsample=subsample)
 
-        train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
-                                                                      batch_size=int(df_train_tokens_reader.chunksize * subsample))
+            train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
+                                                                        batch_size=int(df_train_tokens_reader.chunksize * subsample))
+        else:
+            train_dataset = CustomDatasetCap(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+                                         df_label=df_train_label, cap=self.cap_length)
+            val_dataset = CustomDatasetCap(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
+                                        df_label=df_val_label, cap=self.cap_length)
+
+            train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
+                                                                        batch_size=df_train_tokens_reader.chunksize)
 
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']
@@ -150,6 +169,10 @@ class NNRec(RecommenderBase, ABC):
                           lr=self.lr,  # args.learning_rate - default is 5e-5, our notebook had 2e-5
                           eps=self.eps  # args.adam_epsilon  - default is 1e-8.
                           )
+
+        if pretrained_optimizer_dict_path is not None:
+            print(f"Loading pretrained optimizer : {pretrained_optimizer_dict_path}")
+            optimizer.load_state_dict(torch.load(pretrained_optimizer_dict_path))
 
         # Total number of training steps is [number of batches] x [number of epochs].
         # (Note that this is not the same as the number of training samples).
@@ -206,6 +229,8 @@ class NNRec(RecommenderBase, ABC):
                     'Validation Time': validation_time
                 }
             training_stats.append(curr_stats)
+
+            pathlib.Path('./saved_models').mkdir(parents=True, exist_ok=True)
 
             model_path = f"./saved_models/saved_model_{self.class_label}_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
             optimizer_path = f"./saved_models/saved_optimizer_{self.class_label}_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
@@ -515,10 +540,12 @@ class NNRec(RecommenderBase, ABC):
     def get_prediction(self,
                        df_test_features: pd.DataFrame,
                        df_test_tokens_reader: pd.io.parsers.TextFileReader,
-                       pretrained_model_dict_path: str = None
+                       pretrained_model_dict_path: str = None,
+                       normalize : bool = True
                        ):
 
-        df_test_features = self._normalize_features(df_test_features)
+        if normalize:
+            df_test_features = self._normalize_features(df_test_features)
 
         if pretrained_model_dict_path is None:
             assert self.model is not None, "You are trying to predict without training."

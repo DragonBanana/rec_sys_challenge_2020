@@ -8,6 +8,9 @@ import numpy as np
 
 import json, gzip
 
+from tqdm import tqdm
+tqdm.pandas()
+
 class UtilityMethodsClass():
 
     def loadDiscriminative(self,kind, dataset_id, hashtag_df, hashtag_col, param_pos, param_neg):
@@ -135,13 +138,13 @@ class HasDiscriminativeHashtag_Like(GeneratedFeaturePickle, UtilityMethodsClass)
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)
 
-class HasDiscriminativeHashtag_Reply(GeneratedFeaturePickle):
+class HasDiscriminativeHashtag_Reply(GeneratedFeaturePickle, UtilityMethodsClass):
 
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_has_discriminative_hashtag_reply", dataset_id)
@@ -162,13 +165,13 @@ class HasDiscriminativeHashtag_Reply(GeneratedFeaturePickle):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)
 
-class HasDiscriminativeHashtag_Retweet(GeneratedFeaturePickle):
+class HasDiscriminativeHashtag_Retweet(GeneratedFeaturePickle, UtilityMethodsClass):
 
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_has_discriminative_hashtag_retweet", dataset_id)
@@ -189,13 +192,13 @@ class HasDiscriminativeHashtag_Retweet(GeneratedFeaturePickle):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)
 
-class HasDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
+class HasDiscriminativeHashtag_Comment(GeneratedFeaturePickle, UtilityMethodsClass):
 
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_has_discriminative_hashtag_comment", dataset_id)
@@ -216,8 +219,8 @@ class HasDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
             kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: containsHashtag(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)
@@ -237,20 +240,17 @@ class NumberOfDiscriminativeHashtag_Like(GeneratedFeaturePickle, UtilityMethodsC
         # Load the hashtags column
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
-        # Load the list of discriminative for the like class
-        if not is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        # Load the list of discriminative for the like class, SUPPOSING THAT THEY'VE ALREADY BEEN GENERATED
+        kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)
 
-class NumberOfDiscriminativeHashtag_Reply(GeneratedFeaturePickle):
+class NumberOfDiscriminativeHashtag_Reply(GeneratedFeaturePickle, UtilityMethodsClass):
 
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_number_of_discriminative_hashtag_reply", dataset_id)
@@ -265,19 +265,16 @@ class NumberOfDiscriminativeHashtag_Reply(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if not is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3,3)
-        elif is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)
 
-class NumberOfDiscriminativeHashtag_Retweet(GeneratedFeaturePickle):
+class NumberOfDiscriminativeHashtag_Retweet(GeneratedFeaturePickle, UtilityMethodsClass):
 
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_number_of_discriminative_hashtag_retweet", dataset_id)
@@ -292,19 +289,16 @@ class NumberOfDiscriminativeHashtag_Retweet(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if not is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)
 
-class NumberOfDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
+class NumberOfDiscriminativeHashtag_Comment(GeneratedFeaturePickle, UtilityMethodsClass):
 
     def __init__(self, dataset_id: str):
         super().__init__("tweet_feature_number_of_discriminative_hashtag_comment", dataset_id)
@@ -319,14 +313,11 @@ class NumberOfDiscriminativeHashtag_Comment(GeneratedFeaturePickle):
         feature = MappedFeatureTweetHashtags(self.dataset_id)
         feature_df = feature.load_or_create()
         # Load the list of discriminative for the like class
-        if not is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = self.loadDiscriminative(kind, self.dataset_id, feature_df, feature.feature_name, 3, 3)
-        elif is_test_or_val_set(self.dataset_id):
-            kind_pos, kind_neg = loadPosAndNegLists(kind)
+        kind_pos, kind_neg = loadPosAndNegLists(kind)
         # Create the feature
         kind_disc_df = pd.DataFrame()
-        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
-        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
+        kind_disc_df[self.feature_name+"pos"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_pos) if x is not None else False)
+        kind_disc_df[self.feature_name+"neg"] =  feature_df[feature.feature_name].progress_map(lambda x: numberOfHashtags(x,kind_neg) if x is not None else False)
         kind_disc_df = kind_disc_df.astype(int)   
                 
         self.save_feature(kind_disc_df)        

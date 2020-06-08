@@ -115,7 +115,7 @@ def xgbName():
 #---------------------------------------------------------------
 def lgbmRange(kind):
     param_range_dict = [Integer(70, 4095),                      #num_leaves
-                        Real(0.005, 1, 'log-uniform'),          #learning rate
+                        Real(0.01, 1, 'log-uniform'),          #learning rate
                         Integer(2, 70),                         #max_depth
                         Real(1,50),                             #lambda_l1
                         Real(1,50),                             #lambda_l2
@@ -124,7 +124,7 @@ def lgbmRange(kind):
                         Real(0.1, 1),                           #bagging fraction
                         #Real(0.1, 1),                          #bagging_positive_over_total_ratio
                         #Real(0.1, 1),                          #dominant_bagging
-                        Integer(0, 10),                         #bagging_freq
+                        Integer(1, 10),                         #bagging_freq
                         Integer(255, 5000),                     #max_bin
                         Integer(400, 2000),                     #min_data_in_leaf
     ]
@@ -141,7 +141,7 @@ def lgbmName():
                        "lambda_l2",
                        "colsample_bynode",
                        "colsample_bytree",
-                       "bagging_fraction"
+                       "bagging_fraction",
                        #"bagging_positive_over_total_ratio",
                        #"dominant_bagging",
                        "bagging_freq",
