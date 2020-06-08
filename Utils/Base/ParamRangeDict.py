@@ -124,7 +124,7 @@ def lgbmRange(kind):
                         Real(0.1, 1),                           #bagging fraction
                         #Real(0.1, 1),                          #bagging_positive_over_total_ratio
                         #Real(0.1, 1),                          #dominant_bagging
-                        Integer(0, 10),                         #bagging_freq
+                        Integer(1, 10),                         #bagging_freq
                         Integer(255, 5000),                     #max_bin
                         Integer(400, 2000),                     #min_data_in_leaf
     ]
