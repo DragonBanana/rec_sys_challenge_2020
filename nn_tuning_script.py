@@ -20,36 +20,90 @@ def main():
                 "tweet_feature_creation_timestamp_hour",  # 8
                 "tweet_feature_creation_timestamp_week_day",  # 9
                 "tweet_feature_number_of_mentions",  # 10
-                "engager_feature_number_of_previous_like_engagement",  # 11
-                "engager_feature_number_of_previous_reply_engagement",  # 12
-                "engager_feature_number_of_previous_retweet_engagement",  # 13
-                "engager_feature_number_of_previous_comment_engagement",  # 14
-                "engager_feature_number_of_previous_positive_engagement",  # 15
-                "engager_feature_number_of_previous_negative_engagement",  # 16
-                "engager_feature_number_of_previous_engagement",  # 17 ciao nico :-)
-                "engager_feature_number_of_previous_like_engagement_ratio",  # 18
-                "engager_feature_number_of_previous_reply_engagement_ratio",  # 19
-                "engager_feature_number_of_previous_retweet_engagement_ratio",  # 20
-                "engager_feature_number_of_previous_comment_engagement_ratio",  # 21
-                "engager_feature_number_of_previous_positive_engagement_ratio",  # 22
-                "engager_feature_number_of_previous_negative_engagement_ratio"  # 23
+                "number_of_engagements_like", # 11
+                "number_of_engagements_retweet", #  12
+                "number_of_engagements_reply", # 13
+                "number_of_engagements_comment", #  14
+                "number_of_engagements_positive", #  15
+                "number_of_engagements_negative", # 16
+                "engager_feature_number_of_previous_like_engagement_ratio",  # 17
+                "engager_feature_number_of_previous_reply_engagement_ratio",  # 18
+                "engager_feature_number_of_previous_retweet_engagement_ratio",  # 19
+                "engager_feature_number_of_previous_comment_engagement_ratio",  # 20
+                "engager_feature_number_of_previous_positive_engagement_ratio",  # 21
+                "engager_feature_number_of_previous_negative_engagement_ratio"  # 22
     ]
-
     '''
+    '''
+    feature_list = [
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count",
+        "raw_feature_engager_follower_count",
+        "raw_feature_engager_following_count",
+        "raw_feature_creator_is_verified",
+        "raw_feature_engager_is_verified",
+        "raw_feature_engagement_creator_follows_engager",
+        "tweet_feature_number_of_photo",
+        "tweet_feature_number_of_video",
+        "tweet_feature_number_of_gif",
+        "tweet_feature_number_of_media",
+        "tweet_feature_is_retweet",
+        "tweet_feature_is_quote",
+        "tweet_feature_is_top_level",
+        "tweet_feature_number_of_hashtags",
+        "tweet_feature_creation_timestamp_hour",
+        "tweet_feature_creation_timestamp_week_day",
+        #"tweet_feature_number_of_mentions",
+        "tweet_feature_token_length",
+        "tweet_feature_token_length_unique",
+        "tweet_feature_text_topic_word_count_adult_content",
+        "tweet_feature_text_topic_word_count_kpop",
+        "tweet_feature_text_topic_word_count_covid",
+        "tweet_feature_text_topic_word_count_sport",
+        "number_of_engagements_with_language_like",
+        "number_of_engagements_with_language_retweet",
+        "number_of_engagements_with_language_reply",
+        "number_of_engagements_with_language_comment",
+        "number_of_engagements_with_language_negative",
+        "number_of_engagements_with_language_positive",
+        "number_of_engagements_ratio_like",
+        "number_of_engagements_ratio_retweet",
+        "number_of_engagements_ratio_reply",
+        "number_of_engagements_ratio_comment",
+        "number_of_engagements_ratio_negative",
+        "number_of_engagements_ratio_positive",
+        "number_of_engagements_between_creator_and_engager_like",
+        "number_of_engagements_between_creator_and_engager_retweet",
+        "number_of_engagements_between_creator_and_engager_reply",
+        "number_of_engagements_between_creator_and_engager_comment",
+        "number_of_engagements_between_creator_and_engager_negative",
+        "number_of_engagements_between_creator_and_engager_positive",
+        "number_of_engagements_like",
+        "number_of_engagements_retweet",
+        "number_of_engagements_reply",
+        "number_of_engagements_comment",
+        "number_of_engagements_negative",
+        "number_of_engagements_positive",
+        "tweet_feature_creation_timestamp_hour_shifted",
+        "tweet_feature_creation_timestamp_day_phase",
+        "tweet_feature_creation_timestamp_day_phase_shifted"
+    ]
+    '''
+
     feature_list = [
         "raw_feature_creator_follower_count",  # 0
         "raw_feature_creator_following_count",  # 1
     ]
 
-    chunksize = 2000
-    n_data_train = 2000 #* 10000
-    n_data_val = 2000 #* 10000
+    chunksize = 192
+    n_data_train = chunksize * 1000
+    n_data_val = chunksize * 1000
 
-    train_dataset = "holdout/train"
-    val_dataset = "holdout/test"
-    test_dataset = "test"
+    train_dataset = "cherry_train
+    val_dataset = "cherry_val"
+    test_dataset = "new_test"
 
-    class_label = "retweet"   # retweet, reply, like, comment
+    class_label = "like"   # retweet, reply, like, comment
 
     print(f"n_data_train: {n_data_train}")
     print(f"n_data_val: {n_data_val}")
@@ -78,32 +132,31 @@ def main():
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
 
-    for dropout in [0.1, 0.3]:
-        for lr in [1e-3, 1e-4]:
-            ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': dropout, 'hidden_dropout_prob_2': dropout}
-            rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': lr, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
+    ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
+    rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
 
-            print(f"ffnn_params: {ffnn_params}")
-            print(f"bert_params: {rec_params}")
+    #print(f"ffnn_params: {ffnn_params}")
+    print(f"bert_params: {rec_params}")
 
-            rec = DistilBertRec(**rec_params)
+    rec = DistilBertRec(**rec_params)
 
-            ###   TRAINING
-            stats = rec.fit(df_train_features=feature_train_df,
-                    df_train_tokens_reader=text_train_reader_df,
-                    df_train_label=label_train_df,
-                    df_val_features=feature_val_df,
-                    df_val_tokens_reader=text_val_reader_df,
-                    df_val_label=label_val_df,
-                    cat_feature_set=set([]),
-                    subsample=0.1) # subsample percentage of each batch
+    ###   TRAINING
+    stats = rec.fit(df_train_features=feature_train_df,
+                df_train_tokens_reader=text_train_reader_df,
+                df_train_label=label_train_df,
+                df_val_features=feature_val_df,
+                df_val_tokens_reader=text_val_reader_df,
+                df_val_label=label_val_df,
+                cat_feature_set=set([]),
+                #subsample=0.1, # subsample percentage of each batch
+                #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5") 
+            )
 
-
-            print("STATS: \n")
-            print(stats)
-            with open('stats.txt', 'w+') as f:
-                for s in stats:
-                    f.write(str(s) + '\n')
+    print("STATS: \n")
+    print(stats)
+    with open('stats.txt', 'w+') as f:
+        for s in stats:
+            f.write(str(s) + '\n')
 
 
 if __name__ == '__main__':
