@@ -73,7 +73,7 @@ def xgbRange(kind):
 
 #Names of the hyperparameters that will be optimized
 def xgbName():
-    param_name_dict = ["n_iterations",
+    param_name_dict = ["num_rounds",
                        "max_depth",
                        "min_child_weight",
                        "colsample_bytree",
@@ -85,7 +85,7 @@ def xgbName():
                        "subsample",
                        "base_score",
                        "max_delta_step",
-                       "parallel_num_tree"]
+                       "num_parallel_tree"]
     return param_name_dict
 
 
@@ -135,7 +135,7 @@ def lgbmRange(kind):
 def lgbmName():
     param_name_dict = [
                        "num_leaves",
-                       "learning rate",
+                       "learning_rate",
                        "max_depth",
                        "lambda_l1",
                        "lambda_l2",

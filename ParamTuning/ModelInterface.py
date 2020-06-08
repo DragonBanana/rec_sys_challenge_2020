@@ -1031,11 +1031,12 @@ class ModelInterface(object):
             log.write(to_write)
             telegram_message+=to_write
             telegram_message+="\n"
+
             for i in range(len(p_names)):
-                to_write=str(str(p_names[i])+"= "+str(param[i])+"\n")
+                to_write = f"'{p_names[i]}': {param[i]}, \n"
                 log.write(to_write)
-                telegram_message+=to_write
-                telegram_message+="\n"
+                telegram_message += to_write
+                telegram_message += "\n"
 
         telegram_bot_send_update(self.path+"\n"+telegram_message)
 
