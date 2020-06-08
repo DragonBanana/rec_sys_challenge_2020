@@ -195,16 +195,16 @@ class DistilBertClassifierDoubleInput(nn.Module):
             loss_fct = BCEWithLogitsLoss()
             loss = loss_fct(logits.view(-1), labels.view(-1).float())
             # Declaring the class containing the metrics
-            cm = CoMe(preds.detach().cpu().numpy(), labels.detach().cpu().numpy())
+            #cm = CoMe(preds.detach().cpu().numpy(), labels.detach().cpu().numpy())
             # Evaluating
-            prauc = cm.compute_prauc()
-            rce = cm.compute_rce()
+            #prauc = cm.compute_prauc()
+            #rce = cm.compute_rce()
             # Confusion matrix
-            conf = cm.confMatrix()
+            #conf = cm.confMatrix()
             # Prediction stats
-            max_pred, min_pred, avg = cm.computeStatistics()
+            #max_pred, min_pred, avg = cm.computeStatistics()
 
-            outputs = (loss,) + outputs + (preds, prauc, rce, conf, max_pred, min_pred, avg)
+            outputs = (loss,) + outputs + (preds,) #, prauc, rce, conf, max_pred, min_pred, avg)
 
         return outputs  # (loss), logits, (hidden_states), (attentions), (preds, prauc, rce, conf, max_pred, min_pred, avg)
 

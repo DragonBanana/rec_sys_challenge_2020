@@ -312,19 +312,19 @@ class NNRec(RecommenderBase, ABC):
             # arge given and what flags are set. For our useage here, it returns
             # the loss (because we provided labels) and the "logits"--the model
             # outputs prior to activation.
-            loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
-                                                                            input_features=b_features,
-                                                                            # token_type_ids=None,
-                                                                            attention_mask=b_input_mask,
-                                                                            labels=b_labels)
+            loss, logits, curr_preds = model(input_ids=b_input_ids,
+                                                      input_features=b_features,
+                                                      # token_type_ids=None,
+                                                      attention_mask=b_input_mask,
+                                                      labels=b_labels)
 
             # Accumulate the training loss over all of the batches so that we can
             # calculate the average loss at the end. `loss` is a Tensor containing a
             # single value; the `.item()` function just returns the Python value
             # from the tensor.
             total_train_loss += loss.item()
-            total_train_prauc += prauc
-            total_train_rce += rce
+            #total_train_prauc += prauc
+            #total_train_rce += rce
 
             curr_preds = curr_preds.detach().cpu().numpy()
 
@@ -360,8 +360,8 @@ class NNRec(RecommenderBase, ABC):
 
         # Calculate the average loss over all of the batches.
         avg_train_loss = total_train_loss / len(train_dataloader)
-        avg_train_prauc = total_train_prauc / len(train_dataloader)
-        avg_train_rce = total_train_rce / len(train_dataloader)
+        #avg_train_prauc = total_train_prauc / len(train_dataloader)
+        #avg_train_rce = total_train_rce / len(train_dataloader)
 
         prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds, labels=labels)
 
@@ -371,8 +371,8 @@ class NNRec(RecommenderBase, ABC):
 
         print("")
         print("  Average training loss: {0:.2f}".format(avg_train_loss))
-        print("  Average training PRAUC: {0:.5f}".format(avg_train_prauc))
-        print("  Average training RCE: {0:.5f}".format(avg_train_rce))
+        #print("  Average training PRAUC: {0:.5f}".format(avg_train_prauc))
+        #print("  Average training RCE: {0:.5f}".format(avg_train_rce))
 
         print(f"STATS FOR CURRENT EPOCH"
               f"\nPRAUC : {prauc}"
@@ -443,11 +443,11 @@ class NNRec(RecommenderBase, ABC):
                 # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
                 # Get the "logits" output by the model. The "logits" are the output
                 # values prior to applying an activation function like the softmax.
-                loss, logits, curr_preds, prauc, rce, conf, max_pred, min_pred, avg = model(input_ids=b_input_ids,
-                                                                                input_features=b_features,
-                                                                                # token_type_ids=None,
-                                                                                attention_mask=b_input_mask,
-                                                                                labels=b_labels)
+                loss, logits, curr_preds = model(input_ids=b_input_ids,
+                                                 input_features=b_features,
+                                                 # token_type_ids=None,
+                                                 attention_mask=b_input_mask,
+                                                 labels=b_labels)
 
             curr_preds = curr_preds.detach().cpu().numpy()
 
@@ -459,8 +459,8 @@ class NNRec(RecommenderBase, ABC):
             # Accumulate the validation loss.
             total_eval_loss += loss.item()
 
-            total_eval_prauc += prauc
-            total_eval_rce += rce
+            #total_eval_prauc += prauc
+            #total_eval_rce += rce
 
             # print(f"current batch RCE: {rce}")
             # print(f"current batch PRAUC: {prauc}")
@@ -484,8 +484,8 @@ class NNRec(RecommenderBase, ABC):
 
         # Calculate the average loss over all of the batches.
         avg_val_loss = total_eval_loss / len(validation_dataloader)
-        avg_val_prauc = total_eval_prauc / len(validation_dataloader)
-        avg_val_rce = total_eval_rce / len(validation_dataloader)
+        #avg_val_prauc = total_eval_prauc / len(validation_dataloader)
+        #avg_val_rce = total_eval_rce / len(validation_dataloader)
 
         #print("debug")
         prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds, labels=labels)
@@ -495,8 +495,8 @@ class NNRec(RecommenderBase, ABC):
         validation_time = format_time(time.time() - t0)
 
         print("  Validation Loss: {0:.2f}".format(avg_val_loss))
-        print("  Validation PRAUC: {0:.5f}".format(avg_val_prauc))
-        print("  Validation RCE: {0:.5f}".format(avg_val_rce))
+        #print("  Validation PRAUC: {0:.5f}".format(avg_val_prauc))
+        #print("  Validation RCE: {0:.5f}".format(avg_val_rce))
 
         print(f"STATS FOR VALIDATION"
               f"\nPRAUC : {prauc}"
