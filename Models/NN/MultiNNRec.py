@@ -607,9 +607,10 @@ class MultiNNRec(RecommenderBase, ABC):
                                          # token_type_ids=None, --> missing in distilbert
                                          attention_mask=b_input_mask)
 
-            # print(curr_logits)
+            curr_logits = curr_logits[0]
 
-            curr_logits = curr_logits[0][:, 0]
+            #print(curr_logits)
+            #print(curr_logits.shape)
 
             curr_preds = torch.sigmoid(curr_logits)
 
@@ -618,7 +619,7 @@ class MultiNNRec(RecommenderBase, ABC):
             if preds is None:
                 preds = curr_preds
             else:
-                preds = np.hstack([preds, curr_preds])
+                preds = np.vstack([preds, curr_preds])
 
         return preds
 

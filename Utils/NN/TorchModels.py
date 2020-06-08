@@ -131,7 +131,6 @@ class DistilBertMultiClassifier(nn.Module):
 
         preds = torch.sigmoid(logits)
 
-
         if labels is not None:
             loss_fct = BCEWithLogitsLoss()
             loss = loss_fct(logits.view(-1), labels.view(-1).float())
@@ -147,7 +146,9 @@ class DistilBertMultiClassifier(nn.Module):
                 outputs = (loss, logits[:, i], preds_arr[:, i],)
                 output_list.append(outputs)
 
-        return output_list  # (loss), logits, (hidden_states), (attentions), (preds, prauc, rce, conf, max_pred, min_pred, avg)
+            return output_list  # (loss), logits, (hidden_states), (attentions), (preds, prauc, rce, conf, max_pred, min_pred, avg)
+        else:
+            return (logits,)
 
     def __str__(self):
         return str(self.ffnn)

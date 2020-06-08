@@ -409,7 +409,6 @@ class CustomDatasetCapSubsample(Dataset):
         return tuple(tensor[index - self.count * current_subsampled_batch_size] for tensor in self.tensors)
 
 
-
 class CustomDatasetMultiCap(Dataset):
     def __init__(self,
                  df_features: pd.DataFrame,
