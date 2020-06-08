@@ -124,7 +124,7 @@ def get_dataset(features: list, dataset_id: str, nthread:int=-1):
             with mp.Pool(nthread) as p:
                 partial_create_features = functools.partial(get_feature, dataset_id=dataset_id)
                 # dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
-                dataframes = pd.concat(p.map(partial_create_features, features), axis=1)
+                dataframes = p.map(partial_create_features, features)
                 for df in dataframes:
                     if len(dataframe) > 0:
                         dataframe = df
