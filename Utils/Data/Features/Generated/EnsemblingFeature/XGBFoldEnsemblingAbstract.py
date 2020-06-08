@@ -43,7 +43,14 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             # Load the dataset and shuffle it
             import Utils.Data.Data as data
             X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id, nthread=64)
+
+            print(X_train)
+            print(X_train.memory_usage())
+
             Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id, nthread=64)
+
+            print(Y_train)
+            print(Y_train.memory_usage())
 
             # Declare list of scores (of each folds)
             # used for aggregating results
