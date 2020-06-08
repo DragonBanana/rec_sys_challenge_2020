@@ -125,11 +125,10 @@ def get_dataset(features: list, dataset_id: str, nthread:int=-1):
                 partial_create_features = functools.partial(get_feature, dataset_id=dataset_id)
                 # dataframe = pd.concat(p.map(partial_create_features, features), axis=1)
                 dataframes = p.map(partial_create_features, features)
+                dataframes.append(dataframe)
+                dataframe = pd.concat(dataframes, axis=1)
                 for df in dataframes:
-                    if len(dataframe) > 0:
-                        dataframe = df
-                    else:
-                        dataframe[df.columns[0]] = df[df.columns[0]]
+                    del df
                 del dataframes
     else:
         for feature_name in tqdm(features):
