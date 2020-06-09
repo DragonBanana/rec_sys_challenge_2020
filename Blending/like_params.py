@@ -66,7 +66,7 @@ def lgbm_get_params():
 
         'min_data_in_leaf': 1171,
 
-        'early_stopping_rounds': 15
+        # 'early_stopping_rounds': 15
     })
 
     '''
@@ -109,7 +109,7 @@ def lgbm_get_params():
 
         'num_threads': -1,
 
-        'num_iterations': 1000,
+        'num_iterations': 358,
 
         'num_leaves': 2644,
 
@@ -133,7 +133,7 @@ def lgbm_get_params():
 
         'min_data_in_leaf': 400,
 
-        'early_stopping_rounds': 15
+        # 'early_stopping_rounds': 15
     })
 
 
@@ -202,7 +202,7 @@ def lgbm_get_params():
 
         'min_data_in_leaf': 518,
 
-        'early_stopping_rounds': 15
+        # 'early_stopping_rounds': 15
     })
 
     '''
@@ -246,7 +246,7 @@ def lgbm_get_params():
 
         'num_threads': -1,
 
-        'num_iterations': 1000,
+        'num_iterations': 962,
 
         'num_leaves': 839,
 
@@ -270,7 +270,7 @@ def lgbm_get_params():
 
         'min_data_in_leaf': 779,
 
-        'early_stopping_rounds': 15
+        # 'early_stopping_rounds': 15
     })
 
 
