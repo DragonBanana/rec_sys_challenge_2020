@@ -538,3 +538,131 @@ class CustomDatasetMultiCap(Dataset):
 
         return tuple(tensor[index - self.count * self.df_tokens_reader_current.chunksize] for tensor in self.tensors)
 
+
+class CustomDatasetDualCap(Dataset):
+    def __init__(self,
+                 df_features: pd.DataFrame,
+                 df_tokens_reader: pd.io.parsers.TextFileReader,
+                 df_label: pd.DataFrame,
+                 cap: int = 128):
+
+        self.df_features = df_features
+        self.df_tokens_reader_original = df_tokens_reader
+        self.df_tokens_reader_current = None
+        self.df_label = df_label
+        self.count = -1
+        self.cap = cap
+
+    def __len__(self):
+        return len(self.df_features)
+
+    def __getitem__(self, index):
+
+        # debug
+        #print(f"debug-> index is:{index}")
+
+        # if true, update the caches, i.e. self.tensors
+        if index % self.df_tokens_reader_original.chunksize == 0:
+            sep_tok_id = 102
+            if index == 0:
+                self.count = 0
+                self.df_tokens_reader_current = pd.read_csv(self.df_tokens_reader_original.f,
+                                                            chunksize=self.df_tokens_reader_original.chunksize, index_col=0, header=0,)
+            else:
+                self.count += 1
+
+            df_tokens_cache = self.df_tokens_reader_current.get_chunk()
+            df_tokens_cache.columns = ['tokens']
+
+            start = index
+            end = start + self.df_tokens_reader_current.chunksize
+            df_features_cache = self.df_features.iloc[start:end]
+            df_label_cache = self.df_label.iloc[start:end]
+
+            text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
+            #print(f"first text_series: {text_series}")
+            max_len, is_capped = get_max_len_cap(text_series, self.cap)
+            attention_masks = np.ones((len(text_series), max_len), dtype=np.int8)
+            if is_capped:
+                debug_first_branch = False
+                debug_second_branch = False
+
+                # remove the additional tokens if exceeds max_len,
+                # else: pad
+                for i in range(len(text_series)):
+                    debug_first_branch = False
+                    debug_second_branch = False
+
+                    i_shifted = i + index
+                    if len(text_series[i_shifted]) > max_len:
+                        debug_first_branch = True
+                        # remove the additional tokens
+                        while len(text_series[i_shifted]) >= (max_len):
+                            text_series[i_shifted].pop()
+                        # append the SEP token
+                        text_series[i_shifted].append(sep_tok_id)
+
+                    elif len(text_series[i_shifted]) < max_len:  # padding
+                        debug_second_branch = True
+                        initial_len = len(text_series[i_shifted])
+                        miss = max_len - initial_len
+                        text_series[i_shifted] += [0] * miss
+                        for j in range(initial_len, max_len):
+                            attention_masks[i][j] = 0
+                    # print(
+                    #    f"iteration {i}, debug_first_branch {debug_first_branch} ,debug_second_branch {debug_second_branch}, len: {len(text_series[i_shifted])}")
+                    # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
+                    # print(f"type of the array: {text_series[i_shifted].dtype}")
+
+            else:  # if the series is not capped, normal padding
+
+                # padding
+                for i in range(len(text_series)):
+                    i_shifted = i + index  # * self.df_tokens_reader.chunksize
+                    initial_len = len(text_series[i_shifted])
+                    miss = max_len - initial_len
+                    text_series[i_shifted] += [0] * miss
+                    for j in range(initial_len, max_len):
+                        attention_masks[i][j] = 0
+                    # text_series[i_shifted] = np.array(text_series[i_shifted], dtype=np.int32)
+
+            # todo we need to optimize this
+            list_arr = []
+            for feat in df_features_cache.columns:
+                list_arr.append(df_features_cache[feat].values)
+            feature_mat = np.array(list_arr)
+            del list_arr
+            gc.collect()
+
+            text_series = text_series.map(lambda l: [int(elem) for elem in l]).map(
+                lambda x: np.array(x, dtype=np.int32))
+
+            # print(f"text_series : {text_series}")
+            # print(f"text_series type: {type(text_series)}")
+            # print(f"text_series to numpy: {text_series.to_numpy()}")
+
+            text_np_mat = np.stack(text_series)
+            #print(f"text_np_mat :\n {text_np_mat}")
+            #print(f"text_np_mat shape :\n {text_np_mat.shape}")
+            #print(f"text_np_mat type : {type(text_np_mat)}")
+            #print(f"text_np_mat dtype : {text_np_mat.dtype}")
+            #print(f"text_np_mat 0 type : {type(text_np_mat[0])}")
+
+            #print(f"text_np_mat 0 : {text_np_mat[0]}")
+            #print(f"text_np_mat 0 dtype : {text_np_mat[0].dtype}")
+            text_tensor = torch.tensor(text_np_mat, dtype=torch.int64)
+            attention_masks = torch.tensor(attention_masks, dtype=torch.int8)
+
+            df_label_cache.columns = [0, 1]
+            like_arr = df_label_cache[0].astype(np.int8).values
+            retweet_arr = df_label_cache[1].astype(np.int8).values
+
+            labels_mat = np.vstack([like_arr, retweet_arr, reply_arr, comment_arr])
+
+            labels = torch.tensor(labels_mat.T, dtype=torch.int8)
+
+            features = torch.tensor(feature_mat.T)
+            self.tensors = [text_tensor, attention_masks, features, labels]
+
+        return tuple(tensor[index - self.count * self.df_tokens_reader_current.chunksize] for tensor in self.tensors)
+
