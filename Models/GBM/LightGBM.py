@@ -306,13 +306,16 @@ class LightGBM(RecommenderGBM):
         import matplotlib.pyplot as plt
 
         lgb.plot_importance(model,importance_type="split")
-        plt.rcParams["figure.figsize"] = (20,5)
+        plt.rcParams["figure.figsize"] = (50,50)
         plt.title("Feature Importance: SPLIT")
         plt.savefig("fimportance_split.png")
         lgb.plot_importance(model,importance_type="gain")
         plt.rcParams["figure.figsize"] = (20,5)
         plt.title("Feature Importance: GAIN")
         plt.savefig("fimportance_gain.png")
+
+        feature_imp = pd.DataFrame({'Value':model.feature_importance(),'Feature':X.columns})
+        feature_imp.to_csv("feature_importances.csv")
 
     #Returns the parameters in dictionary form
     def get_param_dict(self):
