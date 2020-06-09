@@ -443,7 +443,8 @@ DICT_ARRAYS = {
     # TWEET TEXT FEATURE
     #"text_embeddings_PCA_10_feature_dict_array": TweetTextEmbeddingsPCA10FeatureDictArray(),
     #"text_embeddings_PCA_32_feature_dict_array": TweetTextEmbeddingsPCA32FeatureDictArray(),
-    "text_embeddings_hashtags_mentions_LDA_15_feature_dict_array": TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray(),
+    "mapping_mentions_id_dictionary": MappingMentionsDictionary(),
+    #"text_embeddings_hashtags_mentions_LDA_15_feature_dict_array": TweetTextEmbeddingsHashtagsMentionsLDA15FeatureDictArray(),
     #"text_embeddings_hashtags_mentions_LDA_20_feature_dict_array": TweetTextEmbeddingsHashtagsMentionsLDA20FeatureDictArray()
     "tweet_token_length_feature_dict_array": TweetTokenLengthFeatureDictArray(),
     "tweet_token_length_unique_feature_dict_array": TweetTokenLengthUniqueFeatureDictArray(),

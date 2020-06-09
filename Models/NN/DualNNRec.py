@@ -11,7 +11,7 @@ from tqdm import tqdm
 import pandas as pd
 from sklearn.preprocessing import PowerTransformer
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
-from Utils.NN.TorchModels import DistilBertMultiClassifier
+from Utils.NN.TorchModels import DistilBertDualClassifier
 from Utils.NN.NNUtils import HIDDEN_SIZE_BERT
 from Utils.Base.RecommenderBase import RecommenderBase
 from Utils.NN.CustomDatasets import *
@@ -22,7 +22,7 @@ from Utils.TelegramBot import telegram_bot_send_update
 
 
 # abstract class for nn recommenders
-class MultiNNRec(RecommenderBase, ABC):
+class DualNNRec(RecommenderBase, ABC):
 
     # TODO add support for Early Stopping
     def __init__(self, weight_decay: float = 0.0,
@@ -101,9 +101,9 @@ class MultiNNRec(RecommenderBase, ABC):
         print(df_train_features)
         print(df_val_features)
 
-        assert len(df_train_label.columns) == 4, "it needs 4 labels in train df."
+        assert len(df_train_label.columns) == 2, "it needs 2 labels in train df."
 
-        assert len(df_val_label.columns) == 4, "it needs 4 labels in val df."
+        assert len(df_val_label.columns) == 2, "it needs 2 labels in val df."
 
         assert len(df_train_features.columns) == len(df_val_features.columns), \
             "df_train_features and df_val_features have different number of columns"
@@ -243,13 +243,13 @@ class MultiNNRec(RecommenderBase, ABC):
 
             pathlib.Path('./saved_models').mkdir(parents=True, exist_ok=True)
 
-            model_path = f"./saved_models/saved_model_multi_label_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
-            optimizer_path = f"./saved_models/saved_optimizer_multi_label_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
+            model_path = f"./saved_models/saved_model_{self.model.get_params_string()}_{self.lr}_epoch_{epoch_i + 1}"
+            optimizer_path = f"./saved_models/saved_optimizer_{self.model.get_params_string()}_{self.lr}_epoch_{epoch_i + 1}"
 
             torch.save(self.model.state_dict(), model_path)
             torch.save(optimizer.state_dict(), optimizer_path)
 
-            bot_string = f"DistilBertDoubleInput NN - multi_label \n ---------------- \n"
+            bot_string = f"DistilBertDoubleInput NN - dual_label \n ---------------- \n"
             bot_string = bot_string + str(self.model)
             bot_string = bot_string + "Weight decay: " + str(self.weight_decay) + "\n"
             bot_string = bot_string + "Learning rate: " + str(self.lr) + "\n"
@@ -280,8 +280,8 @@ class MultiNNRec(RecommenderBase, ABC):
         # `dropout` and `batchnorm` layers behave differently during training
         # vs. test (source: https://stackoverflow.com/questions/51433378/what-does-model-train-do-in-pytorch)
         model.train()
-        preds_list = [None] * 4
-        labels_list = [None] * 4
+        preds_list = [None] * 2
+        labels_list = [None] * 2
 
         # For each batch of training data...
         for step, batch in tqdm(enumerate(train_dataloader), total=len(train_dataloader)):
@@ -341,7 +341,7 @@ class MultiNNRec(RecommenderBase, ABC):
             loss = output_list[0][0]
             total_train_loss += loss.item()
 
-            for i in range(4):
+            for i in range(2):
                 curr_preds = output_list[i][2]
 
                 if preds_list[i] is None:
@@ -378,16 +378,12 @@ class MultiNNRec(RecommenderBase, ABC):
         avg_train_loss = total_train_loss / len(train_dataloader)
 
         print(f"TRAINING STATISTICS FOR EPOCH")
-        for i in range(4):
+        for i in range(2):
             prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds_list[i], labels=labels_list[i])
             if i == 0:
-                print("\n------- LIKE -------")
+                print("\n------- LABEL 1 -------")
             elif i == 1:
-                print("\n------- RETWEET -------")
-            elif i == 2:
-                print("\n------- REPLY -------")
-            elif i == 3:
-                print("\n------- COMMENT -------")
+                print("\n------- LABEL 2 -------")
 
             print(f"PRAUC : {prauc}"
                   f"\nRCE : {rce}"
@@ -413,8 +409,8 @@ class MultiNNRec(RecommenderBase, ABC):
 
         # Tracking variables
         total_eval_loss = 0
-        preds_list = [None] * 4
-        labels_list = [None] * 4
+        preds_list = [None] * 2
+        labels_list = [None] * 2
 
         # Measure how long the training epoch takes.
         t0 = time.time()
@@ -464,7 +460,7 @@ class MultiNNRec(RecommenderBase, ABC):
             loss = output_list[0][0]
             total_eval_loss += loss.item()
 
-            for i in range(4):
+            for i in range(2):
                 curr_preds = output_list[i][2]
 
                 if preds_list[i] is None:
@@ -484,16 +480,12 @@ class MultiNNRec(RecommenderBase, ABC):
         avg_val_loss = total_eval_loss / len(validation_dataloader)
 
         print(f"VALIDATION STATISTICS FOR EPOCH")
-        for i in range(4):
+        for i in range(2):
             prauc, rce, conf, max_pred, min_pred, avg = self.evaluate(preds=preds_list[i], labels=labels_list[i])
             if i == 0:
-                print("\n------- LIKE -------")
+                print("\n------- LABEL 1 -------")
             elif i == 1:
-                print("\n------- RETWEET -------")
-            elif i == 2:
-                print("\n------- REPLY -------")
-            elif i == 3:
-                print("\n------- COMMENT -------")
+                print("\n------- LABEL 2 -------")
 
             print(f"PRAUC : {prauc}"
                   f"\nRCE : {rce}"
@@ -622,8 +614,8 @@ class MultiNNRec(RecommenderBase, ABC):
         return preds
 
 
-class MultiDistilBertRec(MultiNNRec):
+class DualDistilBertRec(DualNNRec):
 
     def _get_model(self, ffnn_input_size):
         self.ffnn_params['input_size'] = ffnn_input_size
-        return DistilBertMultiClassifier(self.ffnn_params)
+        return DistilBertDualClassifier(self.ffnn_params)
