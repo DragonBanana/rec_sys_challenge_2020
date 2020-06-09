@@ -654,10 +654,10 @@ class CustomDatasetDualCap(Dataset):
             attention_masks = torch.tensor(attention_masks, dtype=torch.int8)
 
             df_label_cache.columns = [0, 1]
-            like_arr = df_label_cache[0].astype(np.int8).values
-            retweet_arr = df_label_cache[1].astype(np.int8).values
+            arr_0 = df_label_cache[0].astype(np.int8).values
+            arr_1 = df_label_cache[1].astype(np.int8).values
 
-            labels_mat = np.vstack([like_arr, retweet_arr, reply_arr, comment_arr])
+            labels_mat = np.vstack([arr_0, arr_1])
 
             labels = torch.tensor(labels_mat.T, dtype=torch.int8)
 
