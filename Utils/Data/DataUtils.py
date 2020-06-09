@@ -1,6 +1,6 @@
 import functools
 import pathlib
-
+import multiprocessing
 from Utils.Data.Dictionary.TweetBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.UserBasicFeaturesDictArray import *
 from Utils.Data.Dictionary.TweetTextFeaturesDictArray import *
@@ -56,29 +56,29 @@ import billiard as mp
 import os
 
 DATASET_IDS = [
-    "train",
+    # "train",
     # Removing those datasets to speed up the generation of features
     # "train_days_1",
     # "train_days_12",
     # "train_days_123",
     # "train_days_1234",
     # "train_days_12345",
-    #"train_days_123456",
-    #"test",
+    # "train_days_123456",
+    # "test",
     # Removing those datasets to speed up the generation of features
     # "val_days_2",
     # "val_days_3",
     # "val_days_4",
     # "val_days_5",
     # "val_days_6",
-    #"val_days_7",
-    #"holdout/train",
-    #"holdout/test",
+    # "val_days_7",
+    # "holdout/train",
+    # "holdout/test",
     "new_train",
     "new_test",
-    #"new_val",
-    #"holdout_new_train",
-    #"holdout_new_test",
+    # "new_val",
+    # "holdout_new_train",
+    # "holdout_new_test",
     "cherry_train",
     "cherry_val",
     "last_test"
@@ -185,7 +185,7 @@ def populate_features():
         result[("tweet_feature_creation_timestamp_day_phase_shifted", dataset_id)] = TweetFeatureCreationTimestampDayPhase_Shifted(dataset_id)
         # FROM TEXT TOKEN FEATURES
         #result[("tweet_feature_mentions", dataset_id)] = TweetFeatureMappedMentions(dataset_id)
-        #result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
+        result[("tweet_feature_number_of_mentions", dataset_id)] = TweetFeatureNumberOfMentions(dataset_id)
         #result[("text_embeddings_clean_PCA_32", dataset_id)] = TweetFeatureTextEmbeddingsPCA32(dataset_id)
         #result[("text_embeddings_clean_PCA_10", dataset_id)] = TweetFeatureTextEmbeddingsPCA10(dataset_id)
         #result[("text_embeddings_hashtags_mentions_LDA_15", dataset_id)] = TweetFeatureTextEmbeddingsHashtagsMentionsLDA15(dataset_id)
@@ -543,7 +543,7 @@ def cache_dataset_as_svm(filename, X_train, Y_train=None, no_fuck_my_self=False)
         pathlib.Path("temp").mkdir(parents=True, exist_ok=True)
 
         partial_to_svm = functools.partial(to_svm, filename=filename)
-        with mp.Pool(30) as p:
+        with mp.Pool(multiprocessing.cpu_count()) as p:
             p.map(partial_to_svm, enumerate(zip(X_chunks, Y_chunks)))
 
         cmd = f'cat {"".join([f"temp/{i}_{filename}.svm " for i in range(1000)])}> {filename}.svm'
