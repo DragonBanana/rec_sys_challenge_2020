@@ -130,6 +130,18 @@ def lgbmRange(kind):
     ]
     return param_range_dict
 
+def lgbmRangeCold(kind):
+    param_range_dict = [Integer(20, 2000),                      #num_leaves
+                        Integer(2, 50),                         #max_depth
+                        Real(1,50),                             #lambda_l1
+                        Real(1,50),                             #lambda_l2
+                        Real(0.4, 1),                           #colsample_bynode
+                        Real(0.4, 1),                           #colsample_bytree
+                        Real(0.1, 1),                           #bagging fraction
+                        Integer(1, 10),                         #bagging_freq
+                        Integer(400, 2000),                     #min_data_in_leaf
+    ]
+    return param_range_dict
 
 #Names of the hyperparameters that will be optimized
 def lgbmName():
@@ -146,6 +158,21 @@ def lgbmName():
                        #"dominant_bagging",
                        "bagging_freq",
                        "max_bin",
+                       "min_data_in_leaf"
+                       ]
+    return param_name_dict
+
+#Names of the hyperparameters that will be optimized
+def lgbmNameCold():
+    param_name_dict = [
+                       "num_leaves",
+                       "max_depth",
+                       "lambda_l1",
+                       "lambda_l2",
+                       "colsample_bynode",
+                       "colsample_bytree",
+                       "bagging_fraction",
+                       "bagging_freq",
                        "min_data_in_leaf"
                        ]
     return param_name_dict

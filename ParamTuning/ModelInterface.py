@@ -498,7 +498,65 @@ class ModelInterface(object):
         #Returning the dumbly combined scores
         return self.metriComb(prauc, rce)
 
+#-----------------------------------------
+#       ONLY FOR COLD USERS
+#-----------------------------------------
+    # Score function for the lightGBM model
+    def blackBoxLGBCold(self, param):
+        #Log time
+        start_log_time = time.time()
+        if self.make_log is True:
+            self.saveParam(param)
+        #Initializing the model it it wasn't already
+        model = LightGBM(kind=self.kind,
+                        objective=self.objective,
+                        metric=self.eval_metric,
+                        #In tuning dict
+                        num_leaves=       param[0],
+                        max_depth=        param[1],
+                        learning_rate=    0.25,
+                        lambda_l1=        param[2],
+                        lambda_l2=        param[3],
+                        colsample_bynode= param[4],
+                        colsample_bytree= param[5],
+                        bagging_fraction= param[6],
+                        bagging_freq=     param[7],
+                        min_data_in_leaf= param[8],
+                        #Early stopping
+                        early_stopping_rounds=self.early_stopping_rounds,
+                        is_unbalance=self.is_unbalance
+        )
+        #Training on custom set
+        if (self.Y_train is None):
+            print("No train set passed to the model.")
+        else:
+            if self.X_val is None:
+                model.fit(self.X_train, self.Y_train, categorical_feature=self.categorical_features)           #TODO: AGGIUNGI CATEGORICAL FEATURE
+                best_iter = -1
+            else:
+                model.fit(self.X_train, self.Y_train, X_val=self.X_val, Y_val=self.Y_val, categorical_feature=self.categorical_features)
+                best_iter = model.get_best_iter()
 
+        #Evaluating on custom set
+        if (self.Y_test is None):
+            print("No test set provided.")
+        else:
+            prauc, rce, confmat, max_pred, min_pred, avg = model.evaluate(self.X_test.to_numpy(),self.Y_test.to_numpy())
+
+        del model
+        #Make human readable logs here
+        if self.make_log is True:
+            self.saveRes(best_iter,
+                         prauc, 
+                         rce, 
+                         confmat, 
+                         max_pred, 
+                         min_pred, 
+                         avg,
+                         start_log_time)
+        
+        #Returning the dumbly combined scores
+        return self.metriComb(prauc, rce)
 
     # Batch ones    
     # Score function for the lightGBM model
@@ -849,6 +907,9 @@ class ModelInterface(object):
         if self.model_name in "lightgbm_classifier":
             param_dict =  lgbmRange(self.kind)
 
+        if self.model_name in "lightgbm_classifier_cold":
+            param_dict =  lgbmRangeCold(self.kind)
+
         if self.model_name in "catboost_classifier":
             param_dict = catRange(self.kind)
 
@@ -863,6 +924,9 @@ class ModelInterface(object):
 
         if self.model_name in "lightgbm_classifier":
             names_dict =  lgbmName()
+
+        if self.model_name in "lightgbm_classifier_cold":
+            names_dict =  lgbmNameCold()
 
         if self.model_name in "catboost_classifier":
             names_dict = catName()
@@ -882,6 +946,9 @@ class ModelInterface(object):
         
             if self.model_name in "lightgbm_classifier":
                 score_func = self.blackBoxLGB
+
+            if self.model_name in "lightgbm_classifier_cold":
+                score_func = self.blackBoxLGBCold
 
             if self.model_name in "catboost_classifier":
                 score_func = self.blackBoxCAT
