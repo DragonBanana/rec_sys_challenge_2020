@@ -9,6 +9,8 @@ from Utils.Base.ParamRangeDict import xgbRange
 from Utils.Base.ParamRangeDict import xgbName
 from Utils.Base.ParamRangeDict import lgbmRange
 from Utils.Base.ParamRangeDict import lgbmName
+from Utils.Base.ParamRangeDict import lgbmRangeCold
+from Utils.Base.ParamRangeDict import lgbmNameCold
 from Utils.Base.ParamRangeDict import catRange
 from Utils.Base.ParamRangeDict import catName
 from Utils.Data.Data import get_dataset_xgb
