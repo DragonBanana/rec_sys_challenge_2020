@@ -28,6 +28,8 @@ def main():
 
     assert LABEL in ["like", "reply", "retweet", "comment"], "LABEL not valid."
 
+    print(f"label is {LABEL}")
+
     features = ["raw_feature_creator_follower_count",
                "raw_feature_creator_following_count",
                "raw_feature_engager_follower_count",
@@ -179,20 +181,20 @@ def main():
     val_dataset = "cherry_val"
     test_dataset = "new_test"
 
-
-
-    if LABEL is "like":
+    if LABEL in ["like"]:
         lgbm_params = like_params.lgbm_get_params()
         xgb_params = like_params.xgb_get_params()
-    elif LABEL is "reply":
+    elif LABEL in ["reply"]:
         lgbm_params = reply_params.lgbm_get_params()
         xgb_params = reply_params.xgb_get_params()
-    elif LABEL is "retweet":
+    elif LABEL in ["retweet"]:
         lgbm_params = retweet_params.lgbm_get_params()
         xgb_params = retweet_params.xgb_get_params()
-    elif LABEL is "comment":
+    elif LABEL in ["comment"]:
         lgbm_params = comment_params.lgbm_get_params()
         xgb_params = comment_params.xgb_get_params()
+    else:
+        assert False, "What?"
 
     categorical_features_set = set([])
 
@@ -249,7 +251,7 @@ def main():
     for df_feat in df_feature_list:
         assert len(df_feat) == (len_val + len(df_test)), \
             f"Blending features are not of dimension expected, len val: {len_val} len test: {len(df_test)}\n " \
-            f"obtained len: {len(df_feat)}\n"
+            f"obtained len: {len(df_feat)} of {df_feat.columns[0]}\n"
 
     # split feature dataframe in validation and testing
     df_feat_val_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
