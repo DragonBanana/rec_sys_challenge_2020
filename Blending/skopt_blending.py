@@ -179,8 +179,6 @@ def main():
     val_dataset = "cherry_val"
     test_dataset = "new_test"
 
-
-
     if LABEL is "like":
         lgbm_params = like_params.lgbm_get_params()
         xgb_params = like_params.xgb_get_params()
@@ -249,7 +247,7 @@ def main():
     for df_feat in df_feature_list:
         assert len(df_feat) == (len_val + len(df_test)), \
             f"Blending features are not of dimension expected, len val: {len_val} len test: {len(df_test)}\n " \
-            f"obtained len: {len(df_feat)}\n"
+            f"obtained len: {len(df_feat)} of {df_feat.columns[0]}\n"
 
     # split feature dataframe in validation and testing
     df_feat_val_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
