@@ -210,7 +210,6 @@ class MappingMentionsDictionary(MappingDictionary):
     def __init__(self, inverse: bool = False):
         super().__init__("mapping_mentions_id_dictionary", inverse)
         self.direct_path_csv_path = pl.Path(f"{Dictionary.ROOT_PATH}/mapping/{self.dictionary_name}/direct.csv.gz")
-        self.tokens_df = None
         self.mentions_ids_dict = {} 
         self.current_mapping_mentions = 0
         self.tok = None
@@ -225,42 +224,81 @@ class MappingMentionsDictionary(MappingDictionary):
             tokens_list, mentions_tokens = get_RT_mentions(tokens_list, mentions_tokens)
 
         tokens_list, mentions_tokens, _ = get_remove_mentions_hashtags(self.tok, tokens_list, mentions_tokens, [])
-        mentions_count = len(mentions_tokens)
+        #mentions_count = len(mentions_tokens)
         mentions_strings = decode_hashtags_mentions(self.tok, mentions_tokens)
         mapped_mentions, self.current_mapping_mentions = map_to_unique_ids(mentions_strings, self.mentions_ids_dict, self.current_mapping_mentions)
 
-        for i in range(len(mentions_tokens)):
-            mentions_tokens[i] = '\t'.join(map(str, mentions_tokens[i]))
+        #for i in range(len(mentions_tokens)):
+        #    mentions_tokens[i] = '\t'.join(map(str, mentions_tokens[i]))
 
         # each mention is separated by a ";"
         # each token in a mention is separated by a "\t"
         # each mapped mention is separated by a "\t"
-        return str(mentions_count), ';'.join(mentions_tokens), ';'.join(mentions_strings), '\t'.join(map(str, mapped_mentions))
+        return '\t'.join(map(str, mapped_mentions)) # int(mentions_count), ';'.join(mentions_tokens), ';'.join(mentions_strings),
 
     def create_dictionary(self):
+        from Utils.Data.Features.MappedFeatures import MappedFeatureTweetId
+        
         self.tok = TokenizerWrapper("bert-base-multilingual-cased")
-        train_feature = RawFeatureTweetTextToken("train")
-        test_feature = RawFeatureTweetTextToken("test")
-        last_test_feature = RawFeatureTweetTextToken("last_test")
-        data = pd.concat([
+        
+        train_feature = MappedFeatureTweetId("train")
+        test_feature = MappedFeatureTweetId("test")
+        last_test_feature = MappedFeatureTweetId("last_test")
+        tweet_ids = pd.concat([
             train_feature.load_or_create()[train_feature.feature_name],
             test_feature.load_or_create()[test_feature.feature_name],
             last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
-        self.tokens_df = pd.DataFrame(data.unique())[0]
         
-        #print(self.tokens_df)
+        print(tweet_ids)
         
-        result = pd.DataFrame(columns=['mentions_count', 'mentions_tokens', 'mentions_text', 'mentions_mapped'])
-        result['mentions_count'], result['mentions_tokens'], result['mentions_text'], result['mentions_mapped'] = zip(*self.tokens_df.map(lambda x: self.get_mentions(x)))
+        train_feature = RawFeatureTweetTextToken("train")
+        test_feature = RawFeatureTweetTextToken("test")
+        last_test_feature = RawFeatureTweetTextToken("last_test")
+        text = pd.concat([
+            train_feature.load_or_create()[train_feature.feature_name],
+            test_feature.load_or_create()[test_feature.feature_name],
+            last_test_feature.load_or_create()[last_test_feature.feature_name]
+        ])
+        
+        print(text)
+        
+        del train_feature
+        del test_feature
+        del last_test_feature
+        
+        data = pd.concat([tweet_ids, text], axis=1)
+        
+        print(data)
+        
+        del tweet_ids
+        del text
+        
+        tokens_df = pd.DataFrame(data.drop_duplicates('mapped_feature_tweet_id'))
+        tokens_df = tokens_df.set_index('mapped_feature_tweet_id')
+        tokens_df = tokens_df['raw_feature_tweet_text_token']
+        
+        print(tokens_df)
+        
+        del data
+        
+        result = pd.DataFrame(columns=['mentions_mapped'])
+        result['mentions_mapped'] = tokens_df.apply(self.get_mentions)
+        
+        del tokens_df
+                                                         
+        #result['mentions_count'] = result['mentions_mapped'].apply(lambda x: len(x.split('\t')))
 
-        #print(result)
+        print(result)
 
         self.save_dictionary(result)
         
+    def has_dictionary(self):
+        return self.direct_path_csv_path.is_file()
+        
     def load_dictionary(self):
-        self.direct_path_csv_path.parent.mkdir(parents=True, exist_ok=True)
-        return pd.read_csv(self.direct_path_csv_path, compression="gzip", sep="\x01", index_col=0)
+        return pd.read_csv(self.direct_path_csv_path, compression="gzip", sep="\x01", header=0, index_col=0)
     
     def save_dictionary(self, dictionary):
+        self.direct_path_csv_path.parent.mkdir(parents=True, exist_ok=True)
         dictionary.to_csv(self.direct_path_csv_path, header=True, index=True, sep='\x01')

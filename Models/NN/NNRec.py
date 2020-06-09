@@ -9,8 +9,7 @@ import random
 import time
 from tqdm import tqdm
 import pandas as pd
-from scipy.stats import zscore
-from sklearn.preprocessing import StandardScaler, PowerTransformer
+from sklearn.preprocessing import PowerTransformer
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
 from Utils.NN.TorchModels import DistilBertClassifierDoubleInput
 from Utils.NN.NNUtils import HIDDEN_SIZE_BERT
@@ -276,12 +275,12 @@ class NNRec(RecommenderBase, ABC):
         for step, batch in tqdm(enumerate(train_dataloader), total=len(train_dataloader)):
 
             # Progress update every 40 batches.
-            if step % 40 == 0 and not step == 0:
-                # Calculate elapsed time in minutes.
-                elapsed = format_time(time.time() - t0)
+            #if step % 40 == 0 and not step == 0:
+            #    # Calculate elapsed time in minutes.
+            #    elapsed = format_time(time.time() - t0)
 
-                # Report progress.
-                print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
+            #    # Report progress.
+            #    print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
 
             # Unpack this training batch from our dataloader.
             #
@@ -409,12 +408,12 @@ class NNRec(RecommenderBase, ABC):
         for step, batch in tqdm(enumerate(validation_dataloader), total=len(validation_dataloader)):
 
             # Progress update every 40 batches.
-            if step % 40 == 0 and not step == 0:
-                # Calculate elapsed time in minutes.
-                elapsed = format_time(time.time() - t0)
+            #if step % 40 == 0 and not step == 0:
+            #    # Calculate elapsed time in minutes.
+            #    elapsed = format_time(time.time() - t0)
 
-                # Report progress.
-                print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(validation_dataloader), elapsed))
+            #    # Report progress.
+            #    print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(validation_dataloader), elapsed))
 
 
             # Unpack this training batch from our dataloader.
