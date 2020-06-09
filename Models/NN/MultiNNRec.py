@@ -90,7 +90,6 @@ class MultiNNRec(RecommenderBase, ABC):
             df_val_tokens_reader: pd.io.parsers.TextFileReader,
             df_val_label: pd.DataFrame,
             cat_feature_set: set,
-            subsample: float = None,
             normalize: bool = True,
             pretrained_model_dict_path=None,
             pretrained_optimizer_dict_path=None):
@@ -140,29 +139,15 @@ class MultiNNRec(RecommenderBase, ABC):
         #     param.requires_grad = False
 
         # Combine the training inputs into a TensorDataset.
-        if subsample is not None:
-            train_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_train_features,
-                                                      df_tokens_reader=df_train_tokens_reader,
-                                                      df_label=df_train_label, cap=self.cap_length,
-                                                      batch_subsample=subsample)
-            val_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_val_features,
-                                                    df_tokens_reader=df_val_tokens_reader,
-                                                    df_label=df_val_label, cap=self.cap_length,
-                                                    batch_subsample=subsample)
+        train_dataset = CustomDatasetMultiCap(df_features=df_train_features,
+                                            df_tokens_reader=df_train_tokens_reader,
+                                            df_label=df_train_label, cap=self.cap_length)
+        val_dataset = CustomDatasetMultiCap(df_features=df_val_features,
+                                        df_tokens_reader=df_val_tokens_reader,
+                                        df_label=df_val_label, cap=self.cap_length)
 
-            train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
-                                                                          batch_size=int(
-                                                                              df_train_tokens_reader.chunksize * subsample))
-        else:
-            train_dataset = CustomDatasetMultiCap(df_features=df_train_features,
-                                             df_tokens_reader=df_train_tokens_reader,
-                                             df_label=df_train_label, cap=self.cap_length)
-            val_dataset = CustomDatasetMultiCap(df_features=df_val_features,
-                                           df_tokens_reader=df_val_tokens_reader,
-                                           df_label=df_val_label, cap=self.cap_length)
-
-            train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
-                                                                          batch_size=df_train_tokens_reader.chunksize)
+        train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
+                                                                        batch_size=df_train_tokens_reader.chunksize)
 
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']

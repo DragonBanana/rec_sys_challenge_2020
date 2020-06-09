@@ -6,6 +6,7 @@ import numpy as np
 from Utils.Base.RecommenderGBM import RecommenderGBM
 from Utils.Eval.ConfMatrix import confMatrix
 from Utils.Eval.Metrics import ComputeMetrics as CoMe
+import pandas as pd
 
 
 #TODO: The categorical features must be imported from load_data() method
@@ -314,8 +315,8 @@ class LightGBM(RecommenderGBM):
         plt.title("Feature Importance: GAIN")
         plt.savefig("fimportance_gain.png")
 
-        feature_imp = pd.DataFrame({'Value':model.feature_importance(),'Feature':X.columns})
-        feature_imp.to_csv("feature_importances.csv")
+        #feature_imp = pd.DataFrame({'Value': model.feature_importance(), 'Feature': X.columns})
+        #feature_imp.to_csv("feature_importances.csv")
 
     #Returns the parameters in dictionary form
     def get_param_dict(self):

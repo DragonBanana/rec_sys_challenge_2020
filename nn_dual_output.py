@@ -98,9 +98,12 @@ def main():
         "raw_feature_creator_following_count",  # 1
     ]
 
-    chunksize = 200
-    n_data_train = 1000
-    n_data_val = 1000
+    label_1 = "like"
+    label_2 = "retweet"
+
+    chunksize = 192
+    n_data_train = chunksize * 10000
+    n_data_val = chunksize * 10000
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
@@ -115,8 +118,8 @@ def main():
     #   feature_train_df, _ = train_test_split(feature_train_df, train_size=0.2)
     feature_train_df = feature_train_df.head(n_data_train)
 
-    df_1 = get_feature(feature_name="tweet_feature_engagement_is_like", dataset_id=train_dataset)
-    df_2 = get_feature(feature_name="tweet_feature_engagement_is_retweet", dataset_id=train_dataset)
+    df_1 = get_feature(feature_name=f"tweet_feature_engagement_is_{label_1}", dataset_id=train_dataset)
+    df_2 = get_feature(feature_name=f"tweet_feature_engagement_is_{label_2}", dataset_id=train_dataset)
     label_train_df = pd.concat([df_1, df_2], axis=1)
     label_train_df = label_train_df.head(n_data_train)
 
@@ -128,8 +131,8 @@ def main():
     feature_val_df = get_dataset(features=feature_list, dataset_id=val_dataset)
     feature_val_df = feature_val_df.head(n_data_val)
 
-    df_1 = get_feature(feature_name="tweet_feature_engagement_is_like", dataset_id=val_dataset)
-    df_2 = get_feature(feature_name="tweet_feature_engagement_is_retweet", dataset_id=val_dataset)
+    df_1 = get_feature(feature_name="tweet_feature_engagement_is_{label_1}", dataset_id=val_dataset)
+    df_2 = get_feature(feature_name="tweet_feature_engagement_is_{label_2}", dataset_id=val_dataset)
     label_val_df = pd.concat([df_1, df_2], axis=1)
     label_val_df = label_val_df.head(n_data_val)
 

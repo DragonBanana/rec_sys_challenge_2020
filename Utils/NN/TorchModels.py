@@ -33,7 +33,7 @@ class FFNNMulti(nn.Module):
         return x
 
     def __str__(self):
-        return f"Input size: {self.input_size} \nHidden size 1: {self.hidden_size_1} \nHidden size 2: {self.hidden_size_2} \nDropout 1: {self.hidden_dropout_prob_1} \nDropout 2: {self.hidden_dropout_prob_2} \nOutput Size: 4"
+        return f"Input size: {self.input_size} \nHidden size 1: {self.hidden_size_1} \nHidden size 2: {self.hidden_size_2} \nDropout 1: {self.hidden_dropout_prob_1} \nDropout 2: {self.hidden_dropout_prob_2} \nOutput Size: 4 \n"
 
     def get_params_string(self):
         return f"multi_output_{self.input_size}_{self.hidden_size_1}_{self.hidden_size_2}_{self.hidden_dropout_prob_1}_{self.hidden_dropout_prob_2}"
@@ -66,7 +66,7 @@ class FFNNDual(nn.Module):
         return x
 
     def __str__(self):
-        return f"Input size: {self.input_size} \nHidden size 1: {self.hidden_size_1} \nHidden size 2: {self.hidden_size_2} \nDropout 1: {self.hidden_dropout_prob_1} \nDropout 2: {self.hidden_dropout_prob_2} \nOutput Size: 2"
+        return f"Input size: {self.input_size} \nHidden size 1: {self.hidden_size_1} \nHidden size 2: {self.hidden_size_2} \nDropout 1: {self.hidden_dropout_prob_1} \nDropout 2: {self.hidden_dropout_prob_2} \nOutput Size: 2 \n"
 
     def get_params_string(self):
         return f"dual_output_{self.input_size}_{self.hidden_size_1}_{self.hidden_size_2}_{self.hidden_dropout_prob_1}_{self.hidden_dropout_prob_2}"
@@ -99,7 +99,7 @@ class FFNN2(nn.Module):
         return x
 
     def __str__(self):
-        return f"Input size: {self.input_size} \nHidden size 1: {self.hidden_size_1} \nHidden size 2: {self.hidden_size_2} \nDropout 1: {self.hidden_dropout_prob_1} \nDropout 2: {self.hidden_dropout_prob_2} \nOutput Size: 1"
+        return f"Input size: {self.input_size} \nHidden size 1: {self.hidden_size_1} \nHidden size 2: {self.hidden_size_2} \nDropout 1: {self.hidden_dropout_prob_1} \nDropout 2: {self.hidden_dropout_prob_2} \nOutput Size: 1 \n"
     
     def get_params_string(self):
         return f"{self.input_size}_{self.hidden_size_1}_{self.hidden_size_2}_{self.hidden_dropout_prob_1}_{self.hidden_dropout_prob_2}"
@@ -125,7 +125,7 @@ class FFNN1(nn.Module):
         return x
 
     def __str__(self):
-        return f"Input size: {self.input_size} \nHidden size: {self.hidden_size} \nDropout: {self.hidden_dropout_prob} \nOutput Size: 1"    
+        return f"Input size: {self.input_size} \nHidden size: {self.hidden_size} \nDropout: {self.hidden_dropout_prob} \nOutput Size: 1 \n"    
 
     def get_params_string(self):
         return f"{self.input_size}_{self.hidden_size}_{self.hidden_dropout_prob_1}"
