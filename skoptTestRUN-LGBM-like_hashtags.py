@@ -195,7 +195,7 @@ def main():
         add_feat.append(Data.get_feature_batch(feature, train_dataset, 1, 0, 0.3))
     
     all_feat = pd.concat(add_feat, axis=1)
-    X_train = pd.concat([X_train,add_feat], axis=1)
+    X_train = pd.concat([X_train,all_feat], axis=1)
 
     # Load test data
     X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)    
@@ -203,20 +203,20 @@ def main():
     add_feat = []
 
     for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, test_dataset, 1, 0, 0.3))
+        add_feat.append(Data.get_feature_batch(feature, test_dataset, 2, 0, 1))
     
     all_feat = pd.concat(add_feat, axis=1)
-    X_val = pd.concat([X_test,add_feat], axis=1)
+    X_val = pd.concat([X_test,all_feat], axis=1)
 
     X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
     
     add_feat = []
 
     for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, test_dataset, 1, 0, 0.3))
+        add_feat.append(Data.get_feature_batch(feature, test_dataset, 2, 1, 1))
     
     all_feat = pd.concat(add_feat, axis=1)
-    X_test = pd.concat([X_test,add_feat], axis=1)
+    X_test = pd.concat([X_test,all_feat], axis=1)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
