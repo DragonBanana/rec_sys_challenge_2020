@@ -16,7 +16,7 @@ from Utils.Data.DataUtils import cache_dataset_as_svm
 # The label to be predicted
 from Utils.Submission.Submission import create_submission_file
 
-label = "like"
+label = "comment"
 
 # The name of the submission file
 submission_filename = f"xgb_submission_{label}_2.csv"
