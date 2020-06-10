@@ -125,12 +125,6 @@ def main():
     # "tweet_feature_number_of_previous_comment_engagements",
     # "tweet_feature_number_of_previous_positive_engagements",
     # "tweet_feature_number_of_previous_negative_engagements",
-    "creator_feature_number_of_previous_like_engagements_given",
-    "creator_feature_number_of_previous_reply_engagements_given",
-    "creator_feature_number_of_previous_retweet_engagements_given",
-    "creator_feature_number_of_previous_comment_engagements_given",
-    "creator_feature_number_of_previous_positive_engagements_given",
-    "creator_feature_number_of_previous_negative_engagements_given",
     "creator_feature_number_of_previous_like_engagements_received",
     "creator_feature_number_of_previous_reply_engagements_received",
     "creator_feature_number_of_previous_retweet_engagements_received",
@@ -143,23 +137,14 @@ def main():
     "engager_feature_number_of_previous_comment_engagement_with_language",
     "engager_feature_number_of_previous_positive_engagement_with_language",
     "engager_feature_number_of_previous_negative_engagement_with_language",
-    "engager_feature_knows_hashtag_positive",
-    "engager_feature_knows_hashtag_negative",
-    "engager_feature_knows_hashtag_like",
-    "engager_feature_knows_hashtag_reply",
-    "engager_feature_knows_hashtag_rt",
-    "engager_feature_knows_hashtag_comment",
-    #"creator_and_engager_have_same_main_language",
-    #"is_tweet_in_creator_main_language",
-    #"is_tweet_in_engager_main_language",
-    #"statistical_probability_main_language_of_engager_engage_tweet_language_1",
-    #"statistical_probability_main_language_of_engager_engage_tweet_language_2",
-    #"creator_and_engager_have_same_main_grouped_language",
-    #"is_tweet_in_creator_main_grouped_language",
-    #"is_tweet_in_engager_main_grouped_language",
-    # # "hashtag_similarity_fold_ensembling_positive",
-    # # "link_similarity_fold_ensembling_positive",
-    # # "domain_similarity_fold_ensembling_positive"
+    "tweet_feature_has_discriminative_hashtag_like",
+    "tweet_feature_has_discriminative_hashtag_reply",
+    "tweet_feature_has_discriminative_hashtag_retweet",
+    "tweet_feature_has_discriminative_hashtag_comment",
+    "tweet_feature_number_of_discriminative_hashtag_like",
+    "tweet_feature_number_of_discriminative_hashtag_reply",
+    "tweet_feature_number_of_discriminative_hashtag_retweet",
+    "tweet_feature_number_of_discriminative_hashtag_comment",
     "tweet_feature_creation_timestamp_hour_shifted",
     "tweet_feature_creation_timestamp_day_phase",
     "tweet_feature_creation_timestamp_day_phase_shifted",
@@ -189,34 +174,34 @@ def main():
     "tweet_feature_number_of_discriminative_hashtag_comment",
     ]
 
-    add_feat = []
-
-    for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, train_dataset, 1, 0, 0.3))
-    
-    all_feat = pd.concat(add_feat, axis=1)
-    X_train = pd.concat([X_train,all_feat], axis=1)
+    #add_feat = []
+    #
+    #for feature in additional_features:
+    #    add_feat.append(Data.get_feature_batch(feature, train_dataset, 1, 0, 0.3))
+    #
+    #all_feat = pd.concat(add_feat, axis=1)
+    #X_train = pd.concat([X_train,all_feat], axis=1)
 
     # Load test data
     X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)    
 
-    add_feat = []
-
-    for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, test_dataset, 2, 0, 1))
-    
-    all_feat = pd.concat(add_feat, axis=1)
-    X_val = pd.concat([X_val,all_feat], axis=1)
+    #add_feat = []
+    #
+    #for feature in additional_features:
+    #    add_feat.append(Data.get_feature_batch(feature, test_dataset, 2, 0, 1))
+    #
+    #all_feat = pd.concat(add_feat, axis=1)
+    #X_val = pd.concat([X_val,all_feat], axis=1)
 
     X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
     
-    add_feat = []
-
-    for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, test_dataset, 2, 1, 1))
-    
-    all_feat = pd.concat(add_feat, axis=1)
-    X_test = pd.concat([X_test,all_feat], axis=1)
+    #add_feat = []
+    #
+    #for feature in additional_features:
+    #    add_feat.append(Data.get_feature_batch(feature, test_dataset, 2, 1, 1))
+    #
+    #all_feat = pd.concat(add_feat, axis=1)
+    #X_test = pd.concat([X_test,all_feat], axis=1)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
