@@ -298,7 +298,7 @@ def main():
                    auto_save=False
                    )
 
-    OP.setParameters(n_calls=100, n_random_starts=20)
+    OP.setParameters(n_calls=40, n_random_starts=20)
     OP.loadTrainData(df_metatrain, df_metatrain_label)
 
     OP.loadValData(df_metaval, df_metaval_label)  # early stopping
