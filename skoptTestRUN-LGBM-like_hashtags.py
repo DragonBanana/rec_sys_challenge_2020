@@ -206,7 +206,7 @@ def main():
         add_feat.append(Data.get_feature_batch(feature, test_dataset, 2, 0, 1))
     
     all_feat = pd.concat(add_feat, axis=1)
-    X_val = pd.concat([X_test,all_feat], axis=1)
+    X_val = pd.concat([X_val,all_feat], axis=1)
 
     X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
     
