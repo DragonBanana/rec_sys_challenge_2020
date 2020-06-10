@@ -197,7 +197,7 @@ def main():
                    kind,
                    mode=0,
                    path="like",
-                   path_log="LGBM-like-freschi-sovracampione",
+                   path_log="LGBM-like-HASHTAGS-FEATURES",
                    make_log=True, 
                    make_save=False, 
                    auto_save=False)
