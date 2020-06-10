@@ -163,6 +163,14 @@ def main():
     "tweet_feature_creation_timestamp_hour_shifted",
     "tweet_feature_creation_timestamp_day_phase",
     "tweet_feature_creation_timestamp_day_phase_shifted",
+    "tweet_feature_has_discriminative_hashtag_like",
+    "tweet_feature_has_discriminative_hashtag_reply",
+    "tweet_feature_has_discriminative_hashtag_retweet",
+    "tweet_feature_has_discriminative_hashtag_comment",
+    "tweet_feature_number_of_discriminative_hashtag_like",
+    "tweet_feature_number_of_discriminative_hashtag_reply",
+    "tweet_feature_number_of_discriminative_hashtag_retweet",
+    "tweet_feature_number_of_discriminative_hashtag_comment"
     ]
     
                                                     
@@ -178,45 +186,45 @@ def main():
     loading_data_start_time = time.time()
     X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.3)
 
-    additional_features=[
-    "tweet_feature_has_discriminative_hashtag_like",
-    "tweet_feature_has_discriminative_hashtag_reply",
-    "tweet_feature_has_discriminative_hashtag_retweet",
-    "tweet_feature_has_discriminative_hashtag_comment",
-    "tweet_feature_number_of_discriminative_hashtag_like",
-    "tweet_feature_number_of_discriminative_hashtag_reply",
-    "tweet_feature_number_of_discriminative_hashtag_retweet",
-    "tweet_feature_number_of_discriminative_hashtag_comment",
-    ]
-
-    add_feat = []
-
-    for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, train_dataset, 1, 0, 0.3))
-    
-    all_feat = pd.concat(add_feat, axis=1)
-    X_train = pd.concat([X_train,add_feat], axis=1)
+    #additional_features=[
+    #"tweet_feature_has_discriminative_hashtag_like",
+    #"tweet_feature_has_discriminative_hashtag_reply",
+    #"tweet_feature_has_discriminative_hashtag_retweet",
+    #"tweet_feature_has_discriminative_hashtag_comment",
+    #"tweet_feature_number_of_discriminative_hashtag_like",
+    #"tweet_feature_number_of_discriminative_hashtag_reply",
+    #"tweet_feature_number_of_discriminative_hashtag_retweet",
+    #"tweet_feature_number_of_discriminative_hashtag_comment",
+    #]
+    #
+    #add_feat = []
+    #
+    #for feature in additional_features:
+    #    add_feat.append(Data.get_feature_batch(feature, train_dataset, 1, 0, 0.3))
+    #
+    #all_feat = pd.concat(add_feat, axis=1)
+    #X_train = pd.concat([X_train,add_feat], axis=1)
 
     # Load test data
     X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)    
 
-    add_feat = []
-
-    for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, test_dataset, 1, 0, 0.3))
-    
-    all_feat = pd.concat(add_feat, axis=1)
-    X_val = pd.concat([X_test,add_feat], axis=1)
+    #add_feat = []
+    #
+    #for feature in additional_features:
+    #    add_feat.append(Data.get_feature_batch(feature, test_dataset, 1, 0, 0.3))
+    #
+    #all_feat = pd.concat(add_feat, axis=1)
+    #X_val = pd.concat([X_test,add_feat], axis=1)
 
     X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
     
-    add_feat = []
-
-    for feature in additional_features:
-        add_feat.append(Data.get_feature_batch(feature, test_dataset, 1, 0, 0.3))
-    
-    all_feat = pd.concat(add_feat, axis=1)
-    X_test = pd.concat([X_test,add_feat], axis=1)
+    #add_feat = []
+    #
+    #for feature in additional_features:
+    #    add_feat.append(Data.get_feature_batch(feature, test_dataset, 1, 0, 0.3))
+    #
+    #all_feat = pd.concat(add_feat, axis=1)
+    #X_test = pd.concat([X_test,add_feat], axis=1)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
