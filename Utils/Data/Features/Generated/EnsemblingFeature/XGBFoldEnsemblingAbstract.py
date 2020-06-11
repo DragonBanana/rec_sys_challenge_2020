@@ -86,8 +86,8 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             train_dataset_id = get_train_set_id_from_test_or_val_set(test_dataset_id)
             # Load the train dataset
             import Utils.Data.Data as data
-            X_train = data.get_dataset_batch(features=self.features, dataset_id=train_dataset_id, total_n_split=2, split_n=1, sample=0.5)
-            Y_train = data.get_dataset_batch(features=self.label, dataset_id=train_dataset_id, total_n_split=2, split_n=1, sample=0.5)
+            X_train = data.get_dataset_batch(features=self.features, dataset_id=train_dataset_id, total_n_split=1, split_n=0, sample=0.05)
+            Y_train = data.get_dataset_batch(features=self.label, dataset_id=train_dataset_id, total_n_split=1, split_n=0, sample=0.05)
 
             # Load the test dataset
             X_test = data.get_dataset(features=self.features, dataset_id=test_dataset_id, nthread=64)
