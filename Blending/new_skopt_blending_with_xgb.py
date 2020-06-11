@@ -2,7 +2,6 @@ import time
 from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 import pandas as pd
-
 from Utils.Data.Data import get_dataset_xgb_batch
 from Utils.Data.Features.Generated.EnsemblingFeature.LGBMEnsemblingFeature import LGBMEnsemblingFeature
 from sklearn.model_selection import train_test_split
@@ -25,7 +24,6 @@ def get_ensembling_label(label, dataset_id):
 
 
 def params_by_label(label):
-
     if label in ["like"]:
         lgbm_params = like_params.lgbm_get_params()
         xgb_params = like_params.xgb_get_params()
@@ -40,7 +38,6 @@ def params_by_label(label):
         xgb_params = comment_params.xgb_get_params()
     else:
         assert False, "What?"
-
     return lgbm_params, xgb_params
 
 
@@ -247,25 +244,42 @@ def main():
     # BLENDING FEATURE DECLARATION
 
     feature_list = []
-    df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
-                                                     X_label=features, Y_label=label, sample=0.3)
+    # NEW CODE ADDED
+
+    df_train = pd.DataFrame(columns=features)
+    df_train_label = pd.DataFrame(columns=label)
+    need_to_load_train_set = False
+
     for ens_label in ensembling_list:
         lgbm_params = ensembling_lgbm_params[ens_label]
         for lgbm_param_dict in lgbm_params:
             start_time = time.time()
-
-            feature_list.append(LGBMEnsemblingFeature(dataset_id=train_dataset,
+            if not LGBMEnsemblingFeature(dataset_id=train_dataset,
                                        df_train=df_train,
                                        df_train_label=get_ensembling_label(ens_label, train_dataset),
                                        df_to_predict=df_to_predict,
                                        param_dict=lgbm_param_dict,
-                                       categorical_features_set=categorical_features_set))
-            print(f"time: {time.time()-start_time}")
+                                       categorical_features_set=categorical_features_set).has_feature():
+                print(f"{ens_label} {lgbm_param_dict}")
+                need_to_load_train_set = True
+
+    if need_to_load_train_set:
+        df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
+                                                         X_label=features, Y_label=label, sample=0.3)
+        for ens_label in ensembling_list:
+            lgbm_params = ensembling_lgbm_params[ens_label]
+            for lgbm_param_dict in lgbm_params:
+                start_time = time.time()
+
+                feature_list.append(LGBMEnsemblingFeature(dataset_id=train_dataset,
+                                           df_train=df_train,
+                                           df_train_label=get_ensembling_label(ens_label, train_dataset),
+                                           df_to_predict=df_to_predict,
+                                           param_dict=lgbm_param_dict,
+                                           categorical_features_set=categorical_features_set))
+                print(f"time: {time.time()-start_time}")
 
     del df_train, df_train_label
-
-    df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
-                                                     X_label=features, Y_label=label, sample=0.1)
 
     # NEW PARTll
     # ONLY THIS PART IS NEW
