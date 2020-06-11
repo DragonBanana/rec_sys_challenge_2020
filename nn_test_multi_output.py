@@ -85,37 +85,62 @@ def main():
         "number_of_engagements_positive",
         "tweet_feature_creation_timestamp_hour_shifted",
         "tweet_feature_creation_timestamp_day_phase",
-        "tweet_feature_creation_timestamp_day_phase_shifted"
+        "tweet_feature_creation_timestamp_day_phase_shifted",
+        "engager_feature_number_of_previous_like_engagement_ratio",
+        "engager_feature_number_of_previous_reply_engagement_ratio",
+        "engager_feature_number_of_previous_retweet_engagement_ratio",
+        "engager_feature_number_of_previous_comment_engagement_ratio",
+        "engager_feature_number_of_previous_positive_engagement_ratio",
+        "engager_feature_number_of_previous_negative_engagement_ratio",
+        "adjacency_between_creator_and_engager_retweet",
+        "adjacency_between_creator_and_engager_reply",
+        "adjacency_between_creator_and_engager_comment",
+        "adjacency_between_creator_and_engager_like",
+        "adjacency_between_creator_and_engager_positive",
+        "adjacency_between_creator_and_engager_negative",
+        "graph_two_steps_adjacency_positive",
+        "graph_two_steps_adjacency_negative",
+        "graph_two_steps_adjacency_like",
+        "graph_two_steps_adjacency_reply",
+        "graph_two_steps_adjacency_retweet",
+        "graph_two_steps_adjacency_comment",
+        "graph_two_steps_positive",
+        "graph_two_steps_negative",
+        "graph_two_steps_like",
+        "graph_two_steps_reply",
+        "graph_two_steps_retweet",
+        "graph_two_steps_comment"
     ]
-
     '''
     feature_list = [
         "raw_feature_creator_follower_count",  # 0
         "raw_feature_creator_following_count",  # 1
     ]
 
+    print("Running on labels : like - retweet - reply - comment")
+
     ip = '34.242.41.76'
-    submission_filename = "nn_multi_predictions"
+    submission_filename = "Dataset/Features/cherry_val/ensembling/nn_predictions"
 
     chunksize = 2048
 
     train_dataset = "cherry_train"
-    test_dataset = "cherry_val"
+    test_dataset = "new_test"
 
     ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
     rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params}
 
-    saved_model_path = "saved_models/saved_model_multi_label_2e-05_770_128_64_0.5_0.5_epoch_1"
+    saved_model_path = "./saved_models/saved_model_multi_label"
 
     rec = MultiDistilBertRec(**rec_params)
 
     train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
-    train_df = train_df.head(1920000)
+    train_df = train_df.head(3840000)
     train_df = rec._normalize_features(train_df, is_train=True)
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    test_df = test_df.head(2500)
+    #test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -138,19 +163,19 @@ def main():
     #print(predictions_like)
     #print(predictions_like.shape)
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
 
-    tweets = tweets.head(2500).array
-    users = users.head(2500).array
+    #tweets = tweets.head(2500).array
+    #users = users.head(2500).array
 
     create_submission_file(tweets, users, predictions_like, submission_filename+"_like.csv")
     create_submission_file(tweets, users, predictions_like, submission_filename+"_retweet.csv")
-    #create_submission_file(tweets, users, predictions_like, submission_filename+"_reply.csv")
-    #create_submission_file(tweets, users, predictions_like, submission_filename+"_comment.csv")
+    create_submission_file(tweets, users, predictions_like, submission_filename+"_reply.csv")
+    create_submission_file(tweets, users, predictions_like, submission_filename+"_comment.csv")
 
-    bot_string = f"DistilBertDoubleInput NN - like_retweet \n ---------------- \n"
-    bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
+    #bot_string = f"DistilBertDoubleInput NN - like_retweet \n ---------------- \n"
+    #bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
     #telegram_bot_send_update(bot_string)
 
 

@@ -89,10 +89,11 @@ class DualNNRec(RecommenderBase, ABC):
             df_val_features: pd.DataFrame,
             df_val_tokens_reader: pd.io.parsers.TextFileReader,
             df_val_label: pd.DataFrame,
+            save_filename : str,
             cat_feature_set: set,
             normalize: bool = True,
-            pretrained_model_dict_path=None,
-            pretrained_optimizer_dict_path=None):
+            pretrained_model_dict_path : str = None,
+            pretrained_optimizer_dict_path : str = None):
 
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
@@ -226,8 +227,8 @@ class DualNNRec(RecommenderBase, ABC):
 
             pathlib.Path('./saved_models').mkdir(parents=True, exist_ok=True)
 
-            model_path = f"./saved_models/saved_model_{self.model.get_params_string()}_{self.lr}_epoch_{epoch_i + 1}"
-            optimizer_path = f"./saved_models/saved_optimizer_{self.model.get_params_string()}_{self.lr}_epoch_{epoch_i + 1}"
+            model_path = f"./saved_models/saved_model_{save_filename}"
+            optimizer_path = f"./saved_models/saved_optimizer_{save_filename}"
 
             torch.save(self.model.state_dict(), model_path)
             torch.save(optimizer.state_dict(), optimizer_path)

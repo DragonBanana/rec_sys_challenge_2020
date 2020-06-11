@@ -16,7 +16,6 @@ from Utils.NN.NNUtils import HIDDEN_SIZE_BERT
 from Utils.Base.RecommenderBase import RecommenderBase
 from Utils.NN.CustomDatasets import *
 from Utils.NN.NNUtils import flat_accuracy, create_data_loaders, format_time
-from Utils.NN.TorchModels import BertClassifierDoubleInput
 from abc import ABC, abstractmethod
 
 from Utils.TelegramBot import telegram_bot_send_update
@@ -89,12 +88,14 @@ class NNRec(RecommenderBase, ABC):
             df_train_label: pd.DataFrame,
             df_val_features: pd.DataFrame,
             df_val_tokens_reader: pd.io.parsers.TextFileReader,
-            df_val_label: pd.DataFrame,
+            df_val_label: pd.DataFrame, 
+            save_filename : str,
             cat_feature_set: set,
             subsample : float = None,
             normalize : bool = True,
-            pretrained_model_dict_path=None,
-            pretrained_optimizer_dict_path=None):
+            pretrained_model_dict_path : str = None,
+            pretrained_optimizer_dict_path : str = None,
+           ):
 
         self.df_train_label = df_train_label
         self.df_val_label = df_val_label
@@ -231,8 +232,8 @@ class NNRec(RecommenderBase, ABC):
 
             pathlib.Path('./saved_models').mkdir(parents=True, exist_ok=True)
 
-            model_path = f"./saved_models/saved_model_{self.class_label}_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
-            optimizer_path = f"./saved_models/saved_optimizer_{self.class_label}_{self.lr}_{self.model.get_params_string()}_epoch_{epoch_i + 1}"
+            model_path = f"./saved_models/saved_model_{save_filename}"
+            optimizer_path = f"./saved_models/saved_optimizer_{save_filename}"
 
             torch.save(self.model.state_dict(), model_path)
             torch.save(optimizer.state_dict(), optimizer_path)
@@ -260,8 +261,8 @@ class NNRec(RecommenderBase, ABC):
 
         # Reset the total loss for this epoch.
         total_train_loss = 0
-        total_train_prauc = 0
-        total_train_rce = 0
+        #total_train_prauc = 0
+        #total_train_rce = 0
 
         # Put the model into training mode. Don't be mislead--the call to
         # `train` just changes the *mode*, it doesn't *perform* the training.
@@ -394,8 +395,8 @@ class NNRec(RecommenderBase, ABC):
         # Tracking variables
         total_eval_accuracy = 0
         total_eval_loss = 0
-        total_eval_prauc = 0
-        total_eval_rce = 0
+        #total_eval_prauc = 0
+        #total_eval_rce = 0
 
         nb_eval_steps = 0
         preds = None

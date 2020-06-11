@@ -1,9 +1,6 @@
 from Models.NN.MultiNNRec import MultiDistilBertRec
-from Models.NN.NNRec import DistilBertRec
-from Utils.NN.TorchModels import FFNN2, FFNN1
 from Utils.Data.Data import get_dataset, get_feature, get_feature_reader
 from Utils.Submission.Submission import create_submission_file
-# from sklearn.model_selection import train_test_split
 import numpy as np
 import time
 import pandas as pd
@@ -89,7 +86,31 @@ def main():
         "number_of_engagements_positive",
         "tweet_feature_creation_timestamp_hour_shifted",
         "tweet_feature_creation_timestamp_day_phase",
-        "tweet_feature_creation_timestamp_day_phase_shifted"
+        "tweet_feature_creation_timestamp_day_phase_shifted",
+        "engager_feature_number_of_previous_like_engagement_ratio",
+        "engager_feature_number_of_previous_reply_engagement_ratio",
+        "engager_feature_number_of_previous_retweet_engagement_ratio",
+        "engager_feature_number_of_previous_comment_engagement_ratio",
+        "engager_feature_number_of_previous_positive_engagement_ratio",
+        "engager_feature_number_of_previous_negative_engagement_ratio",
+        "adjacency_between_creator_and_engager_retweet",
+        "adjacency_between_creator_and_engager_reply",
+        "adjacency_between_creator_and_engager_comment",
+        "adjacency_between_creator_and_engager_like",
+        "adjacency_between_creator_and_engager_positive",
+        "adjacency_between_creator_and_engager_negative",
+        "graph_two_steps_adjacency_positive",
+        "graph_two_steps_adjacency_negative",
+        "graph_two_steps_adjacency_like",
+        "graph_two_steps_adjacency_reply",
+        "graph_two_steps_adjacency_retweet",
+        "graph_two_steps_adjacency_comment",
+        "graph_two_steps_positive",
+        "graph_two_steps_negative",
+        "graph_two_steps_like",
+        "graph_two_steps_reply",
+        "graph_two_steps_retweet",
+        "graph_two_steps_comment"
     ]
     '''
 
@@ -99,11 +120,13 @@ def main():
     ]
 
     chunksize = 192
-    n_data_train = chunksize * 10000
+    n_data_train = chunksize * 20000
     n_data_val = chunksize * 10000
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
+
+    print("Running on labels : like - retweet - reply - comment")
 
     print(f"n_data_train: {n_data_train}")
     print(f"n_data_val: {n_data_val}")
@@ -155,6 +178,7 @@ def main():
                 df_val_features=feature_val_df,
                 df_val_tokens_reader=text_val_reader_df,
                 df_val_label=label_val_df,
+                save_filename="multi_label"
                 cat_feature_set=set([]),
                 #subsample=0.1, # subsample percentage of each batch
                 #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5")
