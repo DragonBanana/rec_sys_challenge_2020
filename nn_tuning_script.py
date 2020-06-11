@@ -99,7 +99,7 @@ def main():
     n_data_train = chunksize * 1000
     n_data_val = chunksize * 1000
 
-    train_dataset = "cherry_train
+    train_dataset = "cherry_train"
     val_dataset = "cherry_val"
     test_dataset = "new_test"
 
