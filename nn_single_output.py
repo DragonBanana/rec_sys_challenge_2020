@@ -6,7 +6,7 @@ import time
 import sys
 
 def main(class_label):
-    
+    '''
     feature_list_1 = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -138,10 +138,21 @@ def main(class_label):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
+    '''
+
+    feature_list_1 = [
+        "raw_feature_creator_follower_count",  # 0
+        "raw_feature_creator_following_count",  # 1
+    ]
+
+    feature_list_2 = [
+        "raw_feature_engager_follower_count",
+        "raw_feature_engager_following_count"
+    ]
 
     chunksize = 192
-    n_data_train = chunksize * 20000
-    n_data_val = chunksize * 10000
+    n_data_train = chunksize * 10 #20000
+    n_data_val = chunksize * 10 #10000
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
@@ -150,7 +161,7 @@ def main(class_label):
 
     if class_label == "comment":
         feature_list = feature_list_1
-    else:
+    elif class_label == "reply":
         feature_list = feature_list_2
 
     print(f"n_data_train: {n_data_train}")
@@ -181,7 +192,7 @@ def main(class_label):
                                             chunksize=chunksize)
 
     ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
-    rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
+    rec_params = {'epochs': 1, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
 
     #print(f"ffnn_params: {ffnn_params}")
     print(f"bert_params: {rec_params}")

@@ -4,9 +4,12 @@ from Utils.Submission.Submission import create_submission_file
 import numpy as np
 import time
 import sys
+import pathlib
 from Utils.TelegramBot import telegram_bot_send_update
 
 def main(class_label, test_dataset):
+
+    '''
     feature_list_1 = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -138,21 +141,35 @@ def main(class_label, test_dataset):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
+    '''
+
+    feature_list_1 = [
+        "raw_feature_creator_follower_count",  # 0
+        "raw_feature_creator_following_count",  # 1
+    ]
+
+    feature_list_2 = [
+        "raw_feature_engager_follower_count",
+        "raw_feature_engager_following_count"
+    ]
+
+    chunksize = 192
+
+    train_dataset = "cherry_train"
+    val_dataset = "cherry_val"
 
     print(f"Running on label : {class_label}")
 
     if class_label == "comment":
         feature_list = feature_list_1
-    else:
+        train_data_amount = 1920000
+    elif class_label == "reply":
         feature_list = feature_list_2
-    
-    feature_list = [
-        "raw_feature_creator_follower_count",  # 0
-        "raw_feature_creator_following_count",  # 1
-    ]
+        train_data_amount = 3840000
 
     ip = '34.242.41.76'
-    submission_filename = f"Dataset/Features/{test_dataset}/ensembling/nn_predictions_{class_label}.csv"
+    submission_dir = f"Dataset/Features/{test_dataset}/ensembling"
+    submission_filename = f"{submission_dir}/nn_predictions_{class_label}.csv"
 
     chunksize = 2048
 
@@ -163,17 +180,17 @@ def main(class_label, test_dataset):
     ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
     rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
 
-    saved_model_path = "./saved_models/saved_model_{class_label}"
+    saved_model_path = f"./saved_models/saved_model_{class_label}"
 
     rec = DistilBertRec(**rec_params)
 
     train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
-    train_df = train_df.head(3840000)
+    train_df = train_df.head(train_data_amount)
     train_df = rec._normalize_features(train_df, is_train=True)
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    #test_df = test_df.head(2500)
+    test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -188,11 +205,13 @@ def main(class_label, test_dataset):
     print(predictions)
     print(predictions.shape)
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
 
-    #tweets = tweets.head(2500).array
-    #users = users.head(2500).array
+    tweets = tweets.head(2500).array
+    users = users.head(2500).array
+
+    pathlib.Path(submission_dir).mkdir(parents=True, exist_ok=True)
 
     create_submission_file(tweets, users, predictions, submission_filename)
 
