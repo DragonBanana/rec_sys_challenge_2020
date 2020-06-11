@@ -946,10 +946,10 @@ class ModelInterface(object):
             if self.model_name in "xgboost_classifier":
                 score_func = self.blackBoxXGB
         
-            if self.model_name in "lightgbm_classifier":
+            if self.model_name == "lightgbm_classifier":
                 score_func = self.blackBoxLGB
 
-            if self.model_name in "lightgbm_classifier_cold":
+            if self.model_name == "lightgbm_classifier_cold":
                 score_func = self.blackBoxLGBCold
 
             if self.model_name in "catboost_classifier":
