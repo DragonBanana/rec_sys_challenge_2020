@@ -61,7 +61,7 @@ class LightGBM(RecommenderGBM):
                 'objective':objective,
                 'metric':metric,
                 'num_iterations':num_iterations,
-                'num_leaves':num_leaves,
+                'num_leaves':int(num_leaves),
                 'learning_rate':learning_rate,
                 'num_threads':num_threads,
                 'max_depth':max_depth,
@@ -71,12 +71,12 @@ class LightGBM(RecommenderGBM):
                 'colsample_bynode':colsample_bynode,
                 'bagging_fraction':bagging_fraction,       
                 'bagging_freq':bagging_freq,         
-                'max_bin':max_bin,
+                'max_bin':int(max_bin),
                 'boost_from_average': True,             #default: True
                 #'boosting': "dart"                     #default: gbdt, it is said that dart provides more acurate predictions, while risking overfitting tho
                 'early_stopping_round': early_stopping_rounds,
                 'is_unbalance':is_unbalance,
-                'min_data_in_leaf':min_data_in_leaf,
+                'min_data_in_leaf':int(min_data_in_leaf),
                 'bagging_seed': 92492
         }
 
