@@ -1,4 +1,6 @@
 import time
+
+from Models.GBM.LightGBM import LightGBM
 from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 import pandas as pd
@@ -13,6 +15,8 @@ import Blending.retweet_params as retweet_params
 import Blending.comment_params as comment_params
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBEnsembling import XGBEnsembling
 import argparse
+
+from Utils.Submission.Submission import create_submission_file
 
 
 def main():
@@ -224,31 +228,22 @@ def main():
 
     for lgbm_param_dict in lgbm_params:
         start_time = time.time()
-
         feature_list.append(LGBMEnsemblingFeature(dataset_id=train_dataset,
                                    df_train=df_train,
                                    df_train_label=df_train_label,
                                    df_to_predict=df_to_predict,
                                    param_dict=lgbm_param_dict,
                                    categorical_features_set=categorical_features_set))
-        print(f"time: {time.time()-start_time}")
-
-    del df_train, df_train_label
-
-    df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
-                                                     X_label=features, Y_label=label, sample=0.1)
 
     for xgb_param_dict in xgb_params:
         start_time = time.time()
-
+        df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
+                                                         X_label=features, Y_label=label, sample=0.1)
         feature_list.append(XGBEnsembling(dataset_id=train_dataset,
                                    df_train=df_train,
                                    df_train_label=df_train_label,
                                    df_to_predict=df_to_predict,
                                    param_dict=xgb_param_dict, ))
-        print(f"time: {time.time() - start_time}")
-
-    del df_train, df_train_label
 
     df_feature_list = [x.load_or_create() for x in feature_list]
 
@@ -264,10 +259,12 @@ def main():
     df_feat_val_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
     df_feat_test_list = [df_feat.iloc[len_val:] for df_feat in df_feature_list]
 
-    df_to_be_concatenated_list = [df_val] + df_feat_val_list + [df_val_label]
+    df_val_to_be_concatenated_list = [df_val] + df_feat_val_list + [df_val_label]
+    df_test_to_be_concatenated_list = [df_test] + df_feat_test_list
 
     # creating the new validation set on which we will do meta optimization
-    df_val = pd.concat(df_to_be_concatenated_list, axis=1)
+    df_val = pd.concat(df_val_to_be_concatenated_list, axis=1)
+    df_test = pd.concat(df_test_to_be_concatenated_list, axis=1)
 
     # now we are in full meta-model mode
     # watchout! they are unsorted now, you got to re-sort the dfs
@@ -288,27 +285,59 @@ def main():
     model_name = "lightgbm_classifier"
     kind = LABEL
 
-    OP = Optimizer(model_name,
-                   kind,
-                   mode=0,
-                   path=LABEL,
-                   path_log=f"blending-lgbm-{LABEL}",
-                   make_log=True,
-                   make_save=False,
-                   auto_save=False
-                   )
+    params = {
+        'num_leaves': 544,
+        'max_depth': 7,
+        'lambda_l1': 50.0,
+        'lambda_l2': 2.841130937148593,
+        'colsample_bynode': 0.4,
+        'colsample_bytree': 1.0,
+        'bagging_fraction': 1.0,
+        'bagging_freq': 8,
+        'min_data_in_leaf': 611,
+    }
 
-    OP.setParameters(n_calls=40, n_random_starts=20)
-    OP.loadTrainData(df_metatrain, df_metatrain_label)
+    LGBM = LightGBM(
+        objective='binary',
+        num_threads=-1,
+        num_iterations=1000,
+        early_stopping_rounds=15,
+        **params,
+    )
 
-    OP.loadValData(df_metaval, df_metaval_label)  # early stopping
+    # LGBM Training
+    training_start_time = time.time()
+    LGBM.fit(X=df_metatrain, Y=df_metatrain_label, X_val=df_metaval, Y_val=df_metaval_label,
+             categorical_feature=set([]))
+    print(f"Training time: {time.time() - training_start_time} seconds")
 
-    OP.loadTestData(df_metaval, df_metaval_label)  # evaluate objective
+    # LGBM Evaluation
+    evaluation_start_time = time.time()
+    prauc, rce, conf, max_pred, min_pred, avg = LGBM.evaluate(df_metaval.to_numpy(), df_metaval_label.to_numpy())
+    print("since I'm lazy I did the local test on the same test on which I did EarlyStopping")
+    print(f"PRAUC:\t{prauc}")
+    print(f"RCE:\t{rce}")
+    print(f"TN:\t{conf[0, 0]}")
+    print(f"FP:\t{conf[0, 1]}")
+    print(f"FN:\t{conf[1, 0]}")
+    print(f"TP:\t{conf[1, 1]}")
+    print(f"MAX_PRED:\t{max_pred}")
+    print(f"MIN_PRED:\t{min_pred}")
+    print(f"AVG:\t{avg}")
+    print(f"Evaluation time: {time.time() - evaluation_start_time} seconds")
 
-    OP.setParamsLGB(objective='binary', early_stopping_rounds=10, eval_metric="binary", is_unbalance=False)
-    OP.setCategoricalFeatures(categorical_features_set)
-    # OP.loadModelHardCoded()
-    res = OP.optimize()
+    tweets = Data.get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = Data.get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+
+    # LGBM Prediction
+    prediction_start_time = time.time()
+    predictions = LGBM.get_prediction(df_test.to_numpy())
+    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
+
+    # Uncomment to plot feature importance at the end of training
+    # LGBM.plot_fimportance()
+
+    create_submission_file(tweets, users, predictions, f"{LABEL}_lgbm_blending_submission.csv")
 
 
 if __name__ == '__main__':

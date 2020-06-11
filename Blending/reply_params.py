@@ -1,168 +1,90 @@
 
 def lgbm_get_params():
     params = []
-    '''
-    LGBM-like-freschi-sovracampione
-    ITERATION NUMBER 10
 
-    num_leaves= 139
+    params.append({
+        'num_iterations': 619,
+        'num_leaves': 789,
+        'max_depth': 6,
+        'lambda_l1': 50.0,
+        'lambda_l2': 45.215133554212514,
+        'colsample_bynode': 0.43251797168693623,
+        'colsample_bytree': 1.0,
+        'bagging_fraction': 1.0,
+        'bagging_freq': 2,
+        'min_data_in_leaf': 545,
+    })
 
-    learning rate= 0.2667469321398438
+    params.append({
+        'num_iterations': 396,
+        'num_leaves': 1560,
+        'max_depth': 6,
+        'lambda_l1': 8.906119218844239,
+        'lambda_l2': 47.28155841673409,
+        'colsample_bynode': 0.49654265986746393,
+        'colsample_bytree': 0.6117736410415332,
+        'bagging_fraction': 1.0,
+        'bagging_freq': 1,
+        'min_data_in_leaf': 1713,
+    })
 
-    max_depth= 49
+    params.append({
+        'num_iterations': 546,
+        'num_leaves': 20,
+        'max_depth': 7,
+        'lambda_l1': 21.95252646091185,
+        'lambda_l2': 48.509695155242355,
+        'colsample_bynode': 0.6955101184114274,
+        'colsample_bytree': 0.6213556648043124,
+        'bagging_fraction': 1.0,
+        'bagging_freq': 1,
+        'min_data_in_leaf': 468,
+    })
 
-    lambda_l1= 43.929733757687444
+    params.append({
+        'num_iterations': 431,
+        'num_leaves': 1852,
+        'max_depth': 6,
+        'lambda_l1': 35.697394512543376,
+        'lambda_l2': 13.254038397905015,
+        'colsample_bynode': 0.4,
+        'colsample_bytree': 0.8023619678582585,
+        'bagging_fraction': 1.0,
+        'bagging_freq': 10,
+        'min_data_in_leaf': 468,
+    })
 
-    lambda_l2= 25.86109747137902
+    params.append({
+        'num_iterations': 171,
+        'num_leaves': 827,
+        'max_depth': 11,
+        'lambda_l1': 20.835015524724298,
+        'lambda_l2': 49.14299360409988,
+        'colsample_bynode': 0.9469113483943965,
+        'colsample_bytree': 0.5123700947463752,
+        'bagging_fraction': 0.7352547050374744,
+        'bagging_freq': 6,
+        'min_data_in_leaf': 1458,
+    })
 
-    colsample_bynode= 0.9544155345339177
-
-    colsample_bytree= 0.5349257524842879
-
-    bagging_fractionbagging_freq= 0.14336874823469137
-
-    max_bin= 0
-
-    min_data_in_leaf= 2565
-
-    LGBM-like-freschi-sovracampione
-    -------
-    EXECUTION TIME: 2033.0731165409088
-    -------
-    best_es_iteration: 1000
-    -------
-    PRAUC = 0.8125967126354695
-    RCE   = 31.362556041852418
-    '''
-
-    params.append({"num_iterations": 1000,
-                   "num_leaves": 139,
-                   "learning_rate": 0.2667469321398438,
-                   "max_depth": 49,
-                   "lambda_l1": 43.929733757687444,
-                   "lambda_l2": 25.86109747137902,
-                   "colsample_bynode": 0.9544155345339177,
-                   "colsample_bytree": 0.5349257524842879,
-                   "bagging_fraction": 0.14336874823469137,
-                   "bagging_freq": 1,
-                   "max_bin": 0,
-                   "min_data_in_leaf": 2565})
+    params.append({
+        'num_iterations': 230,
+        'num_leaves': 103,
+        'max_depth': 32,
+        'lambda_l1': 21.886706736695974,
+        'lambda_l2': 31.375418366415943,
+        'colsample_bynode': 0.8540113841121874,
+        'colsample_bytree': 0.41926801219632537,
+        'bagging_fraction': 0.8633652202367414,
+        'bagging_freq': 6,
+        'min_data_in_leaf': 1586,
+    })
 
     return params
 
 
 def xgb_get_params():
     params = []
-    '''
-    skopt_result/like
-    ITERATION NUMBER 10
-    
-    n_iterations= 1001
-    
-    max_depth= 12
-    
-    min_child_weight= 8
-    
-    colsample_bytree= 0.5061342342153339
-    
-    learning_rate= 0.07445195010651855
-    
-    reg_alpha= 0.03845714736115001
-    
-    reg_lambda= 0.006126524544308775
-    
-    scale_pos_weight= 1
-    
-    gamma= 1.567696726803047
-    
-    subsample= 0.8634723191706059
-    
-    base_score= 0.4392
-    
-    max_delta_step= 40.69001101277949
-    
-    parallel_num_tree= 3
-    
-    skopt_result/like
-    -------
-    EXECUTION TIME: 1212.4507186412811
-    -------
-    best_es_iteration: 637
-    -------
-    PRAUC = 0.8000024332958628
-    RCE   = 29.06732237134276
-    '''
-
-    params.append({"num_rounds": 999,
-                    "max_depth": 12,
-                    "min_child_weight": 8,
-                    "colsample_bytree": 0.5061342342153339,
-                    "learning_rate": 0.07445195010651855,
-                    "reg_alpha": 0.03845714736115001,
-                    "reg_lambda": 0.006126524544308775,
-                    "scale_pos_weight": 1,
-                    "gamma": 1.567696726803047,
-                    "subsample": 0.8634723191706059,
-                    "base_score": 0.4392,
-                    "max_delta_step": 40.69001101277949,
-                    "num_parallel_tree": 3
-                    })
-
-    '''
-    skopt_result/like
-    ITERATION NUMBER 4
-    
-    n_iterations= 1001
-    
-    max_depth= 10
-    
-    min_child_weight= 36
-    
-    colsample_bytree= 0.24443043292899824
-    
-    learning_rate= 0.17900935642341087
-    
-    reg_alpha= 0.0009405978959317872
-    
-    reg_lambda= 0.03992235159598744
-    
-    scale_pos_weight= 1
-    
-    gamma= 0.136778544433405
-    
-    subsample= 0.48158672176663975
-    
-    base_score= 0.4392
-    
-    max_delta_step= 37.48408544495799
-    
-    parallel_num_tree= 3
-    
-    skopt_result/like
-    -------
-    EXECUTION TIME: 573.3331050872803
-    -------
-    best_es_iteration: 363
-    -------
-    PRAUC = 0.7968906381669001
-    RCE   = 28.539058541226048
-
-    '''
-
-    params.append({"num_rounds": 999,
-                   "max_depth": 10,
-                   "min_child_weight": 36,
-                   "colsample_bytree": 0.24443043292899824,
-                   "learning_rate": 0.17900935642341087,
-                   "reg_alpha": 0.0009405978959317872,
-                   "reg_lambda": 0.03992235159598744,
-                   "scale_pos_weight": 1,
-                   "gamma": 0.136778544433405,
-                   "subsample": 0.48158672176663975,
-                   "base_score": 0.4392,
-                   "max_delta_step": 37.48408544495799,
-                   "num_parallel_tree": 3
-                   })
 
     return params
 

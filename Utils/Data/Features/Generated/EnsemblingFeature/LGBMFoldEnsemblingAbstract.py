@@ -1,6 +1,7 @@
 from Utils.Data.DatasetUtils import is_test_or_val_set, get_train_set_id_from_test_or_val_set, \
     get_test_or_val_set_id_from_train
 from Utils.Data.Features.Feature import Feature
+from Utils.Data.Features.Generated.EnsemblingFeature.LGBMEnsemblingFeature import LGBMEnsemblingFeature
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBEnsembling import XGBEnsembling
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
 import pathlib as pl
@@ -9,7 +10,7 @@ import pandas as pd
 import hashlib
 from sklearn.model_selection import KFold
 
-class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
+class LGBMFoldEnsemblingAbstract(GeneratedFeaturePickle):
 
     def __init__(self,
                  dataset_id: str,
@@ -22,7 +23,7 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
         hash_label = hashlib.md5(repr(label).encode('utf-8')).hexdigest()
         hash_param_dict = hashlib.md5(repr(param_dict.items()).encode('utf-8')).hexdigest()
         hashcode = f"{hash_features}_{hash_label}_{hash_param_dict}"
-        feature_name = f"xgb_fold_ensembling_{hashcode}"
+        feature_name = f"lgbm_fold_ensembling_{hashcode}"
         super().__init__(feature_name, dataset_id)
         self.pck_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/fold_ensembling/{self.feature_name}.pck.gz")
@@ -58,7 +59,7 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             kf = KFold(n_splits=4, shuffle=True, random_state=8)
             # Train multiple models with 1-fold out strategy
             for train_index, test_index in kf.split(X_train):
-                train_index = np.random.choice(train_index, int(len(train_index)/20), replace=True)
+                train_index = np.random.choice(train_index, int(len(train_index)/6), replace=True)
                 local_X_train = X_train.iloc[train_index]
                 local_Y_train = Y_train.iloc[train_index]
 
@@ -69,7 +70,7 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
                 fold_dataset_id = f"{self.feature_name}_{self.dataset_id}_fold_{len(scores)}"
 
                 # Create the sub-feature
-                feature = XGBEnsembling(fold_dataset_id, local_X_train, local_Y_train, local_X_test, self.param_dict)
+                feature = LGBMEnsemblingFeature(fold_dataset_id, local_X_train, local_Y_train, local_X_test, self.param_dict)
 
                 # Retrieve the scores
                 scores.append(pd.DataFrame(feature.load_or_create(), index=local_X_test.index))
@@ -86,8 +87,8 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             train_dataset_id = get_train_set_id_from_test_or_val_set(test_dataset_id)
             # Load the train dataset
             import Utils.Data.Data as data
-            X_train = data.get_dataset_batch(features=self.features, dataset_id=train_dataset_id, total_n_split=2, split_n=1, sample=0.5)
-            Y_train = data.get_dataset_batch(features=self.label, dataset_id=train_dataset_id, total_n_split=2, split_n=1, sample=0.5)
+            X_train = data.get_dataset(features=self.features, dataset_id=train_dataset_id, nthread=64).sample(frac=0.15, random_state=8)
+            Y_train = data.get_dataset(features=self.label, dataset_id=train_dataset_id, nthread=64).sample(frac=0.15, random_state=8)
 
             # Load the test dataset
             X_test = data.get_dataset(features=self.features, dataset_id=test_dataset_id, nthread=64)
@@ -95,7 +96,7 @@ class XGBFoldEnsemblingAbstract(GeneratedFeaturePickle):
             fold_dataset_id = f"{self.feature_name}_{self.dataset_id}"
 
             # Create the sub-feature
-            feature = XGBEnsembling(fold_dataset_id, X_train, Y_train, X_test, self.param_dict)
+            feature = LGBMEnsemblingFeature(fold_dataset_id, X_train, Y_train, X_test, self.param_dict)
 
             # Retrieve the scores
             result = pd.DataFrame(feature.load_or_create(), index=X_test.index)

@@ -33,7 +33,7 @@ COMMENT = "commentCOMMENTComment"
 REPLY = "replyREPLYReply"
 
 def xgbRange(kind):
-    param_range_dict = [Categorical([1001]),                 #num_rounds
+    param_range_dict = [Categorical([1501]),                 #num_rounds
                         Integer(2, 16),                    #max_depth
                         Integer(1, 100),                    #min_child_weight
                         Real(0.1, 1),                      #colsample_bytree

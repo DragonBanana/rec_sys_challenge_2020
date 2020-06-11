@@ -30,7 +30,7 @@ from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements im
 from Utils.Data.Features.Generated.EnsemblingFeature.SimilarityFoldEnsembling import *
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike1, \
     XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1, XGBFoldEnsemblingLike2, \
-    XGBFoldEnsemblingRetweet2, XGBFoldEnsemblingReply2
+    XGBFoldEnsemblingRetweet2, XGBFoldEnsemblingReply2, XGBFoldEnsemblingComment2
 from Utils.Data.Features.Generated.LanguageFeature.MainGroupedLanguageFeature import *
 from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
@@ -337,8 +337,8 @@ def populate_features():
         result[("creator_and_engager_have_same_main_language", dataset_id)] = CreatorAndEngagerHaveSameMainLanguage(dataset_id)
         result[("is_tweet_in_creator_main_language", dataset_id)] = IsTweetInCreatorMainLanguage(dataset_id)
         result[("is_tweet_in_engager_main_language", dataset_id)] = IsTweetInEngagerMainLanguage(dataset_id)
-        result[("statistical_probability_main_language_of_engager_engage_tweet_language_1", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage1(dataset_id)
-        result[("statistical_probability_main_language_of_engager_engage_tweet_language_2", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage2(dataset_id)
+        #result[("statistical_probability_main_language_of_engager_engage_tweet_language_1", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage1(dataset_id)
+        #result[("statistical_probability_main_language_of_engager_engage_tweet_language_2", dataset_id)] = StatisticalProbabilityMainLanguageOfEngagerEngageTweetLanguage2(dataset_id)
         # MAIN LANGUAGE
         result[("engager_main_grouped_language", dataset_id)] = EngagerMainGroupedLanguage(dataset_id)
         result[("creator_main_grouped_language", dataset_id)] = CreatorMainGroupedLanguage(dataset_id)
@@ -346,17 +346,18 @@ def populate_features():
         result[("is_tweet_in_creator_main_grouped_language", dataset_id)] = IsTweetInCreatorMainGroupedLanguage(dataset_id)
         result[("is_tweet_in_engager_main_grouped_language", dataset_id)] = IsTweetInEngagerMainGroupedLanguage(dataset_id)
         # FOLD ENSEMBLING
-        result[("xgb_fold_ensembling_like_1", dataset_id)] = XGBFoldEnsemblingLike1(dataset_id)
-        result[("xgb_fold_ensembling_retweet_1", dataset_id)] = XGBFoldEnsemblingRetweet1(dataset_id)
-        result[("xgb_fold_ensembling_reply_1", dataset_id)] = XGBFoldEnsemblingReply1(dataset_id)
-        result[("xgb_fold_ensembling_comment_1", dataset_id)] = XGBFoldEnsemblingComment1(dataset_id)
+        #result[("xgb_fold_ensembling_like_1", dataset_id)] = XGBFoldEnsemblingLike1(dataset_id)
+        #result[("xgb_fold_ensembling_retweet_1", dataset_id)] = XGBFoldEnsemblingRetweet1(dataset_id)
+        #result[("xgb_fold_ensembling_reply_1", dataset_id)] = XGBFoldEnsemblingReply1(dataset_id)
+        #result[("xgb_fold_ensembling_comment_1", dataset_id)] = XGBFoldEnsemblingComment1(dataset_id)
         result[("xgb_fold_ensembling_like_2", dataset_id)] = XGBFoldEnsemblingLike2(dataset_id)
         result[("xgb_fold_ensembling_retweet_2", dataset_id)] = XGBFoldEnsemblingRetweet2(dataset_id)
         result[("xgb_fold_ensembling_reply_2", dataset_id)] = XGBFoldEnsemblingReply2(dataset_id)
+        result[("xgb_fold_ensembling_comment_2", dataset_id)] = XGBFoldEnsemblingComment2(dataset_id)
         # SIMILARITY FOLD ENSEMBLING
-        result[("hashtag_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
-        result[("link_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
-        result[("domain_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
+        #result[("hashtag_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
+        #result[("link_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
+        #result[("domain_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
 
         # GRAPH
         result[("graph_two_steps_positive", dataset_id)] = GraphTwoStepsPositive(dataset_id)

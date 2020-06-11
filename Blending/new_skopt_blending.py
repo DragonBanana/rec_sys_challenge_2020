@@ -15,6 +15,32 @@ from Utils.Data.Features.Generated.EnsemblingFeature.XGBEnsembling import XGBEns
 import argparse
 
 
+def get_ensembling_label(label, dataset_id):
+    from Utils.Data import Data
+    return Data.get_feature(f"tweet_feature_engagement_is_{label}", dataset_id)
+
+
+
+def params_by_label(label):
+
+    if label in ["like"]:
+        lgbm_params = like_params.lgbm_get_params()
+        xgb_params = like_params.xgb_get_params()
+    elif label in ["reply"]:
+        lgbm_params = reply_params.lgbm_get_params()
+        xgb_params = reply_params.xgb_get_params()
+    elif label in ["retweet"]:
+        lgbm_params = retweet_params.lgbm_get_params()
+        xgb_params = retweet_params.xgb_get_params()
+    elif label in ["comment"]:
+        lgbm_params = comment_params.lgbm_get_params()
+        xgb_params = comment_params.xgb_get_params()
+    else:
+        assert False, "What?"
+
+    return lgbm_params, xgb_params
+
+
 def main():
     # Instantiate the parser
     parser = argparse.ArgumentParser()
@@ -181,23 +207,22 @@ def main():
     val_dataset = "cherry_val"
     test_dataset = "new_test"
 
-    if LABEL in ["like"]:
-        lgbm_params = like_params.lgbm_get_params()
-        xgb_params = like_params.xgb_get_params()
-    elif LABEL in ["reply"]:
-        lgbm_params = reply_params.lgbm_get_params()
-        xgb_params = reply_params.xgb_get_params()
-    elif LABEL in ["retweet"]:
-        lgbm_params = retweet_params.lgbm_get_params()
-        xgb_params = retweet_params.xgb_get_params()
-    elif LABEL in ["comment"]:
-        lgbm_params = comment_params.lgbm_get_params()
-        xgb_params = comment_params.xgb_get_params()
-    else:
-        assert False, "What?"
+    ensembling_list_dict = {
+        'like': ['reply', 'retweet', 'comment'],
+        'reply': ['reply', 'retweet', 'comment'],
+        'retweet': ['reply', 'retweet', 'comment'],
+        'comment': ['reply', 'retweet', 'comment'],
+    }
+
+    ensembling_list = ensembling_list_dict[LABEL]
+
+    ensembling_lgbm_params = {}
+    ensembling_xgb_params = {}
+    for ens_label in ensembling_list:
+        ensembling_lgbm_params[ens_label], ensembling_xgb_params[ens_label]\
+            = params_by_label(ens_label)
 
     categorical_features_set = set([])
-
 
     # Load train data
     # loading_data_start_time = time.time()
@@ -221,32 +246,35 @@ def main():
     feature_list = []
     df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
                                                      X_label=features, Y_label=label, sample=0.3)
+    for ens_label in ensembling_list:
+        lgbm_params = ensembling_lgbm_params[ens_label]
+        for lgbm_param_dict in lgbm_params:
+            start_time = time.time()
 
-    for lgbm_param_dict in lgbm_params:
-        start_time = time.time()
-
-        feature_list.append(LGBMEnsemblingFeature(dataset_id=train_dataset,
-                                   df_train=df_train,
-                                   df_train_label=df_train_label,
-                                   df_to_predict=df_to_predict,
-                                   param_dict=lgbm_param_dict,
-                                   categorical_features_set=categorical_features_set))
-        print(f"time: {time.time()-start_time}")
+            feature_list.append(LGBMEnsemblingFeature(dataset_id=train_dataset,
+                                       df_train=df_train,
+                                       df_train_label=get_ensembling_label(ens_label, train_dataset),
+                                       df_to_predict=df_to_predict,
+                                       param_dict=lgbm_param_dict,
+                                       categorical_features_set=categorical_features_set))
+            print(f"time: {time.time()-start_time}")
 
     del df_train, df_train_label
 
     df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
                                                      X_label=features, Y_label=label, sample=0.1)
 
-    for xgb_param_dict in xgb_params:
-        start_time = time.time()
+    for ens_label in ensembling_list:
+        xgb_params = ensembling_xgb_params[ens_label]
+        for xgb_param_dict in xgb_params:
+            start_time = time.time()
 
-        feature_list.append(XGBEnsembling(dataset_id=train_dataset,
-                                   df_train=df_train,
-                                   df_train_label=df_train_label,
-                                   df_to_predict=df_to_predict,
-                                   param_dict=xgb_param_dict, ))
-        print(f"time: {time.time() - start_time}")
+            feature_list.append(XGBEnsembling(dataset_id=train_dataset,
+                                       df_train=df_train,
+                                       df_train_label=get_ensembling_label(ens_label, train_dataset),
+                                       df_to_predict=df_to_predict,
+                                       param_dict=xgb_param_dict, ))
+            print(f"time: {time.time() - start_time}")
 
     del df_train, df_train_label
 

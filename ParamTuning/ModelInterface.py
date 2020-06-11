@@ -906,10 +906,10 @@ class ModelInterface(object):
         if self.model_name in "xgboost_classifier":
             param_dict = xgbRange(self.kind)
 
-        if self.model_name in "lightgbm_classifier":
+        if self.model_name == "lightgbm_classifier":
             param_dict =  lgbmRange(self.kind)
 
-        if self.model_name in "lightgbm_classifier_cold":
+        if self.model_name == "lightgbm_classifier_cold":
             param_dict =  lgbmRangeCold(self.kind)
 
         if self.model_name in "catboost_classifier":
@@ -924,10 +924,10 @@ class ModelInterface(object):
         if self.model_name in "xgboost_classifier":
             names_dict = xgbName()
 
-        if self.model_name in "lightgbm_classifier":
+        if self.model_name == "lightgbm_classifier":
             names_dict =  lgbmName()
 
-        if self.model_name in "lightgbm_classifier_cold":
+        if self.model_name == "lightgbm_classifier_cold":
             names_dict =  lgbmNameCold()
 
         if self.model_name in "catboost_classifier":
@@ -946,10 +946,10 @@ class ModelInterface(object):
             if self.model_name in "xgboost_classifier":
                 score_func = self.blackBoxXGB
         
-            if self.model_name in "lightgbm_classifier":
+            if self.model_name == "lightgbm_classifier":
                 score_func = self.blackBoxLGB
 
-            if self.model_name in "lightgbm_classifier_cold":
+            if self.model_name == "lightgbm_classifier_cold":
                 score_func = self.blackBoxLGBCold
 
             if self.model_name in "catboost_classifier":
