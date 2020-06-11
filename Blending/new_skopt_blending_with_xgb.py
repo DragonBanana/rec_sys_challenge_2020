@@ -267,8 +267,13 @@ def main():
     df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
                                                      X_label=features, Y_label=label, sample=0.1)
 
-    # NEW PART
+    # NEW PARTll
     # ONLY THIS PART IS NEW
+    # LOAD THIS PART FIRST
+    del df_train, df_train_label
+
+    df_feature_list = [x.load_or_create() for x in feature_list]
+
     for ens_label in ensembling_list:
         start_time = time.time()
         if ens_label == "like":
@@ -288,17 +293,13 @@ def main():
 
         feature = pd.concat([val_features, test_features])
 
-        feature_list.append(feature)
+        df_feature_list.append(feature)
 
         print(f"time: {time.time() - start_time}")
 
         del val_features, test_features
+
     # END OF NEW PART
-
-
-    del df_train, df_train_label
-
-    df_feature_list = [x.load_or_create() for x in feature_list]
 
     # check dimensions
     len_val = len(df_val)
