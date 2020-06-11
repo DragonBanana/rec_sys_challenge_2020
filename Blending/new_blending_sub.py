@@ -288,7 +288,7 @@ def main():
             start_time = time.time()
             feature_list.append(LGBMEnsemblingFeature(dataset_id=train_dataset,
                                        df_train=df_train,
-                                       df_train_label=df_train_label,
+                                       df_train_label=get_ensembling_label(ens_label, train_dataset),
                                        df_to_predict=df_to_predict,
                                        param_dict=lgbm_param_dict,
                                        categorical_features_set=categorical_features_set))
