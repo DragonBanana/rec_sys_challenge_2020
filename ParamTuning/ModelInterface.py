@@ -924,10 +924,10 @@ class ModelInterface(object):
         if self.model_name in "xgboost_classifier":
             names_dict = xgbName()
 
-        if self.model_name in "lightgbm_classifier":
+        if self.model_name == "lightgbm_classifier":
             names_dict =  lgbmName()
 
-        if self.model_name in "lightgbm_classifier_cold":
+        if self.model_name == "lightgbm_classifier_cold":
             names_dict =  lgbmNameCold()
 
         if self.model_name in "catboost_classifier":
