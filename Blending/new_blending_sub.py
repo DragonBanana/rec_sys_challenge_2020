@@ -341,7 +341,11 @@ def main():
     df_feat_test_list = [df_feat.iloc[len_val:] for df_feat in df_feature_list]
 
     df_feat_nn_val_list = [get_nn_prediction(l, val_dataset) for l in nn_labels]
+
     df_feat_nn_test_list = [get_nn_prediction(l, test_dataset) for l in nn_labels]
+    for df_feat_nn_test in df_feat_nn_test_list:
+        new_index = pd.Series(df_feat_nn_test.index).map(lambda x: x + len(df_val))
+        df_feat_nn_test.set_index(new_index, inplace=True)
 
     df_feat_val_list += df_feat_nn_val_list
     df_feat_test_list += df_feat_nn_test_list
@@ -363,7 +367,7 @@ def main():
     # split dataframe columns in train and label
     col_names_list = [df_feat.columns[0] for df_feat in df_feature_list]
 
-    extended_features = features + col_names_list
+    extended_features = df_metatrain.columns.difference(label)
     df_metatrain_label = df_metatrain[label]
     df_metatrain = df_metatrain[extended_features]
 
