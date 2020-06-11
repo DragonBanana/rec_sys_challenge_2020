@@ -7,7 +7,7 @@ import pandas as pd
 import sys
 
 
-def main(label_1, laebl_2):
+def main(label_1, label_2):
     '''
     feature_list = [
         "raw_feature_creator_follower_count",
@@ -94,8 +94,8 @@ def main(label_1, laebl_2):
     ]
 
     chunksize = 192
-    n_data_train = chunksize * 20000
-    n_data_val = chunksize * 10000
+    n_data_train = chunksize * 10 #20000
+    n_data_val = chunksize * 10 #10000
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
@@ -134,7 +134,7 @@ def main(label_1, laebl_2):
                                             chunksize=chunksize)
 
     ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
-    rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params}
+    rec_params = {'epochs': 2, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params}
 
     #print(f"ffnn_params: {ffnn_params}")
     print(f"bert_params: {rec_params}")
@@ -148,7 +148,7 @@ def main(label_1, laebl_2):
                 df_val_features=feature_val_df,
                 df_val_tokens_reader=text_val_reader_df,
                 df_val_label=label_val_df,
-                save_filename=f"{label_1}_{label_2}"
+                save_filename=f"{label_1}_{label_2}",
                 cat_feature_set=set([]),
                 #subsample=0.1, # subsample percentage of each batch
                 #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5")

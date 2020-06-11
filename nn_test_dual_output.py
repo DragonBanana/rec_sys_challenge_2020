@@ -4,6 +4,7 @@ from Utils.Submission.Submission import create_submission_file
 import numpy as np
 import time
 import sys
+import pathlib
 from Utils.TelegramBot import telegram_bot_send_update
 
 def main(label_1, label_2, test_dataset):
@@ -86,6 +87,7 @@ def main(label_1, label_2, test_dataset):
         "graph_two_steps_comment"
     ]
     '''
+
     feature_list = [
         "raw_feature_creator_follower_count",  # 0
         "raw_feature_creator_following_count",  # 1
@@ -94,7 +96,8 @@ def main(label_1, label_2, test_dataset):
     print(f"Running on labels : {label_1} - {label_2}")
 
     ip = '34.242.41.76'
-    submission_filename = f"Dataset/Features/{test_dataset}/ensembling/nn_predictions"
+    submission_dir = f"Dataset/Features/{test_dataset}/ensembling"
+    submission_filename = f"{submission_dir}/nn_predictions"
 
     chunksize = 2048
 
@@ -105,7 +108,7 @@ def main(label_1, label_2, test_dataset):
     ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
     rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params}
 
-    saved_model_path = "./saved_models/saved_model_{label_1}_{label_2}"
+    saved_model_path = f"./saved_models/saved_model_{label_1}_{label_2}"
 
     rec = DualDistilBertRec(**rec_params)
 
@@ -115,7 +118,7 @@ def main(label_1, label_2, test_dataset):
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    #test_df = test_df.head(2500)
+    test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -133,11 +136,13 @@ def main(label_1, label_2, test_dataset):
     p_1 = predictions[:,0]
     p_2 = predictions[:,1]
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
 
-    #tweets = tweets.head(2500).array
-    #users = users.head(2500).array
+    tweets = tweets.head(2500).array
+    users = users.head(2500).array
+
+    pathlib.Path(submission_dir).mkdir(parents=True, exist_ok=True)
 
     create_submission_file(tweets, users, p_1, submission_filename+f"_{label_1}.csv")
     create_submission_file(tweets, users, p_2, submission_filename+f"_{label_2}.csv")

@@ -230,6 +230,8 @@ class DualNNRec(RecommenderBase, ABC):
             model_path = f"./saved_models/saved_model_{save_filename}"
             optimizer_path = f"./saved_models/saved_optimizer_{save_filename}"
 
+            print(f"Saving model : {model_path}")
+
             torch.save(self.model.state_dict(), model_path)
             torch.save(optimizer.state_dict(), optimizer_path)
 
@@ -240,7 +242,7 @@ class DualNNRec(RecommenderBase, ABC):
             bot_string = bot_string + "Epsilon: " + str(self.eps) + "\n ---------------- \n"
             bot_string = bot_string + "\n".join([key + ": " + str(curr_stats[key]) for key in curr_stats]) + "\n\n"
             bot_string = bot_string + "Saved to : " + model_path
-            telegram_bot_send_update(bot_string)
+            #telegram_bot_send_update(bot_string)
 
         print("")
         print("Training complete!")
