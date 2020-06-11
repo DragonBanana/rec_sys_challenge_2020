@@ -906,10 +906,10 @@ class ModelInterface(object):
         if self.model_name in "xgboost_classifier":
             param_dict = xgbRange(self.kind)
 
-        if self.model_name in "lightgbm_classifier":
+        if self.model_name == "lightgbm_classifier":
             param_dict =  lgbmRange(self.kind)
 
-        if self.model_name in "lightgbm_classifier_cold":
+        if self.model_name == "lightgbm_classifier_cold":
             param_dict =  lgbmRangeCold(self.kind)
 
         if self.model_name in "catboost_classifier":
