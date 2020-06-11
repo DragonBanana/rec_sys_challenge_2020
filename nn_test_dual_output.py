@@ -3,36 +3,10 @@ from Utils.Data.Data import get_dataset, get_feature, get_feature_reader
 from Utils.Submission.Submission import create_submission_file
 import numpy as np
 import time
+import sys
 from Utils.TelegramBot import telegram_bot_send_update
 
-def main():
-    '''
-    feature_list = [
-        "raw_feature_creator_follower_count",  # 0
-                "raw_feature_creator_following_count",  # 1
-                "raw_feature_engager_follower_count",  # 2
-                "raw_feature_engager_following_count",  # 3
-                "tweet_feature_number_of_photo",  # 4
-                "tweet_feature_number_of_video",  # 5
-                "tweet_feature_number_of_gif",  # 6
-                "tweet_feature_number_of_hashtags",  # 7
-                "tweet_feature_creation_timestamp_hour",  # 8
-                "tweet_feature_creation_timestamp_week_day",  # 9
-                "tweet_feature_number_of_mentions",  # 10
-                "number_of_engagements_like", # 11
-                "number_of_engagements_retweet", #  12
-                "number_of_engagements_reply", # 13
-                "number_of_engagements_comment", #  14
-                "number_of_engagements_positive", #  15
-                "number_of_engagements_negative", # 16
-                "engager_feature_number_of_previous_like_engagement_ratio",  # 17
-                "engager_feature_number_of_previous_reply_engagement_ratio",  # 18
-                "engager_feature_number_of_previous_retweet_engagement_ratio",  # 19
-                "engager_feature_number_of_previous_comment_engagement_ratio",  # 20
-                "engager_feature_number_of_previous_positive_engagement_ratio",  # 21
-                "engager_feature_number_of_previous_negative_engagement_ratio"  # 22
-    ]
-    '''
+def main(label_1, label_2, test_dataset):
     '''
     feature_list = [
         "raw_feature_creator_follower_count",
@@ -85,37 +59,63 @@ def main():
         "number_of_engagements_positive",
         "tweet_feature_creation_timestamp_hour_shifted",
         "tweet_feature_creation_timestamp_day_phase",
-        "tweet_feature_creation_timestamp_day_phase_shifted"
+        "tweet_feature_creation_timestamp_day_phase_shifted",
+        "engager_feature_number_of_previous_like_engagement_ratio",
+        "engager_feature_number_of_previous_reply_engagement_ratio",
+        "engager_feature_number_of_previous_retweet_engagement_ratio",
+        "engager_feature_number_of_previous_comment_engagement_ratio",
+        "engager_feature_number_of_previous_positive_engagement_ratio",
+        "engager_feature_number_of_previous_negative_engagement_ratio",
+        "adjacency_between_creator_and_engager_retweet",
+        "adjacency_between_creator_and_engager_reply",
+        "adjacency_between_creator_and_engager_comment",
+        "adjacency_between_creator_and_engager_like",
+        "adjacency_between_creator_and_engager_positive",
+        "adjacency_between_creator_and_engager_negative",
+        "graph_two_steps_adjacency_positive",
+        "graph_two_steps_adjacency_negative",
+        "graph_two_steps_adjacency_like",
+        "graph_two_steps_adjacency_reply",
+        "graph_two_steps_adjacency_retweet",
+        "graph_two_steps_adjacency_comment",
+        "graph_two_steps_positive",
+        "graph_two_steps_negative",
+        "graph_two_steps_like",
+        "graph_two_steps_reply",
+        "graph_two_steps_retweet",
+        "graph_two_steps_comment"
     ]
-
     '''
     feature_list = [
         "raw_feature_creator_follower_count",  # 0
         "raw_feature_creator_following_count",  # 1
     ]
 
+    print(f"Running on labels : {label_1} - {label_2}")
+
     ip = '34.242.41.76'
-    submission_filename = "nn_dual_predictions"
+    submission_filename = f"Dataset/Features/{test_dataset}/ensembling/nn_predictions"
 
     chunksize = 2048
 
     train_dataset = "cherry_train"
-    test_dataset = "cherry_val"
+
+    print(f"Test dataset : {test_dataset}")
 
     ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
     rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params}
 
-    saved_model_path = "saved_models/saved_model_dual_label_2e-05_770_128_64_0.5_0.5_epoch_1"
+    saved_model_path = "./saved_models/saved_model_{label_1}_{label_2}"
 
     rec = DualDistilBertRec(**rec_params)
 
     train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
-    train_df = train_df.head(1920000)
+    train_df = train_df.head(3840000)
     train_df = rec._normalize_features(train_df, is_train=True)
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    test_df = test_df.head(2500)
+    #test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -130,25 +130,22 @@ def main():
     print(predictions)
     print(predictions.shape)
 
-    predictions_like = predictions[:,0]
-    predictions_retweet = predictions[:,1]
+    p_1 = predictions[:,0]
+    p_2 = predictions[:,1]
 
-    #print(predictions_like)
-    #print(predictions_like.shape)
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
+    #tweets = tweets.head(2500).array
+    #users = users.head(2500).array
 
-    tweets = tweets.head(2500).array
-    users = users.head(2500).array
+    create_submission_file(tweets, users, p_1, submission_filename+f"_{label_1}.csv")
+    create_submission_file(tweets, users, p_2, submission_filename+f"_{label_2}.csv")
 
-    create_submission_file(tweets, users, predictions_like, submission_filename+"_like.csv")
-    create_submission_file(tweets, users, predictions_like, submission_filename+"_retweet.csv")
-
-    bot_string = f"DistilBertDoubleInput NN - multi_label \n ---------------- \n"
-    bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
+    #bot_string = f"DistilBertDoubleInput NN - {label_1}_{label_2} \n ---------------- \n"
+    #bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
     #telegram_bot_send_update(bot_string)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1], sys.argv[2], sys.argv[3])

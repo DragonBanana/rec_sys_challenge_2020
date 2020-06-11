@@ -250,7 +250,7 @@ class MappingMentionsDictionary(MappingDictionary):
             last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         
-        print(tweet_ids)
+        #print(tweet_ids)
         
         train_feature = RawFeatureTweetTextToken("train")
         test_feature = RawFeatureTweetTextToken("test")
@@ -261,7 +261,7 @@ class MappingMentionsDictionary(MappingDictionary):
             last_test_feature.load_or_create()[last_test_feature.feature_name]
         ])
         
-        print(text)
+        #print(text)
         
         del train_feature
         del test_feature
@@ -269,7 +269,7 @@ class MappingMentionsDictionary(MappingDictionary):
         
         data = pd.concat([tweet_ids, text], axis=1)
         
-        print(data)
+        #print(data)
         
         del tweet_ids
         del text
@@ -278,7 +278,7 @@ class MappingMentionsDictionary(MappingDictionary):
         tokens_df = tokens_df.set_index('mapped_feature_tweet_id')
         tokens_df = tokens_df['raw_feature_tweet_text_token']
         
-        print(tokens_df)
+        #print(tokens_df)
         
         del data
         
@@ -289,7 +289,7 @@ class MappingMentionsDictionary(MappingDictionary):
                                                          
         #result['mentions_count'] = result['mentions_mapped'].apply(lambda x: len(x.split('\t')))
 
-        print(result)
+        #print(result)
 
         self.save_dictionary(result)
         
