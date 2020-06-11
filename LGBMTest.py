@@ -7,7 +7,7 @@ from Utils.Submission.Submission import create_submission_file
 from Utils.Data.Data import oversample
 from Utils.TelegramBot import telegram_bot_send_update
 
-LABEL = 'retweet'
+LABEL = 'reply'
 
 if __name__ == '__main__':
     train_dataset = "cherry_train"
@@ -145,8 +145,8 @@ if __name__ == '__main__':
                "creator_and_engager_have_same_main_language",
                "is_tweet_in_creator_main_language",
                "is_tweet_in_engager_main_language",
-               "statistical_probability_main_language_of_engager_engage_tweet_language_1",
-               "statistical_probability_main_language_of_engager_engage_tweet_language_2",
+               # "statistical_probability_main_language_of_engager_engage_tweet_language_1",
+               # "statistical_probability_main_language_of_engager_engage_tweet_language_2",
                "creator_and_engager_have_same_main_grouped_language",
                "is_tweet_in_creator_main_grouped_language",
                "is_tweet_in_engager_main_grouped_language",
@@ -179,34 +179,22 @@ if __name__ == '__main__':
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
-    param_dict ={
+    param_dict = {
         'objective': "binary",
 
         'num_threads': -1,
 
         'num_iterations': 1000,
 
-        'num_leaves': 633,
-
-        'learning_rate': 0.018114793990332115,
-
-        'max_depth': 45,
-
-        'lambda_l1': 1.4637814269302447,
-
-        'lambda_l2': 31.442410289634363,
-
-        'colsample_bynode': 0.9775637944537275,
-
-        'colsample_bytree': 0.8029847555201839,
-
-        'bagging_fraction': 0.7166917716229553,
-
-        'bagging_freq': 3,
-
-        'max_bin': 445,
-
-        'min_data_in_leaf': 501,
+        'num_leaves': 789,
+        'max_depth': 6,
+        'lambda_l1': 50.0,
+        'lambda_l2': 45.215133554212514,
+        'colsample_bynode': 0.43251797168693623,
+        'colsample_bytree': 1.0,
+        'bagging_fraction': 1.0,
+        'bagging_freq': 2,
+        'min_data_in_leaf': 545,
 
         'early_stopping_rounds': 15
     }
@@ -247,5 +235,5 @@ if __name__ == '__main__':
     submission_filename = f"lgbm_{LABEL}_submission.csv"
     create_submission_file(tweets, users, predictions, submission_filename)
     
-    ip = "3.250.69.182"
+    ip = "3.249.177.142"
     telegram_bot_send_update(f"@lucaconterio la submission è pronta! IP: {ip}, nome del file: {submission_filename}")
