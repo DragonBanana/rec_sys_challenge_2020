@@ -14,6 +14,8 @@ import Blending.comment_params as comment_params
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBEnsembling import XGBEnsembling
 import argparse
 
+from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import *
+
 
 def get_ensembling_label(label, dataset_id):
     from Utils.Data import Data
@@ -21,8 +23,8 @@ def get_ensembling_label(label, dataset_id):
 
 
 def get_nn_prediction(label, dataset_id):
-    df = pd.read_csv(f'Dataset/Features/{dataset_id}/ensembling/nn_predictions_{label}.csv', header=None)
-    df = df.drop([0, 1], axis=1)
+    df = pd.read_csv(f'Dataset/Features/{dataset_id}/ensembling/nn_predictions_{label}.csv',
+                     header=None, names=[0, 1, 2], usecols=[2])
     df.columns = [f'nn_predictions_{label}']
     return df
 
@@ -252,8 +254,29 @@ def main():
     # BLENDING FEATURE DECLARATION
 
     feature_list = []
-    df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
-                                                     X_label=features, Y_label=label, sample=0.3)
+
+    df_train = pd.DataFrame(columns=features)
+    df_train_label = pd.DataFrame(columns=label)
+    need_to_load_train_set = False
+
+    for ens_label in ensembling_list:
+        lgbm_params = ensembling_lgbm_params[ens_label]
+        for lgbm_param_dict in lgbm_params:
+            start_time = time.time()
+            if not LGBMEnsemblingFeature(dataset_id=train_dataset,
+                                       df_train=df_train,
+                                       df_train_label=get_ensembling_label(ens_label, train_dataset),
+                                       df_to_predict=df_to_predict,
+                                       param_dict=lgbm_param_dict,
+                                       categorical_features_set=categorical_features_set).has_feature():
+                print(f"{ens_label} {lgbm_param_dict}")
+                need_to_load_train_set = True
+
+    if need_to_load_train_set:
+        df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
+                                                         X_label=features, Y_label=label, sample=0.3)
+
+
     for ens_label in ensembling_list:
         lgbm_params = ensembling_lgbm_params[ens_label]
         for lgbm_param_dict in lgbm_params:
@@ -269,24 +292,39 @@ def main():
 
     del df_train, df_train_label
 
-    df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
-                                                     X_label=features, Y_label=label, sample=0.1)
-
-    for ens_label in ensembling_list:
-        xgb_params = ensembling_xgb_params[ens_label]
-        for xgb_param_dict in xgb_params:
-            start_time = time.time()
-
-            feature_list.append(XGBEnsembling(dataset_id=train_dataset,
-                                       df_train=df_train,
-                                       df_train_label=get_ensembling_label(ens_label, train_dataset),
-                                       df_to_predict=df_to_predict,
-                                       param_dict=xgb_param_dict, ))
-            print(f"time: {time.time() - start_time}")
-
-    del df_train, df_train_label
+    # NEW PARTll
+    # ONLY THIS PART IS NEW
+    # LOAD THIS PART FIRST
 
     df_feature_list = [x.load_or_create() for x in feature_list]
+
+    for ens_label in ensembling_list:
+        start_time = time.time()
+        if ens_label == "like":
+            val_features_df = XGBFoldEnsemblingLike2(val_dataset).load_or_create()
+            test_features_df = XGBFoldEnsemblingLike2(test_dataset).load_or_create()
+        elif ens_label == "retweet":
+            val_features_df = XGBFoldEnsemblingRetweet2(val_dataset).load_or_create()
+            test_features_df = XGBFoldEnsemblingRetweet2(test_dataset).load_or_create()
+        elif ens_label == "reply":
+            val_features_df = XGBFoldEnsemblingReply2(val_dataset).load_or_create()
+            test_features_df = XGBFoldEnsemblingReply2(test_dataset).load_or_create()
+        elif ens_label == "comment":
+            val_features_df = XGBFoldEnsemblingComment2(val_dataset).load_or_create()
+            test_features_df = XGBFoldEnsemblingComment2(test_dataset).load_or_create()
+        else:
+            assert False, "oh oh something went wrong. label not found"
+
+        test_features_df.set_index(new_index, inplace=True)
+
+        xgb_feature_df = pd.concat([val_features_df, test_features_df])
+
+        df_feature_list.append(xgb_feature_df)
+
+        print(f"time: {time.time() - start_time}")
+
+        del val_features_df, test_features_df
+
 
     # check dimensions
     len_val = len(df_val)
