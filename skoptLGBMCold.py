@@ -17,8 +17,8 @@ from Utils.Data.Data import oversample
 
 def main():  
     # Defining the dataset used
-    train_dataset = "cold_train"
-    test_dataset = "cold_test"
+    train_dataset = "cherry_train"
+    test_dataset = "cherry_val"
 
     # Define the X label
     X_label = [
@@ -43,7 +43,7 @@ def main():
             "tweet_feature_creation_timestamp_day_phase",               #18                       
             "tweet_feature_creation_timestamp_day_phase_shifted",       #19                       
             "tweet_feature_number_of_mentions",                         #20                                                                       
-            "tweet_feature_token_length",                               #21                                                                       
+            "tweet_feature_token_length",                               #21                                                                      
     ]                                                                           
     # Define the Y label
     Y_label = [
@@ -55,13 +55,41 @@ def main():
 
     # Load train data
     loading_data_start_time = time.time()
-    X_train, Y_train = Data.get_dataset_xgb_batch(1, 0, train_dataset, X_label, Y_label, 0.30)
+    X_train, Y_train = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
 
-    # Load test data
-    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, test_dataset, X_label, Y_label, 1)
+    x = Data.get_feature("mapped_feature_engager_id", train_dataset)
+    y = x.groupby("mapped_feature_engager_id").size()
+    a_1 = y[y == 1]
 
-    X_test, Y_test = Data.get_dataset_xgb_batch(2, 1, test_dataset, X_label, Y_label, 1)
+    one_interaction_mask_train = x['mapped_feature_engager_id'].isin(set(a_1.index))
+
+    X_val = X_train[one_interaction_mask_train]
+    X_train = X_train[~one_interaction_mask_train]
+
+
+    Y_val = Y_train[one_interaction_mask_train]
+    Y_train = Y_train[~one_interaction_mask_train]
+
+    X_train = X_train.sample(frac=0.3,random_state=0)
+    Y_train = Y_train.sample(frac=0.3,random_state=0)
+
+    X_val_temp, Y_val_temp = Data.get_dataset_xgb(test_dataset, X_label, Y_label)    
+
+    x_test = Data.get_feature("engager_feature_number_of_previous_positive_engagements_ratio_1", test_dataset)
     
+    cold_mask = x_test["engager_feature_number_of_previous_positive_engagements_ratio_1"] == -1
+
+    X_val = pd.concat([X_val,X_val_temp[cold_mask]],axis=0)
+    Y_val = pd.concat([Y_val,Y_val_temp[cold_mask]],axis=0)
+
+    X_val_copy=X_val.copy()
+    X_val = X_val_copy.sample(frac=0.5, random_state=0)
+    X_test = X_val_copy.drop(X_val.index)
+
+    Y_val_copy=Y_val.copy()
+    Y_val = Y_val_copy.sample(frac=0.5, random_state=0)
+    Y_test = Y_val_copy.drop(Y_val.index)
+
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
     OP = Optimizer(model_name, 
