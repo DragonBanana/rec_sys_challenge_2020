@@ -402,6 +402,8 @@ def main():
     for i in range(len(df_metatrain.columns)):
         assert df_metatrain.columns[i] == df_test.columns[i], f'You fucked yourself. metatrain col {i}: {df_metatrain.columns[i]}' \
                                                               f' test col {i}: {df_test.columns[i]}'
+        assert df_metatrain.columns[i] == df_private.columns[i], \
+            f'You fucked yourself. metatrain col {i}: {df_metatrain.columns[i]} test col {i}: {df_test.columns[i]}'
 
     model_name = "lightgbm_classifier"
     kind = LABEL
