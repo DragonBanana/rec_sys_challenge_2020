@@ -174,9 +174,10 @@ def main(class_label, model_id):
                                               chunksize=chunksize)
 
     if model_id == 2:
+        # skip first subsample of text tokens
         for i in range(0, train_batches_number):
             chunk = text_train_reader_df.get_chunk()
-        print(chunk)
+        print("Last chunk :", chunk)
 
     #    label_train_df, _ = train_test_split(label_train_df, train_size=0.2)
 
@@ -188,9 +189,10 @@ def main(class_label, model_id):
                                             chunksize=chunksize)
 
     if model_id == 2:
+        # skip first subsample of text tokens
         for i in range(0, val_batches_number):
             chunk = text_val_reader_df.get_chunk()
-        print(chunk)
+        print("Last chunk :", chunk)
 
     if model_id == 1:
         feature_train_df = feature_train_df.head(n_data_train)

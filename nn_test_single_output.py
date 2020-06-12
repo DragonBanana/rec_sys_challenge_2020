@@ -141,12 +141,12 @@ def main(class_label, test_dataset, model_id):
         "graph_two_steps_comment"
     ]
 
-    training_chunksize = 192
-
     train_dataset = "cherry_train"
 
     print(f"Training model : {model_id}")
     print(f"Running on label : {class_label}")
+
+    training_chunksize = 192
 
     if class_label == "comment":
         feature_list = feature_list_1
@@ -207,9 +207,10 @@ def main(class_label, test_dataset, model_id):
                                             chunksize=test_chunksize)
 
     if model_id == 2:
+        # skip first subsample of text tokens
         for i in range(0, training_batches_number):
             chunk = text_test_reader_df.get_chunk()
-        print(chunk)
+        print("Last chunk :", chunk)
 
     predictions = rec.get_prediction(df_test_features=test_df,
                                      df_test_tokens_reader=text_test_reader_df,
