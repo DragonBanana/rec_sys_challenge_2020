@@ -15,6 +15,7 @@ import Blending.retweet_params as retweet_params
 import Blending.comment_params as comment_params
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBEnsembling import XGBEnsembling
 import argparse
+from tqdm import tqdm
 
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import *
 from Utils.Submission.Submission import create_submission_file
@@ -22,7 +23,8 @@ from Utils.Submission.Submission import create_submission_file
 
 def get_ensembling_label(label, dataset_id):
     from Utils.Data import Data
-    return Data.get_feature(f"tweet_feature_engagement_is_{label}", dataset_id)
+    return Data.get_feature_batch(f"tweet_feature_engagement_is_{label}",
+                                  dataset_id, total_n_split=1, split_n=0, sample=0.3)
 
 
 def get_nn_prediction(label, dataset_id):
@@ -304,7 +306,7 @@ def main():
     # LOAD THIS PART FIRST
     del df_train, df_train_label
 
-    df_feature_list = [x.load_or_create() for x in feature_list]
+    df_feature_list = [x.load_or_create() for x in tqdm(feature_list)]
 
     for ens_label in ensembling_list:
         start_time = time.time()

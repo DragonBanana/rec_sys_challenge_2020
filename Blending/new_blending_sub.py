@@ -22,7 +22,8 @@ from Utils.Submission.Submission import create_submission_file
 
 def get_ensembling_label(label, dataset_id):
     from Utils.Data import Data
-    return Data.get_feature(f"tweet_feature_engagement_is_{label}", dataset_id)
+    return Data.get_feature_batch(f"tweet_feature_engagement_is_{label}",
+                                  dataset_id, total_n_split=1, split_n=0, sample=0.3)
 
 
 def get_nn_prediction(label, dataset_id):
