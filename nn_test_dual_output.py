@@ -8,7 +8,7 @@ import pathlib
 from Utils.TelegramBot import telegram_bot_send_update
 
 def main(label_1, label_2, test_dataset, model_id):
-    '''
+    
     feature_list = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -86,12 +86,6 @@ def main(label_1, label_2, test_dataset, model_id):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
-    '''
-
-    feature_list = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
 
     print(f"Training model : {model_id}")
     print(f"Running on labels : {label_1} - {label_2}")
@@ -137,7 +131,7 @@ def main(label_1, label_2, test_dataset, model_id):
 
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    test_df = test_df.head(2500)
+    #test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -155,20 +149,20 @@ def main(label_1, label_2, test_dataset, model_id):
     p_1 = predictions[:,0]
     p_2 = predictions[:,1]
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
 
-    tweets = tweets.head(2500).array
-    users = users.head(2500).array
+    #tweets = tweets.head(2500).array
+    #users = users.head(2500).array
 
     pathlib.Path(submission_dir).mkdir(parents=True, exist_ok=True)
 
     create_submission_file(tweets, users, p_1, submission_filename+f"_{label_1}_{model_id}.csv")
     create_submission_file(tweets, users, p_2, submission_filename+f"_{label_2}_{model_id}.csv")
 
-    #bot_string = f"DistilBertDoubleInput NN - {label_1}_{label_2} \n ---------------- \n"
-    #bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
-    #telegram_bot_send_update(bot_string)
+    bot_string = f"DistilBertDoubleInput NN - {label_1}_{label_2} \n ---------------- \n"
+    bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
+    telegram_bot_send_update(bot_string)
 
 
 if __name__ == '__main__':

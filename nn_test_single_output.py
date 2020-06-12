@@ -8,7 +8,7 @@ import pathlib
 from Utils.TelegramBot import telegram_bot_send_update
 
 def main(class_label, test_dataset, model_id):
-    '''
+    
     feature_list_1 = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -140,17 +140,6 @@ def main(class_label, test_dataset, model_id):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
-    '''
-
-    feature_list_1 = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
-
-    feature_list_2 = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
 
     chunksize = 192
 
@@ -161,10 +150,10 @@ def main(class_label, test_dataset, model_id):
 
     if class_label == "comment":
         feature_list = feature_list_1
-        n_data_train = chunksize * 10 #000
+        n_data_train = chunksize * 10000
     elif class_label == "reply":
         feature_list = feature_list_2
-        n_data_train = chunksize * 20 #000
+        n_data_train = chunksize * 20000
 
     ip = '34.242.41.76'
     submission_dir = f"Dataset/Features/{test_dataset}/ensembling"
@@ -207,7 +196,7 @@ def main(class_label, test_dataset, model_id):
     
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
-    test_df = test_df.head(2500)
+    #test_df = test_df.head(2500)
 
     prediction_start_time = time.time()
 
@@ -222,19 +211,19 @@ def main(class_label, test_dataset, model_id):
     print(predictions)
     print(predictions.shape)
 
-    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"] #.array
-    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"] #.array
+    tweets = get_feature("raw_feature_tweet_id", test_dataset)["raw_feature_tweet_id"].array
+    users = get_feature("raw_feature_engager_id", test_dataset)["raw_feature_engager_id"].array
 
-    tweets = tweets.head(2500).array
-    users = users.head(2500).array
+    #tweets = tweets.head(2500).array
+    #users = users.head(2500).array
 
     pathlib.Path(submission_dir).mkdir(parents=True, exist_ok=True)
 
     create_submission_file(tweets, users, predictions, submission_filename)
 
-    #bot_string = f"DistilBertDoubleInput NN - {class_label} \n ---------------- \n"
-    #bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
-    #telegram_bot_send_update(bot_string)
+    bot_string = f"DistilBertDoubleInput NN - {class_label} \n ---------------- \n"
+    bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
+    telegram_bot_send_update(bot_string)
 
 
 if __name__ == '__main__':

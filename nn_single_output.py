@@ -6,7 +6,7 @@ import time
 import sys
 
 def main(class_label, model_id):
-    '''
+    
     feature_list_1 = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -138,17 +138,6 @@ def main(class_label, model_id):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
-    '''
-
-    feature_list_1 = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
-
-    feature_list_2 = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
 
     chunksize = 192
     n_data_train = chunksize * 20000
@@ -162,10 +151,10 @@ def main(class_label, model_id):
 
     if class_label == "comment":
         feature_list = feature_list_1
-        n_data_train = chunksize * 10 #000
+        n_data_train = chunksize * 10000
     elif class_label == "reply":
         feature_list = feature_list_2
-        n_data_train = chunksize * 20 #000
+        n_data_train = chunksize * 20000
 
     print(f"n_data_train: {n_data_train}")
     print(f"n_data_val: {n_data_val}")

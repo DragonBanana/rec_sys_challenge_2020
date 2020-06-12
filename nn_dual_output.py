@@ -8,7 +8,7 @@ import sys
 
 
 def main(label_1, label_2, model_id):
-    '''
+    
     feature_list = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -86,16 +86,10 @@ def main(label_1, label_2, model_id):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
-    '''
-
-    feature_list = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
 
     chunksize = 192
-    n_data_train = chunksize * 20 #000
-    n_data_val = chunksize * 10 #000
+    n_data_train = chunksize * 20000
+    n_data_val = chunksize * 10000
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
