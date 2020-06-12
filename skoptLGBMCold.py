@@ -17,8 +17,8 @@ from Utils.Data.Data import oversample
 
 def main():  
     # Defining the dataset used
-    train_dataset = "cold_train"
-    test_dataset = "cold_test"
+    train_dataset = "cherry_train"
+    test_dataset = "cherry_val"
 
     # Define the X label
     X_label = [
