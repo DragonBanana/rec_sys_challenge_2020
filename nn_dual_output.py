@@ -7,7 +7,7 @@ import pandas as pd
 import sys
 
 
-def main(label_1, label_2):
+def main(label_1, label_2, model_id):
     '''
     feature_list = [
         "raw_feature_creator_follower_count",
@@ -89,17 +89,18 @@ def main(label_1, label_2):
     '''
 
     feature_list = [
-        "raw_feature_creator_follower_count",  # 0
-        "raw_feature_creator_following_count",  # 1
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
     ]
 
     chunksize = 192
-    n_data_train = chunksize * 10 #20000
-    n_data_val = chunksize * 10 #10000
+    n_data_train = chunksize * 20 #000
+    n_data_val = chunksize * 10 #000
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
 
+    print(f"Training model : {model_id}")
     print(f"Running on labels : {label_1} - {label_2}")
 
     print(f"n_data_train: {n_data_train}")
@@ -110,12 +111,10 @@ def main(label_1, label_2):
 
     feature_train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
     #   feature_train_df, _ = train_test_split(feature_train_df, train_size=0.2)
-    feature_train_df = feature_train_df.head(n_data_train)
 
     df_1 = get_feature(feature_name=f"tweet_feature_engagement_is_{label_1}", dataset_id=train_dataset)
     df_2 = get_feature(feature_name=f"tweet_feature_engagement_is_{label_2}", dataset_id=train_dataset)
     label_train_df = pd.concat([df_1, df_2], axis=1)
-    label_train_df = label_train_df.head(n_data_train)
 
     text_train_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=train_dataset,
                                               chunksize=chunksize)
@@ -123,18 +122,39 @@ def main(label_1, label_2):
     #    label_train_df, _ = train_test_split(label_train_df, train_size=0.2)
 
     feature_val_df = get_dataset(features=feature_list, dataset_id=val_dataset)
-    feature_val_df = feature_val_df.head(n_data_val)
 
     df_1 = get_feature(feature_name=f"tweet_feature_engagement_is_{label_1}", dataset_id=val_dataset)
     df_2 = get_feature(feature_name=f"tweet_feature_engagement_is_{label_2}", dataset_id=val_dataset)
     label_val_df = pd.concat([df_1, df_2], axis=1)
-    label_val_df = label_val_df.head(n_data_val)
 
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
 
-    ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
-    rec_params = {'epochs': 2, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params}
+    if model_id == 1:
+        feature_train_df = feature_train_df.head(n_data_train)
+        label_train_df = label_train_df.head(n_data_train)
+        feature_val_df = feature_val_df.head(n_data_val)
+        label_val_df = label_val_df.head(n_data_val)
+    elif model_id == 2:
+        feature_train_df = feature_train_df.iloc[n_data_train:2*n_data_train]
+        label_train_df = label_train_df.iloc[n_data_train:2*n_data_train]
+        feature_val_df = feature_val_df.iloc[n_data_val:2*n_data_val]
+        label_val_df = label_val_df.iloc[n_data_val:2*n_data_val]
+
+    ffnn_params = {
+        'hidden_size_1': 128, 
+        'hidden_size_2': 64, 
+        'hidden_dropout_prob_1': 0.5, 
+        'hidden_dropout_prob_2': 0.5
+    }
+    
+    rec_params = {
+        'epochs': 2, 
+        'weight_decay': 1e-5, 
+        'lr': 2e-5, 
+        'cap_length': 128, 
+        'ffnn_params': ffnn_params
+    }
 
     #print(f"ffnn_params: {ffnn_params}")
     print(f"bert_params: {rec_params}")
@@ -148,7 +168,7 @@ def main(label_1, label_2):
                 df_val_features=feature_val_df,
                 df_val_tokens_reader=text_val_reader_df,
                 df_val_label=label_val_df,
-                save_filename=f"{label_1}_{label_2}",
+                save_filename=f"{label_1}_{label_2}_{model_id}",
                 cat_feature_set=set([]),
                 #subsample=0.1, # subsample percentage of each batch
                 #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5")
@@ -162,4 +182,4 @@ def main(label_1, label_2):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], int(sys.argv[3]))

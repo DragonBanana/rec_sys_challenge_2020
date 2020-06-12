@@ -87,12 +87,13 @@ def main(label_1, label_2, test_dataset):
         "graph_two_steps_comment"
     ]
     '''
-
+    
     feature_list = [
-        "raw_feature_creator_follower_count",  # 0
-        "raw_feature_creator_following_count",  # 1
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
     ]
 
+    print(f"Training model : {model_id}")
     print(f"Running on labels : {label_1} - {label_2}")
 
     ip = '34.242.41.76'
@@ -100,20 +101,40 @@ def main(label_1, label_2, test_dataset):
     submission_filename = f"{submission_dir}/nn_predictions"
 
     chunksize = 2048
+    n_data_train = 3840000
 
     train_dataset = "cherry_train"
 
     print(f"Test dataset : {test_dataset}")
 
-    ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
-    rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params}
+    ffnn_params = {
+        'hidden_size_1': 128, 
+        'hidden_size_2': 64, 
+        'hidden_dropout_prob_1': 0.5, 
+        'hidden_dropout_prob_2': 0.5
+    }
+    
+    rec_params = {
+        'epochs': 2, 
+        'weight_decay': 1e-5, 
+        'lr': 2e-5, 
+        'cap_length': 128, 
+        'ffnn_params': ffnn_params
+    }
 
-    saved_model_path = f"./saved_models/saved_model_{label_1}_{label_2}"
+    saved_model_path = f"./saved_models/saved_model_{class_label}_{model_id}"
 
-    rec = DualDistilBertRec(**rec_params)
+    rec = DistilBertRec(**rec_params)
 
     train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
-    train_df = train_df.head(3840000)
+
+    if model_id == 1:
+        feature_train_df = feature_train_df.head(n_data_train)
+        label_train_df = label_train_df.head(n_data_train)
+    elif model_id == 2:
+        feature_train_df = feature_train_df.iloc[n_data_train:2*n_data_train]
+        label_train_df = label_train_df.iloc[n_data_train:2*n_data_train]
+
     train_df = rec._normalize_features(train_df, is_train=True)
 
     ###   PREDICTION
@@ -144,8 +165,8 @@ def main(label_1, label_2, test_dataset):
 
     pathlib.Path(submission_dir).mkdir(parents=True, exist_ok=True)
 
-    create_submission_file(tweets, users, p_1, submission_filename+f"_{label_1}.csv")
-    create_submission_file(tweets, users, p_2, submission_filename+f"_{label_2}.csv")
+    create_submission_file(tweets, users, p_1, submission_filename+f"_{label_1}_{model_id}.csv")
+    create_submission_file(tweets, users, p_2, submission_filename+f"_{label_2}_{model_id}.csv")
 
     #bot_string = f"DistilBertDoubleInput NN - {label_1}_{label_2} \n ---------------- \n"
     #bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
@@ -153,4 +174,4 @@ def main(label_1, label_2, test_dataset):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))

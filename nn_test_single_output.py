@@ -7,8 +7,7 @@ import sys
 import pathlib
 from Utils.TelegramBot import telegram_bot_send_update
 
-def main(class_label, test_dataset):
-
+def main(class_label, test_dataset, model_id):
     '''
     feature_list_1 = [
         "raw_feature_creator_follower_count",
@@ -144,32 +143,32 @@ def main(class_label, test_dataset):
     '''
 
     feature_list_1 = [
-        "raw_feature_creator_follower_count",  # 0
-        "raw_feature_creator_following_count",  # 1
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
     ]
 
     feature_list_2 = [
-        "raw_feature_engager_follower_count",
-        "raw_feature_engager_following_count"
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
     ]
 
     chunksize = 192
 
     train_dataset = "cherry_train"
-    val_dataset = "cherry_val"
 
+    print(f"Training model : {model_id}")
     print(f"Running on label : {class_label}")
 
     if class_label == "comment":
         feature_list = feature_list_1
-        train_data_amount = 1920000
+        n_data_train = chunksize * 10 #000
     elif class_label == "reply":
         feature_list = feature_list_2
-        train_data_amount = 3840000
+        n_data_train = chunksize * 20 #000
 
     ip = '34.242.41.76'
     submission_dir = f"Dataset/Features/{test_dataset}/ensembling"
-    submission_filename = f"{submission_dir}/nn_predictions_{class_label}.csv"
+    submission_filename = f"{submission_dir}/nn_predictions_{class_label}_{model_id}.csv"
 
     chunksize = 2048
 
@@ -177,17 +176,38 @@ def main(class_label, test_dataset):
 
     print(f"Test dataset : {test_dataset}")
 
-    ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
-    rec_params = {'epochs': 5, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
+    ffnn_params = {
+        'hidden_size_1': 128, 
+        'hidden_size_2': 64, 
+        'hidden_dropout_prob_1': 0.5, 
+        'hidden_dropout_prob_2': 0.5
+    }
+    
+    rec_params = {
+        'epochs': 1, 
+        'weight_decay': 1e-5, 
+        'lr': 2e-5, 
+        'cap_length': 128, 
+        'ffnn_params': ffnn_params,
+        'class_label': class_label
+    }
 
-    saved_model_path = f"./saved_models/saved_model_{class_label}"
+    saved_model_path = f"./saved_models/saved_model_{class_label}_{model_id}"
 
     rec = DistilBertRec(**rec_params)
 
     train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
-    train_df = train_df.head(train_data_amount)
-    train_df = rec._normalize_features(train_df, is_train=True)
+    train_df = train_df.head(n_data_train)
 
+    if model_id == 1:
+        feature_train_df = feature_train_df.head(n_data_train)
+        label_train_df = label_train_df.head(n_data_train)
+    elif model_id == 2:
+        feature_train_df = feature_train_df.iloc[n_data_train:2*n_data_train]
+        label_train_df = label_train_df.iloc[n_data_train:2*n_data_train]
+
+    train_df = rec._normalize_features(train_df, is_train=True)
+    
     ###   PREDICTION
     test_df = get_dataset(features=feature_list, dataset_id=test_dataset)
     test_df = test_df.head(2500)
@@ -221,4 +241,4 @@ def main(class_label, test_dataset):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], int(sys.argv[3]))
