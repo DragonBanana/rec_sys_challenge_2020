@@ -5,7 +5,7 @@ import numpy as np
 import time
 import sys
 
-def main(class_label):
+def main(class_label, model_id):
     '''
     feature_list_1 = [
         "raw_feature_creator_follower_count",
@@ -141,28 +141,31 @@ def main(class_label):
     '''
 
     feature_list_1 = [
-        "raw_feature_creator_follower_count",  # 0
-        "raw_feature_creator_following_count",  # 1
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
     ]
 
     feature_list_2 = [
-        "raw_feature_engager_follower_count",
-        "raw_feature_engager_following_count"
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
     ]
 
     chunksize = 192
-    n_data_train = chunksize * 10 #20000
-    n_data_val = chunksize * 10 #10000
+    n_data_train = chunksize * 20000
+    n_data_val = chunksize * 10000
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
 
+    print(f"Training model : {model_id}")
     print(f"Running on label : {class_label}")
 
     if class_label == "comment":
         feature_list = feature_list_1
+        n_data_train = chunksize * 10 #000
     elif class_label == "reply":
         feature_list = feature_list_2
+        n_data_train = chunksize * 20 #000
 
     print(f"n_data_train: {n_data_train}")
     print(f"n_data_val: {n_data_val}")
@@ -172,10 +175,8 @@ def main(class_label):
 
     feature_train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
     #   feature_train_df, _ = train_test_split(feature_train_df, train_size=0.2)
-    feature_train_df = feature_train_df.head(n_data_train)
 
     label_train_df = get_feature(feature_name=f"tweet_feature_engagement_is_{class_label}", dataset_id=train_dataset)
-    label_train_df = label_train_df.head(n_data_train)
 
     text_train_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=train_dataset,
                                               chunksize=chunksize)
@@ -183,16 +184,38 @@ def main(class_label):
     #    label_train_df, _ = train_test_split(label_train_df, train_size=0.2)
 
     feature_val_df = get_dataset(features=feature_list, dataset_id=val_dataset)
-    feature_val_df = feature_val_df.head(n_data_val)
 
     label_val_df = get_feature(feature_name=f"tweet_feature_engagement_is_{class_label}", dataset_id=val_dataset)
-    label_val_df = label_val_df.head(n_data_val)
 
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
 
-    ffnn_params = {'hidden_size_1': 128, 'hidden_size_2': 64, 'hidden_dropout_prob_1': 0.5, 'hidden_dropout_prob_2': 0.5}
-    rec_params = {'epochs': 1, 'weight_decay': 1e-5, 'lr': 2e-5, 'cap_length': 128, 'ffnn_params': ffnn_params, 'class_label': class_label}
+    if model_id == 1:
+        feature_train_df = feature_train_df.head(n_data_train)
+        label_train_df = label_train_df.head(n_data_train)
+        feature_val_df = feature_val_df.head(n_data_val)
+        label_val_df = label_val_df.head(n_data_val)
+    elif model_id == 2:
+        feature_train_df = feature_train_df.iloc[n_data_train:2*n_data_train]
+        label_train_df = label_train_df.iloc[n_data_train:2*n_data_train]
+        feature_val_df = feature_val_df.iloc[n_data_val:2*n_data_val]
+        label_val_df = label_val_df.iloc[n_data_val:2*n_data_val]
+
+    ffnn_params = {
+        'hidden_size_1': 128, 
+        'hidden_size_2': 64, 
+        'hidden_dropout_prob_1': 0.5, 
+        'hidden_dropout_prob_2': 0.5
+    }
+
+    rec_params = {
+        'epochs': 1, 
+        'weight_decay': 1e-5, 
+        'lr': 2e-5, 
+        'cap_length': 128, 
+        'ffnn_params': ffnn_params, 
+        'class_label': class_label
+    }
 
     #print(f"ffnn_params: {ffnn_params}")
     print(f"bert_params: {rec_params}")
@@ -206,7 +229,7 @@ def main(class_label):
                 df_val_features=feature_val_df,
                 df_val_tokens_reader=text_val_reader_df,
                 df_val_label=label_val_df,
-                save_filename=class_label,
+                save_filename=f"{class_label}_{model_id}",
                 cat_feature_set=set([]),
                 #subsample=0.1, # subsample percentage of each batch
                 #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5") 
@@ -220,4 +243,4 @@ def main(class_label):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1], int(sys.argv[2]))
