@@ -367,12 +367,16 @@ def main():
     # split dataframe columns in train and label
     col_names_list = [df_feat.columns[0] for df_feat in df_feature_list]
 
-    extended_features = df_metatrain.columns.difference(label)
+    extended_features = df_test.columns
     df_metatrain_label = df_metatrain[label]
     df_metatrain = df_metatrain[extended_features]
 
     df_metaval_label = df_metaval[label]
     df_metaval = df_metaval[extended_features]
+
+    for i in range(len(df_metatrain.columns)):
+        assert df_metatrain.columns[i] == df_test.columns[i], f'You fucked yourself. metatrain col {i}: {df_metatrain.columns[i]}' \
+                                                              f' test col {i}: {df_test.columns[i]}'
 
     model_name = "lightgbm_classifier"
     kind = LABEL
