@@ -33,8 +33,9 @@ if __name__ == '__main__':
             "tweet_feature_creation_timestamp_hour_shifted",            #16                    
             "tweet_feature_creation_timestamp_week_day",                #17                       
             "tweet_feature_creation_timestamp_day_phase",               #18                       
-            "tweet_feature_creation_timestamp_day_phase_shifted",       #19                                                                    
-            "tweet_feature_token_length",                               #20 
+            "tweet_feature_creation_timestamp_day_phase_shifted",       #19                       
+            #"tweet_feature_number_of_mentions",                         #20                                                                       
+            "tweet_feature_token_length",                               #21   
     ]
     # Define the Y label
     Y_label = [
