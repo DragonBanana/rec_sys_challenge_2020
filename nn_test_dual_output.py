@@ -7,7 +7,7 @@ import sys
 import pathlib
 from Utils.TelegramBot import telegram_bot_send_update
 
-def main(label_1, label_2, test_dataset):
+def main(label_1, label_2, test_dataset, model_id):
     '''
     feature_list = [
         "raw_feature_creator_follower_count",
@@ -87,7 +87,7 @@ def main(label_1, label_2, test_dataset):
         "graph_two_steps_comment"
     ]
     '''
-    
+
     feature_list = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count"
@@ -122,18 +122,16 @@ def main(label_1, label_2, test_dataset):
         'ffnn_params': ffnn_params
     }
 
-    saved_model_path = f"./saved_models/saved_model_{class_label}_{model_id}"
+    saved_model_path = f"./saved_models/saved_model_{label_1}_{label_2}_{model_id}"
 
-    rec = DistilBertRec(**rec_params)
+    rec = DualDistilBertRec(**rec_params)
 
     train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
 
     if model_id == 1:
-        feature_train_df = feature_train_df.head(n_data_train)
-        label_train_df = label_train_df.head(n_data_train)
+        train_df = train_df.head(n_data_train)
     elif model_id == 2:
-        feature_train_df = feature_train_df.iloc[n_data_train:2*n_data_train]
-        label_train_df = label_train_df.iloc[n_data_train:2*n_data_train]
+        train_df = train_df.iloc[n_data_train:2*n_data_train]
 
     train_df = rec._normalize_features(train_df, is_train=True)
 

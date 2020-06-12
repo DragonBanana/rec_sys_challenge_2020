@@ -213,7 +213,7 @@ def main(class_label, model_id):
         'weight_decay': 1e-5, 
         'lr': 2e-5, 
         'cap_length': 128, 
-        'ffnn_params': ffnn_params, 
+        'ffnn_params': ffnn_params,
         'class_label': class_label
     }
 

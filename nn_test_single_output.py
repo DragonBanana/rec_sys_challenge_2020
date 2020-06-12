@@ -197,14 +197,11 @@ def main(class_label, test_dataset, model_id):
     rec = DistilBertRec(**rec_params)
 
     train_df = get_dataset(features=feature_list, dataset_id=train_dataset)
-    train_df = train_df.head(n_data_train)
 
     if model_id == 1:
-        feature_train_df = feature_train_df.head(n_data_train)
-        label_train_df = label_train_df.head(n_data_train)
+        train_df = train_df.head(n_data_train)
     elif model_id == 2:
-        feature_train_df = feature_train_df.iloc[n_data_train:2*n_data_train]
-        label_train_df = label_train_df.iloc[n_data_train:2*n_data_train]
+        train_df = train_df.iloc[n_data_train:2*n_data_train]
 
     train_df = rec._normalize_features(train_df, is_train=True)
     
