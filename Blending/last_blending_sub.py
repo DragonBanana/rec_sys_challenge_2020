@@ -473,4 +473,4 @@ def prediction(LGBM, dataset_id, df, label):
     # Uncomment to plot feature importance at the end of training
     # LGBM.plot_fimportance()
 
-    create_submission_file(tweets, users, predictions, f"{label}_lgbm_blending_submission.csv")
+    create_submission_file(tweets, users, predictions, f"{dataset_id}_{label}_lgbm_blending_submission.csv")
