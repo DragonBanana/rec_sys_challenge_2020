@@ -43,18 +43,18 @@ xgb_model_filename = f"xgb_model_{label}.model"
 
 # XGB parameters
 xgb_parameters = {
-    'max_depth': 11,
-    'min_child_weight': 81,
-    'colsample_bytree': 0.2649064567045216,
-    'learning_rate': 0.1188611713303711,
-    'reg_alpha': 0.0004715390726558292,
-    'reg_lambda': 0.04540853259670264,
+    'max_depth': 13,
+    'min_child_weight': 88,
+    'colsample_bytree': 0.4499723255619491,
+    'learning_rate': 0.05936449833058634,
+    'reg_alpha': 1.0,
+    'reg_lambda': 1.0,
     'scale_pos_weight': 1,
-    'gamma': 1.3335093029765577,
-    'subsample': 0.5882432665783615,
+    'gamma': 0.9960657403330612,
+    'subsample': 0.5161657588808174,
     'base_score': 0.0274,
-    'max_delta_step': 264.97035696830164,
-    'num_parallel_tree': 8
+    'max_delta_step': 0.0,
+    'num_parallel_tree': 10
 }
 
 # XGBoost model
@@ -62,7 +62,7 @@ xgboost = XGBoost(
     eval_metric="logloss",
     tree_method='gpu_hist',
     early_stopping_rounds=50,
-    num_rounds=2000,
+    num_rounds=2500,
     **xgb_parameters
 )
 

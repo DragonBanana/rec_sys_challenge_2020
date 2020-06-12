@@ -2,6 +2,7 @@ import time
 from ParamTuning.Optimizer import Optimizer
 from Utils.Data import Data
 import pandas as pd
+
 from Utils.Data.Data import get_dataset_xgb_batch
 from Utils.Data.Features.Generated.EnsemblingFeature.LGBMEnsemblingFeature import LGBMEnsemblingFeature
 from sklearn.model_selection import train_test_split
@@ -13,8 +14,7 @@ import Blending.comment_params as comment_params
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBEnsembling import XGBEnsembling
 import argparse
 
-from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike2, \
-    XGBFoldEnsemblingComment2, XGBFoldEnsemblingReply2, XGBFoldEnsemblingRetweet2
+from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import *
 
 
 def get_ensembling_label(label, dataset_id):
@@ -22,8 +22,15 @@ def get_ensembling_label(label, dataset_id):
     return Data.get_feature(f"tweet_feature_engagement_is_{label}", dataset_id)
 
 
+def get_nn_prediction(label, dataset_id):
+    df = pd.read_csv(f'Dataset/Features/{dataset_id}/ensembling/nn_predictions_{label}.csv',
+                     header=None, names=[0, 1, 2], usecols=[2])
+    df.columns = [f'nn_predictions_{label}']
+    return df
+
 
 def params_by_label(label):
+
     if label in ["like"]:
         lgbm_params = like_params.lgbm_get_params()
         xgb_params = like_params.xgb_get_params()
@@ -38,6 +45,7 @@ def params_by_label(label):
         xgb_params = comment_params.xgb_get_params()
     else:
         assert False, "What?"
+
     return lgbm_params, xgb_params
 
 
@@ -49,6 +57,8 @@ def main():
                         help='required argument: label')
 
     args = parser.parse_args()
+
+    nn_labels = ["like", "reply", "retweet", "comment"]
 
     LABEL = args.label
 
@@ -244,7 +254,6 @@ def main():
     # BLENDING FEATURE DECLARATION
 
     feature_list = []
-    # NEW CODE ADDED
 
     df_train = pd.DataFrame(columns=features)
     df_train_label = pd.DataFrame(columns=label)
@@ -266,6 +275,8 @@ def main():
     if need_to_load_train_set:
         df_train, df_train_label = get_dataset_xgb_batch(total_n_split=1, split_n=0, dataset_id=train_dataset,
                                                          X_label=features, Y_label=label, sample=0.3)
+
+
     for ens_label in ensembling_list:
         lgbm_params = ensembling_lgbm_params[ens_label]
         for lgbm_param_dict in lgbm_params:
@@ -284,7 +295,6 @@ def main():
     # NEW PARTll
     # ONLY THIS PART IS NEW
     # LOAD THIS PART FIRST
-    del df_train, df_train_label
 
     df_feature_list = [x.load_or_create() for x in feature_list]
 
@@ -315,7 +325,6 @@ def main():
 
         del val_features_df, test_features_df
 
-    # END OF NEW PART
 
     # check dimensions
     len_val = len(df_val)
@@ -327,7 +336,11 @@ def main():
 
     # split feature dataframe in validation and testing
     df_feat_val_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
-    df_feat_test_list = [df_feat.iloc[len_val:] for df_feat in df_feature_list]
+    #df_feat_test_list = [df_feat.iloc[len_val:] for df_feat in df_feature_list]
+
+    df_feat_nn_val_list = [get_nn_prediction(l, val_dataset) for l in nn_labels]
+
+    df_feat_val_list += df_feat_nn_val_list
 
     df_to_be_concatenated_list = [df_val] + df_feat_val_list + [df_val_label]
 
@@ -357,13 +370,13 @@ def main():
                    kind,
                    mode=0,
                    path=LABEL,
-                   path_log=f"blending-lgbm-{LABEL}",
+                   path_log=f"blending-lgbm-{LABEL}-with-xgb-nn",
                    make_log=True,
                    make_save=False,
                    auto_save=False
                    )
 
-    OP.setParameters(n_calls=40, n_random_starts=20)
+    OP.setParameters(n_calls=100, n_random_starts=30)
     OP.loadTrainData(df_metatrain, df_metatrain_label)
 
     OP.loadValData(df_metaval, df_metaval_label)  # early stopping

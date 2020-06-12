@@ -8,9 +8,9 @@ from Utils.Data.Data import oversample
 from Utils.TelegramBot import telegram_bot_send_update
 
 if __name__ == '__main__':
-    train_dataset = "cold_train"
-    val_dataset = "cold_test"
-    test_dataset="test"
+    train_dataset = "cherry_train"
+    val_dataset = "cherry_val"
+    test_dataset="new_test"
 
     # Define the X label
     X_label = [
@@ -33,8 +33,9 @@ if __name__ == '__main__':
             "tweet_feature_creation_timestamp_hour_shifted",            #16                    
             "tweet_feature_creation_timestamp_week_day",                #17                       
             "tweet_feature_creation_timestamp_day_phase",               #18                       
-            "tweet_feature_creation_timestamp_day_phase_shifted",       #19                                                                    
-            "tweet_feature_token_length",                               #20 
+            "tweet_feature_creation_timestamp_day_phase_shifted",       #19                       
+            #"tweet_feature_number_of_mentions",                         #20                                                                       
+            "tweet_feature_token_length",                               #21   
     ]
     # Define the Y label
     Y_label = [
@@ -46,35 +47,54 @@ if __name__ == '__main__':
     loading_data_start_time = time.time()
     X_train, Y_train = Data.get_dataset_xgb(train_dataset, X_label, Y_label)
 
-    # Load val data
-    X_val, Y_val = Data.get_dataset_xgb_batch(2, 0, val_dataset, X_label, Y_label, 1)
+    x = Data.get_feature("mapped_feature_engager_id", train_dataset)
+    y = x.groupby("mapped_feature_engager_id").size()
+    a_1 = y[y == 1]
 
-    # Load local_test data
-    X_local, Y_local = Data.get_dataset_xgb_batch(2, 1, val_dataset, X_label, Y_label, 1)
+    one_interaction_mask_train = x['mapped_feature_engager_id'].isin(set(a_1.index))
+
+    X_val = X_train[one_interaction_mask_train]
+    X_train = X_train[~one_interaction_mask_train]
+
+
+    Y_val = Y_train[one_interaction_mask_train]
+    Y_train = Y_train[~one_interaction_mask_train]
+
+    X_val_temp, Y_val_temp = Data.get_dataset_xgb(test_dataset, X_label, Y_label)    
+
+    x_test = Data.get_feature("engager_feature_number_of_previous_positive_engagements_ratio_1", test_dataset)
+    
+    cold_mask = x_test["engager_feature_number_of_previous_positive_engagements_ratio_1"] == -1
+
+    X_val = pd.concat([X_val,X_val_temp[cold_mask]],axis=0)
+    Y_val = pd.concat([Y_val,Y_val_temp[cold_mask]],axis=0)
 
     # Load test data
     X_test = Data.get_dataset(X_label, test_dataset)
 
     print(f"Loading data time: {time.time() - loading_data_start_time} seconds")
 
-    LGBM = LightGBM(
-        objective         =     'binary',
-        num_threads       =     -1,
-        num_iterations    =     1000,
-        num_leaves        =     2754, 
-        learning_rate     =     0.28615984073261447, 
-        max_depth         =     7, 
-        lambda_l1         =     27.9468057035752, 
-        lambda_l2         =     22.217911321276674, 
-        colsample_bynode  =     0.6621896939145201, 
-        colsample_bytree  =     0.4497659681733497, 
-        bagging_fraction  =     0.25811151715918407, 
-        bagging_freq      =     8, 
-        max_bin           =     1365, 
-        min_data_in_leaf  =     489,
-        early_stopping_rounds=15
-        )
+    param_dict = {
+        'objective': "binary",
 
+        'num_threads': -1,
+
+        'num_iterations': 1000,
+
+        'num_leaves': 803, 
+        'max_depth': 40, 
+        'lambda_l1': 34.569259003648796, 
+        'lambda_l2': 16.052913892958095, 
+        'colsample_bynode': 0.6211381028707941, 
+        'colsample_bytree': 0.7776543289263252, 
+        'bagging_fraction': 0.9735959521100843, 
+        'bagging_freq': 8, 
+        'min_data_in_leaf': 986,
+
+        'early_stopping_rounds': 15
+    }
+
+    LGBM = LightGBM(**param_dict)
     # LGBM Training
     training_start_time = time.time()
     #LGBM.fit(X=X_train, Y=Y_train, X_val=X_val, Y_val=Y_val, categorical_feature=set([4,5,6,11,12,13]))
@@ -83,7 +103,7 @@ if __name__ == '__main__':
 
     # LGBM Evaluation
     evaluation_start_time = time.time()
-    prauc, rce, conf, max_pred, min_pred, avg = LGBM.evaluate(X_local.to_numpy(), Y_local.to_numpy())
+    prauc, rce, conf, max_pred, min_pred, avg = LGBM.evaluate(X_val.to_numpy(), Y_val.to_numpy())
     print(f"PRAUC:\t{prauc}")
     print(f"RCE:\t{rce}")
     print(f"TN:\t{conf[0,0]}")
