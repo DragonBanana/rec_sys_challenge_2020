@@ -90,12 +90,16 @@ def main(label_1, label_2, test_dataset, model_id):
     print(f"Training model : {model_id}")
     print(f"Running on labels : {label_1} - {label_2}")
 
+    training_chunksize = 192
+
     ip = '34.242.41.76'
     submission_dir = f"Dataset/Features/{test_dataset}/ensembling"
     submission_filename = f"{submission_dir}/nn_predictions"
 
-    chunksize = 2048
-    n_data_train = 3840000
+    training_batches_number = 20000
+    n_data_train = training_chunksize * training_batches_number
+
+    test_chunksize = 2048
 
     train_dataset = "cherry_train"
 
@@ -137,7 +141,13 @@ def main(label_1, label_2, test_dataset, model_id):
 
     text_test_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token",
                                             dataset_id=test_dataset,
-                                            chunksize=chunksize)
+                                            chunksize=test_chunksize)
+
+    if model_id == 2:
+        for i in range(0, training_batches_number):
+            chunk = text_test_reader_df.get_chunk()
+        print(chunk)
+            
     predictions = rec.get_prediction(df_test_features=test_df,
                                      df_test_tokens_reader=text_test_reader_df,
                                      pretrained_model_dict_path=saved_model_path)

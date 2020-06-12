@@ -88,8 +88,10 @@ def main(label_1, label_2, model_id):
     ]
 
     chunksize = 192
-    n_data_train = chunksize * 20000
-    n_data_val = chunksize * 10000
+    train_batches_number = 20000
+    n_data_train = chunksize * train_batches_number
+    val_batches_number = 10000
+    n_data_val = chunksize * val_batches_number
 
     train_dataset = "cherry_train"
     val_dataset = "cherry_val"
@@ -113,6 +115,11 @@ def main(label_1, label_2, model_id):
     text_train_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=train_dataset,
                                               chunksize=chunksize)
 
+    if model_id == 2:
+        for i in range(0, train_batches_number):
+            chunk = text_train_reader_df.get_chunk()
+        print(chunk)
+
     #    label_train_df, _ = train_test_split(label_train_df, train_size=0.2)
 
     feature_val_df = get_dataset(features=feature_list, dataset_id=val_dataset)
@@ -123,6 +130,11 @@ def main(label_1, label_2, model_id):
 
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
+
+    if model_id == 2:
+        for i in range(0, val_batches_number):
+            chunk = text_val_reader_df.get_chunk()
+        print(chunk)
 
     if model_id == 1:
         feature_train_df = feature_train_df.head(n_data_train)
