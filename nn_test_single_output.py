@@ -142,7 +142,7 @@ def main(class_label, test_dataset, model_id):
 
     train_dataset = "cherry_train"
 
-    print(f"Training model : {model_id}")
+    print(f"Model : {model_id}")
     print(f"Running on label : {class_label}")
 
     training_chunksize = 192

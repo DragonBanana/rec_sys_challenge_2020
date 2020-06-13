@@ -125,11 +125,6 @@ def main(label_1, label_2, model_id):
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
 
-    if model_id == 2:
-        # skip first subsample of text tokens
-        for i in range(0, val_batches_number):
-            chunk = text_val_reader_df.get_chunk()
-
     if model_id == 1:
         feature_train_df = feature_train_df.head(n_data_train)
         label_train_df = label_train_df.head(n_data_train)
@@ -169,7 +164,7 @@ def main(label_1, label_2, model_id):
                     df_val_features=feature_val_df,
                     df_val_tokens_reader=text_val_reader_df,
                     df_val_label=label_val_df,
-                    save_filename=f"{class_label}_{model_id}",
+                    save_filename=f"{label_1}_{label_2}_{model_id}",
                     cat_feature_set=set([]),
                     #subsample=0.1, # subsample percentage of each batch
                     #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5"
@@ -181,7 +176,7 @@ def main(label_1, label_2, model_id):
                     df_val_features=feature_val_df,
                     df_val_tokens_reader=text_val_reader_df,
                     df_val_label=label_val_df,
-                    save_filename=f"{class_label}_{model_id}",
+                    save_filename=f"{label_1}_{label_2}_{model_id}",
                     cat_feature_set=set([]),
                     train_batches_to_skip=train_batches_number,
                     val_batches_to_skip=val_batches_number

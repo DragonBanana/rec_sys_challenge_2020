@@ -86,7 +86,7 @@ def main(label_1, label_2, test_dataset, model_id):
         "graph_two_steps_comment"
     ]
 
-    print(f"Training model : {model_id}")
+    print(f"Model : {model_id}")
     print(f"Running on labels : {label_1} - {label_2}")
 
     ip = '34.242.41.76'

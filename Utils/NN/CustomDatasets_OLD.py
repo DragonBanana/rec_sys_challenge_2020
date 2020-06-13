@@ -124,12 +124,11 @@ class CustomTestDatasetCap(Dataset):
 
 
 class CustomDatasetCap(Dataset):
-    def __init__(self, class_label : str,
+    def __init__(self, class_label : str, 
                  df_features: pd.DataFrame,
                  df_tokens_reader: pd.io.parsers.TextFileReader,
                  df_label: pd.DataFrame,
-                 cap: int = 128,
-                 batches_to_skip: int = 0):
+                 cap: int = 128):
 
         self.df_features = df_features
         self.df_tokens_reader_original = df_tokens_reader
@@ -138,7 +137,6 @@ class CustomDatasetCap(Dataset):
         self.count = -1
         self.cap = cap
         self.class_label = class_label
-        self.batches_to_skip = batches_to_skip
 
     def __len__(self):
         return len(self.df_features)
@@ -155,10 +153,6 @@ class CustomDatasetCap(Dataset):
                 self.count = 0
                 self.df_tokens_reader_current = pd.read_csv(self.df_tokens_reader_original.f,
                                                             chunksize=self.df_tokens_reader_original.chunksize, index_col=0, header=0,)
-
-                for j in range(0, self.batches_to_skip):
-                    chunk = self.df_tokens_reader_current.get_chunk()
-
             else:
                 self.count += 1
 
@@ -169,11 +163,6 @@ class CustomDatasetCap(Dataset):
             end = start + self.df_tokens_reader_current.chunksize
             df_features_cache = self.df_features.iloc[start:end]
             df_label_cache = self.df_label.iloc[start:end]
-
-            df_tokens_cache.set_index(df_tokens_cache.index - self.batches_to_skip*self.df_tokens_reader_original.chunksize, inplace=True)
-
-            #print(df_tokens_cache)
-            #print(df_features_cache)
 
             text_series = df_tokens_cache['tokens'].map(lambda x: x.split('\t'))
             #print(f"first text_series: {text_series}")
@@ -190,11 +179,6 @@ class CustomDatasetCap(Dataset):
                     debug_second_branch = False
 
                     i_shifted = i + index
-
-                    #print("i ", i)
-                    #print("index ", index)
-                    #print("i_shifted ", i_shifted)
-
                     if len(text_series[i_shifted]) > max_len:
                         debug_first_branch = True
                         # remove the additional tokens
@@ -560,8 +544,7 @@ class CustomDatasetDualCap(Dataset):
                  df_features: pd.DataFrame,
                  df_tokens_reader: pd.io.parsers.TextFileReader,
                  df_label: pd.DataFrame,
-                 cap: int = 128,
-                 batches_to_skip: int = 0):
+                 cap: int = 128):
 
         self.df_features = df_features
         self.df_tokens_reader_original = df_tokens_reader
@@ -569,7 +552,6 @@ class CustomDatasetDualCap(Dataset):
         self.df_label = df_label
         self.count = -1
         self.cap = cap
-        self.batches_to_skip = batches_to_skip
 
     def __len__(self):
         return len(self.df_features)
@@ -586,19 +568,11 @@ class CustomDatasetDualCap(Dataset):
                 self.count = 0
                 self.df_tokens_reader_current = pd.read_csv(self.df_tokens_reader_original.f,
                                                             chunksize=self.df_tokens_reader_original.chunksize, index_col=0, header=0,)
-
-                for j in range(0, self.batches_to_skip):
-                    chunk = self.df_tokens_reader_current.get_chunk()
             else:
                 self.count += 1
 
             df_tokens_cache = self.df_tokens_reader_current.get_chunk()
             df_tokens_cache.columns = ['tokens']
-
-            df_tokens_cache.set_index(df_tokens_cache.index - self.batches_to_skip*self.df_tokens_reader_original.chunksize, inplace=True)
-
-            #print(df_tokens_cache)
-            #print(df_features_cache)
 
             start = index
             end = start + self.df_tokens_reader_current.chunksize
