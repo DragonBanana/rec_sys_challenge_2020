@@ -8,8 +8,8 @@ r = requests.get("https://recsys-twitter.com/leaderboard/latest")
 
 result = str(r.content)
 
-groupname = "12345678."
-start_index = result.find('12345678.')
+groupname = "luchetto"
+start_index = result.find('luchetto')
 
 print(start_index)
 
@@ -24,21 +24,22 @@ for i in range(0,10):
     print(splitted[i])
 
 praucs= [splitted[2], splitted[4], splitted[6], splitted[8]]
-rces = [splitted[3], splitted[5], splitted[6], splitted[9]]
+rces = [splitted[3], splitted[5], splitted[7], splitted[9]]
 
 classes = ["retweet","reply", "like", "rt with comment"]
 
 for c in classes:
     i = 0
     print(f"{c}: PRAUC:\t{praucs[i]}, RCE:\t{rces[i]}")
+    i+=1
 
 while True:
     r = requests.get("https://recsys-twitter.com/leaderboard/latest")
 
     result = str(r.content)
 
-    groupname = "12345678."
-    start_index = result.find('12345678.')
+    groupname = "luchetto"
+    start_index = result.find('luchetto')
 
     print(start_index)
 
@@ -53,7 +54,7 @@ while True:
         print(splitted[i])
 
     new_praucs= [splitted[2], splitted[4], splitted[6], splitted[8]]
-    new_rces = [splitted[3], splitted[5], splitted[6], splitted[9]]
+    new_rces = [splitted[3], splitted[5], splitted[7], splitted[9]]
 
     for i in range(0,4):
         if new_praucs[i] != praucs[i]:
