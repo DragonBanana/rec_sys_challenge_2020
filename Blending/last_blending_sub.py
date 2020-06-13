@@ -359,18 +359,19 @@ def main():
 
     # check dimensions
     len_val = len(df_val)
+    len_test = len(df_test)
     len_private = len(df_private)
 
     for df_feat in df_feature_list:
-        assert len(df_feat) == (len_val + len(df_test) + len(df_private)), \
-            f"Blending features are not of dimension expected, len val: {len_val} len test: {len(df_test)}" \
-            f" len private test: {len(df_private)}\n " \
+        assert len(df_feat) == (len_val + len_test + len_private), \
+            f"Blending features are not of dimension expected, len val: {len_val} len test: {len_test}" \
+            f" len private test: {len_private}\n " \
             f"obtained len: {len(df_feat)} of {df_feat.columns[0]}\n"
 
     # split feature dataframe in validation and testing
     df_feat_val_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
     df_feat_test_list = [df_feat.iloc[len_val:-len_private] for df_feat in df_feature_list]
-    df_feat_private_list = [df_feat.iloc[:(len_val+len_private)] for df_feat in df_feature_list]
+    df_feat_private_list = [df_feat.iloc[:(len_val+len_test)] for df_feat in df_feature_list]
 
     df_feat_nn_val_list = [get_nn_prediction(l, val_dataset) for l in nn_labels]
 
