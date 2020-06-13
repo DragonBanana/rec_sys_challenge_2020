@@ -6,7 +6,7 @@ import time
 import sys
 
 def main(class_label, model_id):
-    
+    '''
     feature_list_1 = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -137,6 +137,17 @@ def main(class_label, model_id):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
+    '''
+
+    feature_list_1 = [
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
+    ]
+
+    feature_list_2 = [
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
+    ]
 
     chunksize = 192
 
@@ -148,14 +159,14 @@ def main(class_label, model_id):
 
     if class_label == "comment":
         feature_list = feature_list_1
-        train_batches_number = 10000
+        train_batches_number = 10 #000
     elif class_label == "reply":
         feature_list = feature_list_2
-        train_batches_number = 20000
+        train_batches_number = 20 #000
 
     n_data_train = chunksize * train_batches_number
 
-    val_batches_number = 10000
+    val_batches_number = 10 #000
     n_data_val = chunksize * val_batches_number
 
     print(f"n_data_train: {n_data_train}")
@@ -193,17 +204,17 @@ def main(class_label, model_id):
         label_val_df = label_val_df.iloc[n_data_val:2*n_data_val]
 
     ffnn_params = {
-        'hidden_size_1': 128, 
-        'hidden_size_2': 64, 
-        'hidden_dropout_prob_1': 0.5, 
+        'hidden_size_1': 128,
+        'hidden_size_2': 64,
+        'hidden_dropout_prob_1': 0.5,
         'hidden_dropout_prob_2': 0.5
     }
 
     rec_params = {
-        'epochs': 1, 
-        'weight_decay': 1e-5, 
-        'lr': 2e-5, 
-        'cap_length': 128, 
+        'epochs': 1,
+        'weight_decay': 1e-5,
+        'lr': 2e-5,
+        'cap_length': 128,
         'ffnn_params': ffnn_params,
         'class_label': class_label
     }
@@ -226,7 +237,7 @@ def main(class_label, model_id):
                     #subsample=0.1, # subsample percentage of each batch
                     #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5"
                 )
-    elif model_id == 1:
+    elif model_id == 2:
         stats = rec.fit(df_train_features=feature_train_df,
                     df_train_tokens_reader=text_train_reader_df,
                     df_train_label=label_train_df,

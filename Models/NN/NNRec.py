@@ -98,8 +98,8 @@ class NNRec(RecommenderBase, ABC):
             save_filename : str,
             cat_feature_set: set,
             normalize : bool = True,
-            train_batches_to_skip=train_batches_number,
-            val_batches_to_skip=val_batches_number
+            train_batches_to_skip: int = 0,
+            val_batches_to_skip: int = 0,
             pretrained_model_dict_path : str = None,
             pretrained_optimizer_dict_path : str = None,
            ):
