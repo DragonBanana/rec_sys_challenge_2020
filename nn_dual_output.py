@@ -114,11 +114,6 @@ def main(label_1, label_2, model_id):
     text_train_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=train_dataset,
                                               chunksize=chunksize)
 
-    if model_id == 2:
-        # skip first subsample of text tokens
-        for i in range(0, train_batches_number):
-            chunk = text_train_reader_df.get_chunk()
-
     #    label_train_df, _ = train_test_split(label_train_df, train_size=0.2)
 
     feature_val_df = get_dataset(features=feature_list, dataset_id=val_dataset)
@@ -167,17 +162,32 @@ def main(label_1, label_2, model_id):
     rec = DualDistilBertRec(**rec_params)
 
     ###   TRAINING
-    stats = rec.fit(df_train_features=feature_train_df,
-                df_train_tokens_reader=text_train_reader_df,
-                df_train_label=label_train_df,
-                df_val_features=feature_val_df,
-                df_val_tokens_reader=text_val_reader_df,
-                df_val_label=label_val_df,
-                save_filename=f"{label_1}_{label_2}_{model_id}",
-                cat_feature_set=set([]),
-                #subsample=0.1, # subsample percentage of each batch
-                #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5")
-            )
+    if model_id == 1:
+        stats = rec.fit(df_train_features=feature_train_df,
+                    df_train_tokens_reader=text_train_reader_df,
+                    df_train_label=label_train_df,
+                    df_val_features=feature_val_df,
+                    df_val_tokens_reader=text_val_reader_df,
+                    df_val_label=label_val_df,
+                    save_filename=f"{class_label}_{model_id}",
+                    cat_feature_set=set([]),
+                    #subsample=0.1, # subsample percentage of each batch
+                    #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5"
+                )
+    elif model_id == 2:
+        stats = rec.fit(df_train_features=feature_train_df,
+                    df_train_tokens_reader=text_train_reader_df,
+                    df_train_label=label_train_df,
+                    df_val_features=feature_val_df,
+                    df_val_tokens_reader=text_val_reader_df,
+                    df_val_label=label_val_df,
+                    save_filename=f"{class_label}_{model_id}",
+                    cat_feature_set=set([]),
+                    train_batches_to_skip=train_batches_number,
+                    val_batches_to_skip=val_batches_number
+                    #subsample=0.1, # subsample percentage of each batch
+                    #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5"
+                ) 
 
     print("STATS: \n")
     print(stats)

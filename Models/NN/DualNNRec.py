@@ -98,6 +98,8 @@ class DualNNRec(RecommenderBase, ABC):
             save_filename : str,
             cat_feature_set: set,
             normalize: bool = True,
+            train_batches_to_skip: int = 0,
+            val_batches_to_skip: int = 0,
             pretrained_model_dict_path : str = None,
             pretrained_optimizer_dict_path : str = None):
 
@@ -138,12 +140,10 @@ class DualNNRec(RecommenderBase, ABC):
         # freeze all bert layers
         # for param in self.model.bert.parameters():
         #     param.requires_grad = False
-        train_dataset = CustomDatasetDualCap(df_features=df_train_features,
-                                            df_tokens_reader=df_train_tokens_reader,
-                                            df_label=df_train_label, cap=self.cap_length)
-        val_dataset = CustomDatasetDualCap(df_features=df_val_features,
-                                        df_tokens_reader=df_val_tokens_reader,
-                                        df_label=df_val_label, cap=self.cap_length)
+        train_dataset = CustomDatasetDualCap(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+                                        df_label=df_train_label, cap=self.cap_length, batches_to_skip=train_batches_to_skip)
+        val_dataset = CustomDatasetDualCap(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
+                                    df_label=df_val_label, cap=self.cap_length, batches_to_skip=val_batches_to_skip)
 
         train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
                                                                         batch_size=df_train_tokens_reader.chunksize)
