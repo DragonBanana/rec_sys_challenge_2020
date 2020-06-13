@@ -21,6 +21,22 @@ from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import *
 from Utils.Submission.Submission import create_submission_file
 
 
+def prediction(LGBM, dataset_id, df, label):
+
+    tweets = Data.get_feature("raw_feature_tweet_id", dataset_id)["raw_feature_tweet_id"].array
+    users = Data.get_feature("raw_feature_engager_id", dataset_id)["raw_feature_engager_id"].array
+
+    # LGBM Prediction
+    prediction_start_time = time.time()
+    predictions = LGBM.get_prediction(df.to_numpy())
+    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
+
+    # Uncomment to plot feature importance at the end of training
+    # LGBM.plot_fimportance()
+
+    create_submission_file(tweets, users, predictions, f"{dataset_id}_{label}_lgbm_blending_submission.csv")
+
+
 def get_ensembling_label(label, dataset_id):
     from Utils.Data import Data
     return Data.get_feature_batch(f"tweet_feature_engagement_is_{label}",
@@ -354,7 +370,7 @@ def main():
     # split feature dataframe in validation and testing
     df_feat_val_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
     df_feat_test_list = [df_feat.iloc[len_val:-len_private] for df_feat in df_feature_list]
-    df_feat_private_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
+    df_feat_private_list = [df_feat.iloc[:(len_val+len_private)] for df_feat in df_feature_list]
 
     df_feat_nn_val_list = [get_nn_prediction(l, val_dataset) for l in nn_labels]
 
@@ -403,7 +419,7 @@ def main():
         assert df_metatrain.columns[i] == df_test.columns[i], f'You fucked yourself. metatrain col {i}: {df_metatrain.columns[i]}' \
                                                               f' test col {i}: {df_test.columns[i]}'
         assert df_metatrain.columns[i] == df_private.columns[i], \
-            f'You fucked yourself. metatrain col {i}: {df_metatrain.columns[i]} test col {i}: {df_test.columns[i]}'
+            f'You fucked yourself. metatrain col {i}: {df_metatrain.columns[i]} private test col {i}: {df_test.columns[i]}'
 
     model_name = "lightgbm_classifier"
     kind = LABEL
@@ -460,19 +476,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-def prediction(LGBM, dataset_id, df, label):
-
-    tweets = Data.get_feature("raw_feature_tweet_id", dataset_id)["raw_feature_tweet_id"].array
-    users = Data.get_feature("raw_feature_engager_id", dataset_id)["raw_feature_engager_id"].array
-
-    # LGBM Prediction
-    prediction_start_time = time.time()
-    predictions = LGBM.get_prediction(df.to_numpy())
-    print(f"Prediction time: {time.time() - prediction_start_time} seconds")
-
-    # Uncomment to plot feature importance at the end of training
-    # LGBM.plot_fimportance()
-
-    create_submission_file(tweets, users, predictions, f"{dataset_id}_{label}_lgbm_blending_submission.csv")
