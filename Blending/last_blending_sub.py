@@ -371,7 +371,7 @@ def main():
     # split feature dataframe in validation and testing
     df_feat_val_list = [df_feat.iloc[:len_val] for df_feat in df_feature_list]
     df_feat_test_list = [df_feat.iloc[len_val:-len_private] for df_feat in df_feature_list]
-    df_feat_private_list = [df_feat.iloc[:(len_val+len_test)] for df_feat in df_feature_list]
+    df_feat_private_list = [df_feat.iloc[-len_private:] for df_feat in df_feature_list]
 
     df_feat_nn_val_list = [get_nn_prediction(l, val_dataset) for l in nn_labels]
 
