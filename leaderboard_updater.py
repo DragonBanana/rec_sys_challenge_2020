@@ -8,8 +8,8 @@ r = requests.get("https://recsys-twitter.com/leaderboard/latest")
 
 result = str(r.content)
 
-groupname = "luchetto"
-start_index = result.find('luchetto')
+groupname = "12345678."
+start_index = result.find(groupname)
 
 print(start_index)
 
@@ -38,8 +38,7 @@ while True:
 
     result = str(r.content)
 
-    groupname = "luchetto"
-    start_index = result.find('luchetto')
+    start_index = result.find(groupname)
 
     print(start_index)
 
@@ -58,7 +57,7 @@ while True:
 
     for i in range(0,4):
         if new_praucs[i] != praucs[i]:
-            telegram_bot_send_update(f"{classes[i]}:\n PREVIOUS RESULTS: \nPRAUC:\t{praucs[i]}, RCE:\t{rces[i]}\n NEW RESULTS: \nPRAUC:\t{new_praucs[i]}, RCE:\t{new_rces[i]}")
+            telegram_bot_send_update(f"{groupname}\n{classes[i]}:\nPREVIOUS RESULTS: \nPRAUC:\t{praucs[i]}, RCE:\t{rces[i]}\nNEW RESULTS: \nPRAUC:\t{new_praucs[i]}, RCE:\t{new_rces[i]}")
             praucs[i] = new_praucs[i]
             rces[i] = new_rces[i]
 
