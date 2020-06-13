@@ -402,7 +402,7 @@ def main():
 
     # now we are in full meta-model mode
     # watchout! they are unsorted now, you got to re-sort the dfs
-    df_metatrain, df_metaval = train_test_split(df_val, test_size=0.3)
+    df_metatrain, df_metaval = train_test_split(df_val, test_size=0.3, random_state=16+1)
     df_metatrain.sort_index(inplace=True)
     df_metaval.sort_index(inplace=True)
 

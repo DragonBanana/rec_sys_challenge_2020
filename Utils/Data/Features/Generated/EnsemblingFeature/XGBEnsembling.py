@@ -76,11 +76,11 @@ class XGBEnsembling(EnsemblingFeatureAbstract):
         # Generate a random number
         random_n = random.random()
         # Cache the train matrix as libsvm
-        data.DataUtils.cache_dataset_as_svm(f"temp_ensembling_test_{random_n}", self.df_to_predict, no_fuck_my_self=True)
+        data.DataUtils.cache_dataset_as_svm(f"temp_ensembling_test_{random_n}", self.df_to_predict[model.model.feature_names], no_fuck_my_self=True)
         # Load the train matrix + external memory
         test = xgb.DMatrix(f"temp_ensembling_test_{random_n}.svm")
         # Overwrite the feature names for consistency
-        test.feature_names = self.df_train.columns
+        test.feature_names = model.model.feature_names
         # Predict the labels
         predictions = model.get_prediction(test)
         # Encapsulate the labels
