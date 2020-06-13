@@ -81,7 +81,6 @@ def main(class_label, test_dataset, model_id):
         "tweet_feature_number_of_hashtags",
         "tweet_feature_creation_timestamp_hour",
         "tweet_feature_creation_timestamp_week_day",
-        #"tweet_feature_number_of_mentions",
         "tweet_feature_token_length",
         "tweet_feature_token_length_unique",
         "tweet_feature_text_topic_word_count_adult_content",

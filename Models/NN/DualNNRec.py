@@ -49,6 +49,12 @@ class DualNNRec(RecommenderBase, ABC):
 
         self.model = None
 
+        # Set the seed value all over the place to make this reproducible.
+        self.seed_val = 42
+        random.seed(self.seed_val)
+        np.random.seed(self.seed_val)
+        torch.manual_seed(self.seed_val)
+
     @abstractmethod
     def _get_model(self, ffnn_input_size):
         pass
@@ -114,15 +120,9 @@ class DualNNRec(RecommenderBase, ABC):
             print(df_train_features)
             print(df_val_features)
 
-        # Set the seed value all over the place to make this reproducible.
-        seed_val = 42
-
-        random.seed(seed_val)
-        np.random.seed(seed_val)
-        torch.manual_seed(seed_val)
         gpu = torch.cuda.is_available()
         if gpu:
-            torch.cuda.manual_seed_all(seed_val)
+            torch.cuda.manual_seed_all(self.seed_val)
 
         ffnn_input_size = HIDDEN_SIZE_BERT + df_train_features.shape[1]
 

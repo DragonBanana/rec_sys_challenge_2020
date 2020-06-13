@@ -49,6 +49,12 @@ class NNRec(RecommenderBase, ABC):
 
         self.model = None
 
+         # Set the seed value all over the place to make this reproducible.
+        self.seed_val = 42
+        random.seed(self.seed_val)
+        np.random.seed(self.seed_val)
+        torch.manual_seed(self.seed_val)
+
     @abstractmethod
     def _get_model(self, ffnn_input_size):
         pass
@@ -91,8 +97,9 @@ class NNRec(RecommenderBase, ABC):
             df_val_label: pd.DataFrame, 
             save_filename : str,
             cat_feature_set: set,
-            subsample : float = None,
             normalize : bool = True,
+            train_batches_to_skip=train_batches_number,
+            val_batches_to_skip=val_batches_number
             pretrained_model_dict_path : str = None,
             pretrained_optimizer_dict_path : str = None,
            ):
@@ -111,15 +118,9 @@ class NNRec(RecommenderBase, ABC):
             print(df_train_features)
             print(df_val_features)
 
-        # Set the seed value all over the place to make this reproducible.
-        seed_val = 42
-
-        random.seed(seed_val)
-        np.random.seed(seed_val)
-        torch.manual_seed(seed_val)
         gpu = torch.cuda.is_available()
         if gpu:
-            torch.cuda.manual_seed_all(seed_val)
+            torch.cuda.manual_seed_all(self.seed_val)
 
         ffnn_input_size = HIDDEN_SIZE_BERT + df_train_features.shape[1]
 
@@ -137,22 +138,13 @@ class NNRec(RecommenderBase, ABC):
         #     param.requires_grad = False
 
         # Combine the training inputs into a TensorDataset.
-        if subsample is not None:
-            train_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
-                                            df_label=df_train_label, cap=self.cap_length, batch_subsample=subsample)
-            val_dataset = CustomDatasetCapSubsample(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
-                                        df_label=df_val_label, cap=self.cap_length, batch_subsample=subsample)
+        train_dataset = CustomDatasetCap(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
+                                        df_label=df_train_label, cap=self.cap_length, batches_to_skip=train_batches_to_skip)
+        val_dataset = CustomDatasetCap(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
+                                    df_label=df_val_label, cap=self.cap_length, batches_to_skip=val_batches_to_skip)
 
-            train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
-                                                                        batch_size=int(df_train_tokens_reader.chunksize * subsample))
-        else:
-            train_dataset = CustomDatasetCap(class_label=self.class_label, df_features=df_train_features, df_tokens_reader=df_train_tokens_reader,
-                                         df_label=df_train_label, cap=self.cap_length)
-            val_dataset = CustomDatasetCap(class_label=self.class_label, df_features=df_val_features, df_tokens_reader=df_val_tokens_reader,
-                                        df_label=df_val_label, cap=self.cap_length)
-
-            train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
-                                                                        batch_size=df_train_tokens_reader.chunksize)
+        train_dataloader, validation_dataloader = create_data_loaders(train_dataset, val_dataset,
+                                                                    batch_size=df_train_tokens_reader.chunksize)
 
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']

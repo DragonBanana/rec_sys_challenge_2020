@@ -128,7 +128,8 @@ class CustomDatasetCap(Dataset):
                  df_features: pd.DataFrame,
                  df_tokens_reader: pd.io.parsers.TextFileReader,
                  df_label: pd.DataFrame,
-                 cap: int = 128):
+                 cap: int = 128,
+                 batches_to_skip: int = 0):
 
         self.df_features = df_features
         self.df_tokens_reader_original = df_tokens_reader
@@ -137,6 +138,7 @@ class CustomDatasetCap(Dataset):
         self.count = -1
         self.cap = cap
         self.class_label = class_label
+        self.batches_to_skip = batches_to_skip
 
     def __len__(self):
         return len(self.df_features)
@@ -153,6 +155,10 @@ class CustomDatasetCap(Dataset):
                 self.count = 0
                 self.df_tokens_reader_current = pd.read_csv(self.df_tokens_reader_original.f,
                                                             chunksize=self.df_tokens_reader_original.chunksize, index_col=0, header=0,)
+
+                for i in range(0, self.batches_to_skip):
+                    chunk = self.df_tokens_reader_current.get_chunk()
+
             else:
                 self.count += 1
 

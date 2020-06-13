@@ -27,7 +27,6 @@ def main(label_1, label_2, model_id):
         "tweet_feature_number_of_hashtags",
         "tweet_feature_creation_timestamp_hour",
         "tweet_feature_creation_timestamp_week_day",
-        #"tweet_feature_number_of_mentions",
         "tweet_feature_token_length",
         "tweet_feature_token_length_unique",
         "tweet_feature_text_topic_word_count_adult_content",
@@ -119,7 +118,6 @@ def main(label_1, label_2, model_id):
         # skip first subsample of text tokens
         for i in range(0, train_batches_number):
             chunk = text_train_reader_df.get_chunk()
-        print("Last chunk :", chunk)
 
     #    label_train_df, _ = train_test_split(label_train_df, train_size=0.2)
 
@@ -136,7 +134,6 @@ def main(label_1, label_2, model_id):
         # skip first subsample of text tokens
         for i in range(0, val_batches_number):
             chunk = text_val_reader_df.get_chunk()
-        print("Last chunk :", chunk)
 
     if model_id == 1:
         feature_train_df = feature_train_df.head(n_data_train)
