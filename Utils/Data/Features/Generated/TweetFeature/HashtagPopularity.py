@@ -34,8 +34,8 @@ def get_popularity(chunk, result, s):
 
 class HashtagPopularity(GeneratedFeaturePickle):
 
-    def __init__(self, dataset_id: str, window_size, window_overlap):
-        super().__init__(f"max_hashtag_popularity_{window_size}_{window_overlap}", dataset_id)
+    def __init__(self, feature_name: str, dataset_id: str, window_size, window_overlap):
+        super().__init__(feature_name, dataset_id)
         self.pck_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/hashtag_popularity/{self.feature_name}.pck.gz")
         self.csv_path = pl.Path(
@@ -91,7 +91,7 @@ class HashtagPopularity(GeneratedFeaturePickle):
 class MaxHashtagPopularity(HashtagPopularity):
 
     def __init__(self, dataset_id: str, window_size, window_overlap):
-        super().__init__(dataset_id, window_size, window_overlap)
+        super().__init__(f"max_hashtag_popularity_{window_size}_{window_overlap}", dataset_id, window_size, window_overlap)
 
     def create_feature(self):
         popularity = self.get_popularity()
@@ -102,7 +102,7 @@ class MaxHashtagPopularity(HashtagPopularity):
 class MinHashtagPopularity(HashtagPopularity):
 
     def __init__(self, dataset_id: str, window_size, window_overlap):
-        super().__init__(dataset_id, window_size, window_overlap)
+        super().__init__(f"min_hashtag_popularity_{window_size}_{window_overlap}", dataset_id, window_size, window_overlap)
 
     def create_feature(self):
         popularity = self.get_popularity()
@@ -113,7 +113,7 @@ class MinHashtagPopularity(HashtagPopularity):
 class MeanHashtagPopularity(HashtagPopularity):
 
     def __init__(self, dataset_id: str, window_size, window_overlap):
-        super().__init__(dataset_id, window_size, window_overlap)
+        super().__init__(f"mean_hashtag_popularity_{window_size}_{window_overlap}", dataset_id, window_size, window_overlap)
 
     def create_feature(self):
         popularity = self.get_popularity()
@@ -124,7 +124,7 @@ class MeanHashtagPopularity(HashtagPopularity):
 class TotalHashtagPopularity(HashtagPopularity):
 
     def __init__(self, dataset_id: str, window_size, window_overlap):
-        super().__init__(dataset_id, window_size, window_overlap)
+        super().__init__(f"total_hashtag_popularity_{window_size}_{window_overlap}", dataset_id, window_size, window_overlap)
 
     def create_feature(self):
         popularity = self.get_popularity()
