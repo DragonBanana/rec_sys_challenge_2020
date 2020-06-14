@@ -26,12 +26,12 @@ class LightGBM(RecommenderGBM):
                  #Not in tuning dict
                  objective= 'binary',
                  metric='binary',
-                 num_threads= -1,       
+                 num_threads= -1,
                  #In tuning dict
                  num_iterations = 1000,
                  num_leaves= 31,
                  learning_rate= 0.2,
-                 max_depth= 14, 
+                 max_depth= 14,
                  lambda_l1= 0.01,
                  lambda_l2= 0.01,
                  colsample_bynode= 0.5,
@@ -69,8 +69,8 @@ class LightGBM(RecommenderGBM):
                 'lambda_l2':lambda_l2,
                 'colsample_bytree':colsample_bytree,
                 'colsample_bynode':colsample_bynode,
-                'bagging_fraction':bagging_fraction,       
-                'bagging_freq':bagging_freq,         
+                'bagging_fraction':bagging_fraction,
+                'bagging_freq':bagging_freq,
                 'max_bin':int(max_bin),
                 'boost_from_average': True,             #default: True
                 #'boosting': "dart"                     #default: gbdt, it is said that dart provides more acurate predictions, while risking overfitting tho
@@ -91,13 +91,13 @@ class LightGBM(RecommenderGBM):
             print("Starting default configuration.")
             self._initStandard(self.params)
 
-        
+
         #CLASS VARIABLES
         #Models
         self.model = None
         # Default for categorical features
         self.categorical_feature = 'auto'
-        
+
         #Extension of saving file
         self.ext=".txt"
 
@@ -151,7 +151,7 @@ class LightGBM(RecommenderGBM):
                                'bagging_fraction': (0,1)}
 
     def fit(self, X=None, Y=None, X_val=None, Y_val=None, categorical_feature=None):
-        #Tries to load X and Y if not directly passed        
+        #Tries to load X and Y if not directly passed
         if (X is None) or (Y is None):
             X, Y = self.load_data(self.test_dataset)        #still to be implemented
             print("Train set loaded from file.")
@@ -181,7 +181,7 @@ class LightGBM(RecommenderGBM):
 
                 #Defining and fitting the model
                 self.model = lgb.train(self.get_param_dict(),
-                                            train_set=train,       
+                                            train_set=train,
                                             valid_sets=validation,
                                             categorical_feature=categorical_feature)
 
@@ -212,7 +212,7 @@ class LightGBM(RecommenderGBM):
             X_tst, Y_tst = Data.get_dataset_xgb_default_test()
             print("Test set loaded from file.")
         #Y_tst = np.array(Y_tst[Y_tst.columns[0]].astype(float))
-        
+
         if self.model is None:
             print("No model trained yet.")
         else:
@@ -254,7 +254,7 @@ class LightGBM(RecommenderGBM):
     #-------------------------------------------
     def get_prediction(self, X_tst=None):
         Y_pred = None
-        #Tries to load X and Y if not directly passed        
+        #Tries to load X and Y if not directly passed
         if (X_tst is None):
             X_tst, Y_tst = self.load_data(self.test_dataset)
             print("Test set loaded from file.")
@@ -291,15 +291,15 @@ class LightGBM(RecommenderGBM):
     def get_feat_importance(self, verbose = False):
 
         model = self.model
-        
+
         #Getting the importance
         importance = model.feature_importance(importance_type="gain")
 
         if verbose is True:
             print("F_pos\tF_importance")
             for k in range(len(importance)):
-                print("{0}:\t{1}".format(k,importance[k]))            
-            
+                print("{0}:\t{1}".format(k,importance[k]))
+
         return importance
 
     def plot_fimportance(self):
@@ -315,14 +315,16 @@ class LightGBM(RecommenderGBM):
         plt.title("Feature Importance: GAIN")
         plt.savefig("fimportance_gain.png")
 
-    def save_fimportance_df(self, df_train):
+    def save_fimportance_df(self, filename: str):
         model = self.model
 
-        feature_imp_split = pd.DataFrame({'Value': model.feature_importance(importance_type="split"), 'Feature': df_train.columns})
-        feature_imp_split.to_csv("feature_importance_split.csv")
+        feature_imp_split = pd.DataFrame({'Value': model.feature_importance(importance_type="split"),
+                                          'Feature': model.feature_name()})
+        feature_imp_split.to_csv(filename + '_split.csv')
+
         feature_imp_gain = pd.DataFrame(
-            {'Value': model.feature_importance(importance_type="gain"), 'Feature': df_train.columns})
-        feature_imp_gain.to_csv("feature_importance_gain.csv")
+            {'Value': model.feature_importance(importance_type="gain"), 'Feature': model.feature_name()})
+        feature_imp_gain.to_csv(filename + '_gain.csv')
 
 
     #Returns the parameters in dictionary form
