@@ -49,7 +49,7 @@ class HashtagPopularity(GeneratedFeaturePickle):
     def get_popularity(self):
         import Utils.Data.Data as data
         if self.popularity_path.is_file():
-            return np.load(self.popularity_path)
+            return np.load(self.popularity_path, allow_pickle=True)
         else:
             x = data.get_dataset(
                 [
@@ -86,7 +86,7 @@ class HashtagPopularity(GeneratedFeaturePickle):
             get_popularity_partial = functools.partial(get_popularity, result=result, s=s)
             popularity = pd.concat(process_map(get_popularity_partial, np.array_split(y, 100)))
             self.popularity_path.parent.mkdir(parents=True, exist_ok=True)
-            np.save(self.popularity_path, popularity)
+            np.save(self.popularity_path, popularity, allow_pickle=True)
             return popularity
 
 class MaxHashtagPopularity(HashtagPopularity):
