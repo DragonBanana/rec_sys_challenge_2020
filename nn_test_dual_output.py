@@ -27,7 +27,6 @@ def main(label_1, label_2, test_dataset, model_id):
         "tweet_feature_number_of_hashtags",
         "tweet_feature_creation_timestamp_hour",
         "tweet_feature_creation_timestamp_week_day",
-        #"tweet_feature_number_of_mentions",
         "tweet_feature_token_length",
         "tweet_feature_token_length_unique",
         "tweet_feature_text_topic_word_count_adult_content",
@@ -87,7 +86,7 @@ def main(label_1, label_2, test_dataset, model_id):
         "graph_two_steps_comment"
     ]
 
-    print(f"Training model : {model_id}")
+    print(f"Model : {model_id}")
     print(f"Running on labels : {label_1} - {label_2}")
 
     ip = '34.242.41.76'
@@ -162,8 +161,8 @@ def main(label_1, label_2, test_dataset, model_id):
 
     pathlib.Path(submission_dir).mkdir(parents=True, exist_ok=True)
 
-    create_submission_file(tweets, users, p_1, submission_filename+f"_{label_1}_{model_id}.csv")
-    create_submission_file(tweets, users, p_2, submission_filename+f"_{label_2}_{model_id}.csv")
+    create_submission_file(tweets, users, p_1, submission_filename + f"_{label_1}_{model_id}.csv")
+    create_submission_file(tweets, users, p_2, submission_filename + f"_{label_2}_{model_id}.csv")
 
     bot_string = f"DistilBertDoubleInput NN - {label_1}_{label_2} \n ---------------- \n"
     bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"

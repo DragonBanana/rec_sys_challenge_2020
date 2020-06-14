@@ -6,7 +6,7 @@ import time
 import sys
 
 def main(class_label, model_id):
-    
+    '''
     feature_list_1 = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -79,7 +79,6 @@ def main(class_label, model_id):
         "tweet_feature_number_of_hashtags",
         "tweet_feature_creation_timestamp_hour",
         "tweet_feature_creation_timestamp_week_day",
-        #"tweet_feature_number_of_mentions",
         "tweet_feature_token_length",
         "tweet_feature_token_length_unique",
         "tweet_feature_text_topic_word_count_adult_content",
@@ -138,6 +137,17 @@ def main(class_label, model_id):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
+    '''
+
+    feature_list_1 = [
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
+    ]
+
+    feature_list_2 = [
+        "raw_feature_creator_follower_count",
+        "raw_feature_creator_following_count"
+    ]
 
     chunksize = 192
 
@@ -149,14 +159,14 @@ def main(class_label, model_id):
 
     if class_label == "comment":
         feature_list = feature_list_1
-        train_batches_number = 10000
+        train_batches_number = 10 #000
     elif class_label == "reply":
         feature_list = feature_list_2
-        train_batches_number = 20000
+        train_batches_number = 20 #000
 
     n_data_train = chunksize * train_batches_number
 
-    val_batches_number = 10000
+    val_batches_number = 10 #000
     n_data_val = chunksize * val_batches_number
 
     print(f"n_data_train: {n_data_train}")
@@ -173,12 +183,6 @@ def main(class_label, model_id):
     text_train_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=train_dataset,
                                               chunksize=chunksize)
 
-    if model_id == 2:
-        # skip first subsample of text tokens
-        for i in range(0, train_batches_number):
-            chunk = text_train_reader_df.get_chunk()
-        print("Last chunk :", chunk)
-
     #    label_train_df, _ = train_test_split(label_train_df, train_size=0.2)
 
     feature_val_df = get_dataset(features=feature_list, dataset_id=val_dataset)
@@ -187,12 +191,6 @@ def main(class_label, model_id):
 
     text_val_reader_df = get_feature_reader(feature_name="raw_feature_tweet_text_token", dataset_id=val_dataset,
                                             chunksize=chunksize)
-
-    if model_id == 2:
-        # skip first subsample of text tokens
-        for i in range(0, val_batches_number):
-            chunk = text_val_reader_df.get_chunk()
-        print("Last chunk :", chunk)
 
     if model_id == 1:
         feature_train_df = feature_train_df.head(n_data_train)
@@ -206,17 +204,17 @@ def main(class_label, model_id):
         label_val_df = label_val_df.iloc[n_data_val:2*n_data_val]
 
     ffnn_params = {
-        'hidden_size_1': 128, 
-        'hidden_size_2': 64, 
-        'hidden_dropout_prob_1': 0.5, 
+        'hidden_size_1': 128,
+        'hidden_size_2': 64,
+        'hidden_dropout_prob_1': 0.5,
         'hidden_dropout_prob_2': 0.5
     }
 
     rec_params = {
-        'epochs': 1, 
-        'weight_decay': 1e-5, 
-        'lr': 2e-5, 
-        'cap_length': 128, 
+        'epochs': 1,
+        'weight_decay': 1e-5,
+        'lr': 2e-5,
+        'cap_length': 128,
         'ffnn_params': ffnn_params,
         'class_label': class_label
     }
@@ -227,17 +225,32 @@ def main(class_label, model_id):
     rec = DistilBertRec(**rec_params)
 
     ###   TRAINING
-    stats = rec.fit(df_train_features=feature_train_df,
-                df_train_tokens_reader=text_train_reader_df,
-                df_train_label=label_train_df,
-                df_val_features=feature_val_df,
-                df_val_tokens_reader=text_val_reader_df,
-                df_val_label=label_val_df,
-                save_filename=f"{class_label}_{model_id}",
-                cat_feature_set=set([]),
-                #subsample=0.1, # subsample percentage of each batch
-                #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5") 
-            )
+    if model_id == 1:
+        stats = rec.fit(df_train_features=feature_train_df,
+                    df_train_tokens_reader=text_train_reader_df,
+                    df_train_label=label_train_df,
+                    df_val_features=feature_val_df,
+                    df_val_tokens_reader=text_val_reader_df,
+                    df_val_label=label_val_df,
+                    save_filename=f"{class_label}_{model_id}",
+                    cat_feature_set=set([]),
+                    #subsample=0.1, # subsample percentage of each batch
+                    #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5"
+                )
+    elif model_id == 2:
+        stats = rec.fit(df_train_features=feature_train_df,
+                    df_train_tokens_reader=text_train_reader_df,
+                    df_train_label=label_train_df,
+                    df_val_features=feature_val_df,
+                    df_val_tokens_reader=text_val_reader_df,
+                    df_val_label=label_val_df,
+                    save_filename=f"{class_label}_{model_id}",
+                    cat_feature_set=set([]),
+                    train_batches_to_skip=train_batches_number,
+                    val_batches_to_skip=val_batches_number
+                    #subsample=0.1, # subsample percentage of each batch
+                    #pretrained_model_dict_path="saved_models/saved_model_yj_like_0.0001_774_128_64_0.1_0.1_epoch_5"
+                ) 
 
     print("STATS: \n")
     print(stats)
