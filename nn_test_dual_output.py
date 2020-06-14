@@ -164,9 +164,9 @@ def main(label_1, label_2, test_dataset, model_id):
     create_submission_file(tweets, users, p_1, submission_filename + f"_{label_1}_{model_id}.csv")
     create_submission_file(tweets, users, p_2, submission_filename + f"_{label_2}_{model_id}.csv")
 
-    bot_string = f"DistilBertDoubleInput NN - {label_1}_{label_2} \n ---------------- \n"
-    bot_string = bot_string + f"@lucaconterio la submission pronta! \nIP: {ip} \nFile: {submission_filename}"
-    telegram_bot_send_update(bot_string)
+    #bot_string = f"DistilBertDoubleInput NN - {label_1}_{label_2} \n ---------------- \n"
+    #bot_string = bot_string + f"@lucaconterio submission pronta! \nIP: {ip} \nFile: {submission_filename}"
+    #telegram_bot_send_update(bot_string)
 
 
 if __name__ == '__main__':

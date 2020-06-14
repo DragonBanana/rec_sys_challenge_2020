@@ -6,7 +6,7 @@ import time
 import sys
 
 def main(class_label, model_id):
-    '''
+
     feature_list_1 = [
         "raw_feature_creator_follower_count",
         "raw_feature_creator_following_count",
@@ -25,7 +25,6 @@ def main(class_label, model_id):
         "tweet_feature_number_of_hashtags",
         "tweet_feature_creation_timestamp_hour",
         "tweet_feature_creation_timestamp_week_day",
-        #"tweet_feature_number_of_mentions",
         "tweet_feature_token_length",
         "tweet_feature_token_length_unique",
         "tweet_feature_text_topic_word_count_adult_content",
@@ -137,17 +136,6 @@ def main(class_label, model_id):
         "graph_two_steps_retweet",
         "graph_two_steps_comment"
     ]
-    '''
-
-    feature_list_1 = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
-
-    feature_list_2 = [
-        "raw_feature_creator_follower_count",
-        "raw_feature_creator_following_count"
-    ]
 
     chunksize = 192
 
@@ -159,14 +147,14 @@ def main(class_label, model_id):
 
     if class_label == "comment":
         feature_list = feature_list_1
-        train_batches_number = 10 #000
+        train_batches_number = 10000
     elif class_label == "reply":
         feature_list = feature_list_2
-        train_batches_number = 20 #000
+        train_batches_number = 20000
 
     n_data_train = chunksize * train_batches_number
 
-    val_batches_number = 10 #000
+    val_batches_number = 10000
     n_data_val = chunksize * val_batches_number
 
     print(f"n_data_train: {n_data_train}")
