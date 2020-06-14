@@ -42,7 +42,7 @@ class HashtagPopularity(GeneratedFeaturePickle):
         self.csv_path = pl.Path(
             f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/hashtag_popularity/{self.feature_name}.csv.gz")
         self.popularity_path = pl.Path(
-            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/hashtag_popularity/{self.feature_name}_popularity.npy")
+            f"{Feature.ROOT_PATH}/{self.dataset_id}/generated/hashtag_popularity/{self.window_size}_{self.window_overlap}_popularity.npy")
         self.window_size = window_size
         self.window_overlap = window_overlap
 
