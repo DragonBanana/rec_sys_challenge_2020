@@ -27,6 +27,7 @@ from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementBetw
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementRatio import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagementWithLanguage import *
 from Utils.Data.Features.Generated.EngagerFeature.NumberOfPreviousEngagements import *
+from Utils.Data.Features.Generated.EnsemblingFeature.LGBMFoldEnsembling import LGBMFoldEnsemblingLike1
 from Utils.Data.Features.Generated.EnsemblingFeature.SimilarityFoldEnsembling import *
 from Utils.Data.Features.Generated.EnsemblingFeature.XGBFoldEnsembling import XGBFoldEnsemblingLike1, \
     XGBFoldEnsemblingRetweet1, XGBFoldEnsemblingReply1, XGBFoldEnsemblingComment1, XGBFoldEnsemblingLike2, \
@@ -35,6 +36,7 @@ from Utils.Data.Features.Generated.LanguageFeature.MainGroupedLanguageFeature im
 from Utils.Data.Features.Generated.LanguageFeature.MainLanguageFeature import *
 from Utils.Data.Features.Generated.TweetFeature.CreationTimestamp import *
 from Utils.Data.Features.Generated.TweetFeature.FromTextToken import *
+from Utils.Data.Features.Generated.TweetFeature.HashtagPopularity import *
 from Utils.Data.Features.Generated.TweetFeature.IsEngagementType import *
 from Utils.Data.Features.Generated.TweetFeature.IsLanguage import *
 from Utils.Data.Features.Generated.TweetFeature.IsTweetType import *
@@ -74,7 +76,7 @@ DATASET_IDS = [
     # "val_days_7",
     # "holdout/train",
     # "holdout/test",
-    "new_train",
+    # "new_train",
     "new_test",
     # "new_val",
     # "holdout_new_train",
@@ -354,6 +356,9 @@ def populate_features():
         result[("xgb_fold_ensembling_retweet_2", dataset_id)] = XGBFoldEnsemblingRetweet2(dataset_id)
         result[("xgb_fold_ensembling_reply_2", dataset_id)] = XGBFoldEnsemblingReply2(dataset_id)
         result[("xgb_fold_ensembling_comment_2", dataset_id)] = XGBFoldEnsemblingComment2(dataset_id)
+
+
+        result[("lgbm_fold_ensembling_like_1", dataset_id)] = LGBMFoldEnsemblingLike1(dataset_id)
         # SIMILARITY FOLD ENSEMBLING
         #result[("hashtag_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
         #result[("link_similarity_fold_ensembling_positive", dataset_id)] = HashtagSimilarityFoldEnsembling(dataset_id, label="positive")
@@ -390,6 +395,24 @@ def populate_features():
             result[("tweet_feature_engagement_is_reply", dataset_id)] = TweetFeatureEngagementIsReply(dataset_id)
             result[("tweet_feature_engagement_is_positive", dataset_id)] = TweetFeatureEngagementIsPositive(dataset_id)
             result[("tweet_feature_engagement_is_negative", dataset_id)] = TweetFeatureEngagementIsNegative(dataset_id)
+
+        # HASHTAG POPULARITY
+        # SET 1
+        result[("max_hashtag_popularity_1", dataset_id)] = MaxHashtagPopularity(dataset_id, 1000000, 950000)
+        result[("min_hashtag_popularity_1", dataset_id)] = MinHashtagPopularity(dataset_id, 1000000, 950000)
+        result[("mean_hashtag_popularity_1", dataset_id)] = MeanHashtagPopularity(dataset_id, 1000000, 950000)
+        result[("total_hashtag_popularity_1", dataset_id)] = TotalHashtagPopularity(dataset_id, 1000000, 950000)
+        # SET 2
+        result[("max_hashtag_popularity_2", dataset_id)] = MaxHashtagPopularity(dataset_id, 2000000, 950000)
+        result[("min_hashtag_popularity_2", dataset_id)] = MinHashtagPopularity(dataset_id, 2000000, 950000)
+        result[("mean_hashtag_popularity_2", dataset_id)] = MeanHashtagPopularity(dataset_id, 2000000, 950000)
+        result[("total_hashtag_popularity_2", dataset_id)] = TotalHashtagPopularity(dataset_id, 2000000, 950000)
+        # SET 3
+        result[("max_hashtag_popularity_3", dataset_id)] = MaxHashtagPopularity(dataset_id, 100000, 99000)
+        result[("min_hashtag_popularity_3", dataset_id)] = MinHashtagPopularity(dataset_id, 100000, 99000)
+        result[("mean_hashtag_popularity_3", dataset_id)] = MeanHashtagPopularity(dataset_id, 100000, 99000)
+        result[("total_hashtag_popularity_3", dataset_id)] = TotalHashtagPopularity(dataset_id, 100000, 99000)
+
         # CREATOR FEATURE
         #result[("creator_feature_frequency_of_unique_tokens", dataset_id)] = CreatorFrequencyUniqueTokens(dataset_id)
         # KNOWN COUNT OF ENGAGEMENT
