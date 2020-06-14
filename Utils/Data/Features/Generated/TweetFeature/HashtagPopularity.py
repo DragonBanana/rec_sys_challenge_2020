@@ -1,11 +1,10 @@
 import functools
 
 from tqdm.contrib.concurrent import process_map
-
+import copy
 from Utils.Data.Dictionary.MappingDictionary import *
 from Utils.Data.Features.Generated.GeneratedFeature import GeneratedFeaturePickle
 import pandas as pd
-from datetime import datetime as dt
 import numpy as np
 
 
@@ -22,6 +21,8 @@ def compute_chunk(chunk):
 
 def get_popularity(chunk, result, s):
     out = []
+    result = copy.deepcopy(result)
+    s = copy.deepcopy(s)
     for hashtag, timestamp in zip(chunk['hashtags'], chunk['time']):
         if hashtag is not None:
             index = np.searchsorted(s, timestamp, 'left') - 1
