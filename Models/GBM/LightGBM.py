@@ -315,8 +315,15 @@ class LightGBM(RecommenderGBM):
         plt.title("Feature Importance: GAIN")
         plt.savefig("fimportance_gain.png")
 
-        #feature_imp = pd.DataFrame({'Value': model.feature_importance(), 'Feature': X.columns})
-        #feature_imp.to_csv("feature_importances.csv")
+    def save_fimportance_df(self, df_train):
+        model = self.model
+
+        feature_imp_split = pd.DataFrame({'Value': model.feature_importance(importance_type="split"), 'Feature': df_train.columns})
+        feature_imp_split.to_csv("feature_importance_split.csv")
+        feature_imp_gain = pd.DataFrame(
+            {'Value': model.feature_importance(importance_type="gain"), 'Feature': df_train.columns})
+        feature_imp_gain.to_csv("feature_importance_gain.csv")
+
 
     #Returns the parameters in dictionary form
     def get_param_dict(self):
