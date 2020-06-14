@@ -8,7 +8,7 @@ r = requests.get("https://recsys-twitter.com/leaderboard/latest")
 
 result = str(r.content)
 
-groupname = "12345678."
+groupname = "luchetto"
 start_index = result.find(groupname)
 
 print(start_index)
