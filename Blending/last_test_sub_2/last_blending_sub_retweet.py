@@ -238,7 +238,7 @@ def main():
     private_test_dataset = "last_test"
 
     ensembling_list_dict = {
-        'like': [],
+        'like': ['reply', 'retweet', 'comment'],
         'reply': ['reply', 'retweet', 'comment'],
         'retweet': ['reply', 'retweet', 'comment'],
         'comment': ['reply', 'retweet', 'comment'],
