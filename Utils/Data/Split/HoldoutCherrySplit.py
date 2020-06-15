@@ -50,9 +50,12 @@ def holdout_split_train_test(input_dataset_id: str, pc_hold_out: float = 0.30, r
                 line_counter += 1
             else:
                 if line_counter in lines_to_val:
-                    print("Oh oh oopsie woopsie")
+                    print("Oh oh oopsie woopsie. this is not an error")
                 a, b, c, d, e, f, g, h, timestamp, j = line.decode('utf-8').split("\x01", 9)
                 timestamp = int(timestamp)
                 timestamp += SECONDS_IN_A_WEEK
                 line = codecs.encode(a+"\x01"+b+"\x01"+c+"\x01"+d+"\x01"+e+"\x01"+f+"\x01"+g+"\x01"+h+"\x01"+str(timestamp)+"\x01"+j,encoding='utf-8')
                 test_file.write(line)
+
+if __name__ == '__main__':
+    holdout_split_train_test("new_train")
