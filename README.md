@@ -40,7 +40,20 @@ python nn_run.sh
 this script trains a bunch of NNs and places the infered probabilities in the folder "**./Dataset/Features/{test_dataset}/ensembling**" with filename "**nn_predictions_{class_label}_{model_id}.csv**"
 
 For each label (like, retweet, reply and comment):
-```shell script
-cp ./Blending/last_submission_sub.py .
-python last_submission_sub_2_nn.py {label}
+```shell script 
+# RUN 1
+cp ./Blending/last_test_sub/* .
+python last_blending_sub_comment.py comment
+python last_blending_sub_like.py like
+python last_blending_sub_retweet.py retweet
+python last_blending_sub_reply.py reply
+```
+
+```shell script 
+# RUN 2
+cp ./Blending/last_test_sub_2/* .
+python last_blending_sub_comment.py comment
+python last_blending_sub_like.py like
+python last_blending_sub_retweet.py retweet
+python last_blending_sub_reply.py reply
 ```
