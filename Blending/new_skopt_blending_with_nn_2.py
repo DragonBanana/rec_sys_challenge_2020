@@ -218,7 +218,7 @@ def main():
     test_dataset = "new_test"
 
     ensembling_list_dict = {
-        'like': ['reply', 'retweet', 'comment'],
+        'like': [],
         'reply': ['reply', 'retweet', 'comment'],
         'retweet': ['reply', 'retweet', 'comment'],
         'comment': ['reply', 'retweet', 'comment'],
@@ -350,7 +350,7 @@ def main():
 
     # now we are in full meta-model mode
     # watchout! they are unsorted now, you got to re-sort the dfs
-    df_metatrain, df_metaval = train_test_split(df_val, test_size=0.3)
+    df_metatrain, df_metaval = train_test_split(df_val, test_size=0.2)
     df_metatrain.sort_index(inplace=True)
     df_metaval.sort_index(inplace=True)
 
@@ -371,7 +371,7 @@ def main():
                    kind,
                    mode=0,
                    path=LABEL,
-                   path_log=f"blending-lgbm-{LABEL}-with-xgb-nn",
+                   path_log=f"blending-lgbm-{LABEL}-twonn-reg",
                    make_log=True,
                    make_save=False,
                    auto_save=False
