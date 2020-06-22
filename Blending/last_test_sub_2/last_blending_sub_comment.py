@@ -476,6 +476,7 @@ def main():
     # private prediction
     prediction(LGBM=LGBM, dataset_id=private_test_dataset, df=df_private, label=LABEL)
 
+    LGBM.permutation_importance(X_tst=df_metaval, Y_tst=df_metaval_label)
 
 if __name__ == '__main__':
     main()
