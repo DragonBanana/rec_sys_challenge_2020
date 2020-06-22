@@ -239,7 +239,7 @@ def main():
     private_test_dataset = "last_test"
 
     ensembling_list_dict = {
-        'like': ['reply', 'retweet', 'comment'],
+        'like': [],
         'reply': ['reply', 'retweet', 'comment'],
         'retweet': ['reply', 'retweet', 'comment'],
         'comment': ['reply', 'retweet', 'comment'],
@@ -448,7 +448,7 @@ def main():
     LGBM = LightGBM(
         objective='binary',
         num_threads=-1,
-        num_iterations=1500,
+        num_iterations=1000,
         early_stopping_rounds=20,
         **params,
     )
