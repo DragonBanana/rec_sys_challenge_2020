@@ -4,7 +4,7 @@
 In order to run the code it is necessary to have:
 * **Python**: version 3.8. 
 * **Pip**: version 20.1.1.
-* CUDA is also required.
+* **CUDA** is also required.
 
 If you do not have Python already installed, you can find it here (https://www.python.org/downloads/).
 
