@@ -1,4 +1,4 @@
-# ACM RecSys Challenge 2019
+# ACM RecSys Challenge 2020
 <p align="center">
   <img width="100%" src="https://i.imgur.com/tm9mSuM.png" alt="Recommender System 2018 Challenge Polimi" />
 </p>
@@ -40,7 +40,8 @@ We worked under the supervision of two PhD students:
 ## Features
 
 The features extracted from the dataset are listed and 
-described [here](Utils/Data/Features/README.md).
+described [here](Utils/Data/Features/README.md) (the list contains all the feature we created including the ones
+we did not use for the submission).
 
 ## Models
 
