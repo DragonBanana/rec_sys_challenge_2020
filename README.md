@@ -28,10 +28,10 @@ preserving user privacy.
 We partecipated in the challenge as BanaNeverAlone, a team of 5 MSc students from Politecnico di Milano:
 
 * **[Luca Conterio](https://github.com/luca-conterio)**
-* **[Andrea Donati](https://github.com/donand)**
+* **[Andrea Donati](https://github.com/AndreaDonati)**
 * **[Luca Bartoccioni](https://github.com/LucaBartoccioni)**
 * **[Nicolo' Felicioni](https://github.com/ciamir51)**
-* **[Davide Yi Xian Hu](https://github.com/DragonBanana)**
+* **[Davide Yi Xian Hu](https://github.com/DragonBanana)** (AKA DragonBanana)
 
 We worked under the supervision of two PhD students:
 * **[Cesare Bernardis](https://github.com/cesarebernardis)**
