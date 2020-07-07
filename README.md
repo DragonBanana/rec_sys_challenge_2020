@@ -30,7 +30,7 @@ We partecipated in the challenge as BanaNeverAlone, a team of 5 MSc students fro
 * **[Luca Conterio](https://github.com/luca-conterio)**
 * **[Andrea Donati](https://github.com/AndreaDonati)**
 * **[Luca Bartoccioni](https://github.com/LucaBartoccioni)**
-* **[Nicolo' Felicioni](https://github.com/ciamir51)**
+* **[Nicolò Felicioni](https://github.com/ciamir51)**
 * **[Davide Yi Xian Hu](https://github.com/DragonBanana)** (AKA DragonBanana)
 
 We worked under the supervision of two PhD students:
