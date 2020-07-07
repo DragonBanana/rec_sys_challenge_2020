@@ -10,7 +10,7 @@
 </p>
 
 ## About the challenge
-[Twitter](https://www.twitter.com) Twitter is what’s happening in the world and what people are talking about right now.
+[Twitter](https://www.twitter.com) is what’s happening in the world and what people are talking about right now.
 On Twitter, live comes to life as conversations unfold, showing you all sides of the story. From breaking news and 
 entertainment to sports, politics and everyday interests, when things happen in the world, they happen first on Twitter.
 
