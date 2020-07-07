@@ -64,7 +64,7 @@ Install the python dependecies with the following bash command:
 pip install -r requirements.txt
 ```
 
-It is also required to have the datasets already downloaded, compressed with GZip and renamed as **new_train.csv.gz** and **new_test.csv.gz**.
+It is also required to have the datasets already downloaded, compressed with GZip and renamed as **new_train.csv.gz**, **new_test.csv.gz** and **last_test.csv.gz**.
 We assume these datasets are placed in the **./Dataset** folder.
 
 If you do not have the dataset, you can download from here (https://recsys-twitter.com/data/show-downloads, registration is required).
