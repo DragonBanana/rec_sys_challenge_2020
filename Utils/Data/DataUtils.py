@@ -58,7 +58,7 @@ import billiard as mp
 import os
 
 DATASET_IDS = [
-    # "train",
+    "train",
     # Removing those datasets to speed up the generation of features
     # "train_days_1",
     # "train_days_12",

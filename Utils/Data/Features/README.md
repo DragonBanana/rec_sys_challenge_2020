@@ -120,6 +120,27 @@ For each dataset we have the following features:
    - **tweet_feature_number_of_hashtags**: int:
  <br>Number of hashtags in the tweet.
  
+ #### Hashtag related features
+ 
+   - **tweet_feature_has_discriminative_hashtag_like**: bool:
+ <br>If the tweet contains a discriminative (w.r.t like engagements) hashtag.
+   - **tweet_feature_has_discriminative_hashtag_retweet**: bool:
+ <br>If the tweet contains a discriminative (w.r.t retweet engagements) hashtag.
+   - **tweet_feature_has_discriminative_hashtag_reply**: bool:
+ <br>If the tweet contains a discriminative (w.r.t reply engagements) hashtag.
+   - **tweet_feature_has_discriminative_hashtag_comment**: bool:
+ <br>If the tweet contains a discriminative (w.r.t comment engagements) hashtag.
+ 
+   - **tweet_feature_number_of_discriminative_hashtag_like**: int:
+ <br>Count of the discriminative (w.r.t like engagements) hashtags contained in a tweet.
+   - **tweet_feature_number_of_discriminative_hashtag_retweet**: int:
+ <br>Count of the discriminative (w.r.t retweet engagements) hashtags contained in a tweet.
+   - **tweet_feature_number_of_discriminative_hashtag_reply**: int:
+ <br>Count of the discriminative (w.r.t reply engagements) hashtags contained in a tweet.
+   - **tweet_feature_number_of_discriminative_hashtag_comment**: int:
+ <br>Count of the discriminative (w.r.t comment engagements) hashtags contained in a tweet.
+ 
+ 
  #### Is tweet type
 
   - **tweet_feature_is_reply**: bool:
@@ -135,17 +156,43 @@ For each dataset we have the following features:
  
    - **tweet_feature_mentions**: list of ints (or None):
  <br>Mentions extracted from the tweet. 
- 
    - **tweet_feature_number_of_mentions**: int:
  <br>Number of mentions in the tweet.
+ 
+   - **tweet_feature_token_length**: int:
+ <br>Number of BERT tokens in the tweet.
+   - **tweet_feature_token_length_unique**: int:
+ <br>Number of unique bert tokens in the tweet.
+ 
+   - **tweet_feature_text_token_decoded**: list of str:
+ <br>Decoded BERT tokens.
+ 
+   - **tweet_feature_text_topic_word_count_adult_content**: int:
+ <br>Number of 'adult content' words.
+   - **tweet_feature_text_topic_word_count_kpop**: int:
+ <br>Number of 'kpop' words.
+   - **tweet_feature_text_topic_word_count_covid**: int:
+ <br>Number of 'covid' words.
+   - **tweet_feature_text_topic_word_count_sport**: int:
+ <br>Number of 'sport' words.
+   
  
  #### Creation timestamp
  
    - **tweet_feature_creation_timestamp_hour**: int:
  <br>The hour when the tweet has been created. (0-23 UTC hour)
+   - **tweet_feature_creation_timestamp_hour_shifted**: int:
+ <br>The shifted hour (+12 hours) when the tweet has been created. (0-23 UTC hour)
  
    - **tweet_feature_creation_timestamp_week_day**: int:
  <br>The week day when the tweet has been created (0-6 UTC date)
+ 
+ 
+   - **tweet_feature_creation_timestamp_day_phase**: int:
+ <br>The phase of the day when the tweet has been created. It can be NIGHT, MORNING, LUNCH, AFTERNOON or EVENING.
+   - **tweet_feature_creation_timestamp_day_phase**: int:
+ <br>The shifted phase of the day (+12 hours) when the tweet has been created. It can be NIGHT, MORNING, LUNCH, AFTERNOON or EVENING.
+
 
  #### Is engagement type
  **Only for train and local validation test**
@@ -162,6 +209,91 @@ For each dataset we have the following features:
  <br>True if the tweet has been involved in a positive engagement by the engager.
    - **tweet_feature_engagement_is_negative**: bool:
  <br>True if the tweet has been involved in a pseudo negative engagement by the engager.
+ 
+ #### Engager knows hashtag
+ 
+   - **engager_feature_knows_hashtag_like**: int:
+ <br>The number of time the engager has engaged with a like engagement the hashtags in the tweet.
+   - **engager_feature_knows_hashtag_retweet**: int:
+ <br>The number of time the engager has engaged with a retweet engagement the hashtags in the tweet.
+   - **engager_feature_knows_hashtag_reply**: int:
+ <br>The number of time the engager has engaged with a reply engagement the hashtags in the tweet.
+   - **engager_feature_knows_hashtag_comment**: int:
+ <br>The number of time the engager has engaged with a comment engagement the hashtags in the tweet.
+   - **engager_feature_knows_hashtag_negative**: int:
+ <br>The number of time the engager has engaged with a negative engagement the hashtags in the tweet.
+   - **engager_feature_knows_hashtag_positive**: int:
+ <br>The number of time the engager has engaged with a positive engagement the hashtags in the tweet.
+ 
+ 
+ #### Number of (previous) engagement
+ 
+   - **engager_feature_number_of_previous_like_engagement**: int:
+ <br>The number of time the engager has previously engaged a tweet with a like engagement.
+   - **engager_feature_number_of_previous_retweet_engagement**: int:
+ <br>The number of time the engager has previously engaged a tweet with a retweet engagement.
+   - **engager_feature_number_of_previous_reply_engagement**: int:
+ <br>The number of time the engager has previously engaged a tweet with a reply engagement.
+   - **engager_feature_number_of_previous_comment_engagement**: int:
+ <br>The number of time the engager has previously engaged a tweet with a comment engagement.
+   - **engager_feature_number_of_previous_positive_engagement**: int:
+ <br>The number of time the engager has previously engaged a tweet with a positive engagement.
+   - **engager_feature_number_of_previous_negative_engagement**: int:
+ <br>The number of time the engager has previously engaged a tweet with a negative engagement.
+ 
+   - **number_of_engagements_like**: int:
+ <br>The number of time the engager has engaged a tweet with a like engagement.
+   - **number_of_engagements_retweet**: int:
+ <br>The number of time the engager has engaged a tweet with a retweet engagement.
+   - **number_of_engagements_reply**: int:
+ <br>The number of time the engager has engaged a tweet with a reply engagement.
+   - **number_of_engagements_comment**: int:
+ <br>The number of time the engager has engaged a tweet with a comment engagement.
+   - **number_of_engagements_positive**: int:
+ <br>The number of time the engager has engaged a tweet with a positive engagement.
+   - **number_of_engagements_negative**: int:
+ <br>The number of time the engager has engaged a tweet with a negative engagement.
+ 
+ #### Number of engagements ratio
+ 
+   - **number_of_engagements_ratio_like**: int:
+ <br>The ratio 'number of previous like engagements'/'number of all previous engagements'. 0 when the user has never been seen.
+   - **number_of_engagements_ratio_retweet**: int:
+ <br>The ratio 'number of previous retweet engagements'/'number of all previous engagements'. 0 when the user has never been seen.
+   - **number_of_engagements_ratio_reply**: int:
+ <br>The ratio 'number of previous reply engagements'/'number of all previous engagements'. 0 when the user has never been seen.
+   - **number_of_engagements_ratio_comment**: int:
+ <br>The ratio 'number of previous comment engagements'/'number of all previous engagements'. 0 when the user has never been seen.
+   - **number_of_engagements_ratio_positive**: int:
+ <br>The ratio 'number of previous positive engagements'/'number of all previous engagements'. 0 when the user has never been seen.
+   - **number_of_engagements_ratio_negative**: int:
+ <br>The ratio 'number of previous negative engagements'/'number of all previous engagements'. 0 when the user has never been seen.
+ 
+   - **number_of_engagements_ratio_like_1**: int:
+ <br>The ratio 'number of previous like engagements'/'number of all previous engagements'. -1 when the user has never been seen.
+   - **number_of_engagements_ratio_retweet_1**: int:
+ <br>The ratio 'number of previous retweet engagements'/'number of all previous engagements'. -1 when the user has never been seen.
+   - **number_of_engagements_ratio_reply_1**: int:
+ <br>The ratio 'number of previous reply engagements'/'number of all previous engagements'. -1 when the user has never been seen.
+   - **number_of_engagements_ratio_comment_1**: int:
+ <br>The ratio 'number of previous comment engagements'/'number of all previous engagements'. -1 when the user has never been seen.
+   - **number_of_engagements_ratio_positive_1**: int:
+ <br>The ratio 'number of previous positive engagements'/'number of all previous engagements'. -1 when the user has never been seen.
+   - **number_of_engagements_ratio_negative_1**: int:
+ <br>The ratio 'number of previous negative engagements'/'number of all previous engagements'. -1 when the user has never been seen.
+ 
+   - **number_of_engagements_ratio_like**: int:
+ <br>The ratio 'number of like engagements'/'number of all engagements'.
+   - **number_of_engagements_ratio_retweet**: int:
+ <br>The ratio 'number of retweet engagements'/'number of all engagements'.
+   - **number_of_engagements_ratio_reply**: int:
+ <br>The ratio 'number of reply engagements'/'number of all engagements'.
+   - **number_of_engagements_ratio_comment**: int:
+ <br>The ratio 'number of comment engagements'/'number of all engagements'.
+   - **number_of_engagements_ratio_positive**: int:
+ <br>The ratio 'number of positive engagements'/'number of all engagements'.
+   - **number_of_engagements_ratio_negative**: int:
+ <br>The ratio 'number of negative engagements'/'number of all engagements'.
  
  #### Main Language
 
