@@ -3,7 +3,7 @@
   <img width="100%" src="https://i.imgur.com/tm9mSuM.png" alt="Recommender System 2018 Challenge Polimi" />
 </p>
 <p align="center">
-    <img src="https://seeklogo.com/images/T/twitter-logo-A84FE9258E-seeklogo.com.png" />
+    <img width="10%" src="https://seeklogo.com/images/T/twitter-logo-A84FE9258E-seeklogo.com.png" />
 </p>
 <p align="center">
     <img src="https://i.imgur.com/mPb3Qbd.gif" width="180" />
@@ -17,7 +17,7 @@ entertainment to sports, politics and everyday interests, when things happen in 
 On the platform, users post and engage with (in the form of Likes, Replies, Retweets and Retweets with comments) content
 known as “Tweets”. This challenge aims to evaluate novel algorithms for predicting different engagement rates at a
 large scale, and push the state-of-the-art in recommender systems. Following the success and advancements in the
-domain of top-K recommendations, the challenge aim to encourage the development of new approaches by releasing the largest
+domain of top-K recommendations, the [challenge](https://recsys-twitter.com/) aim to encourage the development of new approaches by releasing the largest
 real-world dataset to predict user engagements. The dataset comprises of roughly 200 million public engagements,
 along with user and engagement features, that span a period of 2 weeks and contain public interactions
 (Like, Reply, Retweet and Retweet with comment), as well as 100 million pseudo negatives which are randomly
@@ -37,13 +37,18 @@ We worked under the supervision of two PhD students:
 * **[Cesare Bernardis](https://github.com/cesarebernardis)**
 * **[Maurizio Ferrari Dacrema](https://github.com/maurizioFD)**
 
+## Features
+
+The features extracted from the dataset are listed and 
+described [here](Utils/Data/Features/README.md).
+
 ## Models
 
-This repository contains uses:
+This repository uses:
 * **XGBoost**: an optimized distributed gradient boosting library designed to be highly efficient, flexible and portable.
 * **LightGBM**: LightGBM is a gradient boosting framework that uses tree based learning algorithms. It is designed to be distributed and efficient.
 * **PyTorch**: PyTorch is a Python package that provides two high-level features: tensor computation (like NumPy) with 
-strong GPU acceleration, and deep neural networks built on a tape-based autograd system
+strong GPU acceleration, and deep neural networks built on a tape-based autograd system.
 
 ## Requirements
 In order to run the code it is necessary to have:
