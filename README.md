@@ -1,176 +1,112 @@
-# RecSys Course @ Politecnico di Milano
-This is the official repository for the 2019 Recommender Systems course at Polimi.
+# ACM RecSys Challenge 2020
+<p align="center">
+  <img width="100%" src="https://i.imgur.com/tm9mSuM.png" alt="Recommender System 2018 Challenge Polimi" />
+</p>
+<p align="center">
+    <img width="10%" src="https://seeklogo.com/images/T/twitter-logo-A84FE9258E-seeklogo.com.png" />
+</p>
+<p align="center">
+    <img src="https://i.imgur.com/mPb3Qbd.gif" width="180" />
+</p>
 
-Developed by <a href="https://mauriziofd.github.io/" target="_blank">Maurizio Ferrari Dacrema</a>, PhD candidate at Politecnico di Milano. See our [website](http://recsys.deib.polimi.it/) for more information on our research group and available thesis.
-For Installation instructions see the following section [Installation](#Installation).
+## About the challenge
+[Twitter](https://www.twitter.com) is what’s happening in the world and what people are talking about right now.
+On Twitter, live comes to life as conversations unfold, showing you all sides of the story. From breaking news and 
+entertainment to sports, politics and everyday interests, when things happen in the world, they happen first on Twitter.
 
+On the platform, users post and engage with (in the form of Likes, Replies, Retweets and Retweets with comments) content
+known as “Tweets”. This challenge aims to evaluate novel algorithms for predicting different engagement rates at a
+large scale, and push the state-of-the-art in recommender systems. Following the success and advancements in the
+domain of top-K recommendations, the [challenge](https://recsys-twitter.com/) aim to encourage the development of new approaches by releasing the largest
+real-world dataset to predict user engagements. The dataset comprises of roughly 200 million public engagements,
+along with user and engagement features, that span a period of 2 weeks and contain public interactions
+(Like, Reply, Retweet and Retweet with comment), as well as 100 million pseudo negatives which are randomly
+sampled from the public follow graph. While sampling the latter pool of Tweets, Twitter takes special care about
+preserving user privacy.
 
-#### This repository contains a Cython implementation of:
- - SLIM BPR: Item-item similarity matrix machine learning algorithm optimizing BPR.
-    Uses a Cython tree-based sparse matrix, suitable for datasets whose number of items is too big for the
-    dense similarity matrix to fit in memory. 
-    Dense similarity is also supported.
- - MF BPR: Matrix factorization optimizing BPR
- - FunkSVD: Matrix factorization optimizing RMSE
- - AsymmetricSVD
+## Team members
+We partecipated in the challenge as BanaNeverAlone, a team of 5 MSc students from Politecnico di Milano:
 
-#### This repo contains a Python implementation of:
- - Item-based KNN collaborative
- - Item-based KNN content
- - User-based KNN
- - PureSVD: Matrix factorization applied using the simple SVD decomposition of the URM
- - WRMF or IALS: Matrix factorization developed for implicit interactions
- - P3alpha, RP3beta: graph based algorithms modelling a random walk and representing the item-item similarity as a transition probability
- - SLIM ElasticNet Item-item similarity matrix machine learning algorithm optimizing prediction error (MSE)
- 
- 
-#### Bayesian parameter tuning:
-A simple wrapper of scikit-optimize allowing for a simple and fast parameter tuning.
-The BayesianSkoptSearch object will save the following files:
-- AlgorithmName_BayesianSkoptSearch.txt file with all the cases explored and the recommendation quality
-- _best_model file which contains the trained model and can be loaded with recommender.load_model(path_to_best_model_file)
-- _metadata file which contains a dictionary with all the explored cases, for each the fit parameters, the validation results and, if that configuration was the new best one, the test results. It also contains, for all configurations, the train, validation and test time, in seconds.
- 
-#### This repository contains the following runnable scripts
+* **[Luca Conterio](https://github.com/luca-conterio)**
+* **[Andrea Donati](https://github.com/AndreaDonati)**
+* **[Luca Bartoccioni](https://github.com/LucaBartoccioni)**
+* **[Nicolò Felicioni](https://github.com/ciamir51)**
+* **[Davide Yi Xian Hu](https://github.com/DragonBanana)** (AKA DragonBanana)
 
- - run_all_algorithms.py: Script running sequentially all available algorithms and saving the results in result_all_algorithms.txt
- - run_parameter_search.py: Script performing parameter tuning for all available algorithms. Inside all parameters are listed with some common values.
- 
+We worked under the supervision of two PhD students:
+* **[Cesare Bernardis](https://github.com/cesarebernardis)**
+* **[Maurizio Ferrari Dacrema](https://github.com/maurizioFD)**
 
-#### This repository also provides an implementation of:
- 
- - Similarities: Cosine Similarity, Adjusted Cosine, Pearson Correlation, Jaccard Correlation, Tanimoto Coefficient, Dice coefficinent, Tversky coefficient, Asymmetric Cosine and Euclidean similarity: Implemented both in Python and Cython with the same interface. Base.compute_similarity chooses which to use depending on the density of the data and on whether a compiled cython version is available on your architecture and operative system. 
- - Metrics: MAP, recall (the denominator is the number of user's test items), precision_recall_min_den (the denominator is the min between the number of user's test items and the recommendation list length), precision, ROC-AUC, MRR, RR, NDCG, Hit Rate, ARHR, Novelty, Coverage, Shannon entropy, Gini Diversity, Herfindahl Diversity, Mean inter list Diversity, Feature based diversity
- - Dataset: Movielens10MReader, downloads and reads the Movielens 10M rating file, splits it into three URMs for train, test and validation and saves them for later use. 
- 
+## Features
 
-Cython code is already compiled for Linux and Windows x86 (your usual personal computer architecture) and ppc64 (IBM Power PC). To recompile the code just run the cython compilaton script as described in the installation section.
-The code has beend developed for Linux and Windows.
+The features extracted from the dataset are listed and 
+described [here](Utils/Data/Features/README.md) (the list contains all the feature we created including the ones
+we did not use for the submission).
 
+## Models
 
+This repository uses:
+* **XGBoost**: an optimized distributed gradient boosting library designed to be highly efficient, flexible and portable.
+* **LightGBM**: LightGBM is a gradient boosting framework that uses tree based learning algorithms. It is designed to be distributed and efficient.
+* **PyTorch**: PyTorch is a Python package that provides two high-level features: tensor computation (like NumPy) with 
+strong GPU acceleration, and deep neural networks built on a tape-based autograd system.
 
+## Requirements
+In order to run the code it is necessary to have:
+* **Python**: version 3.8. 
+* **Pip**: version 20.1.1.
+* **CUDA** is also required.
 
-## Installation
+If you do not have Python already installed, you can find it here (https://www.python.org/downloads/).
 
-Note that this repository requires Python 3.6
-
-First we suggest you create an environment for this project using virtualenv (or another tool like conda)
-
-First checkout this repository, then enter in the repository folder and run this commands to create and activate a new environment:
-
-If you are using virtualenv:
-```Python
-virtualenv -p python3 RecSysFramework
-source RecSysFramework/bin/activate
-```
-If you are using conda:
-```Python
-conda create -n RecSysFramework python=3.6 anaconda
-source activate RecSysFramework
-```
-
-Then install all the requirements and dependencies
-```Python
+Install the python dependecies with the following bash command:
+```shell script
 pip install -r requirements.txt
 ```
 
-In order to compile you must have installed: _gcc_ and _python3 dev_, which can be installed with the following commands:
-```Python
-sudo apt install gcc 
-sudo apt-get install python3-dev
+It is also required to have the datasets already downloaded, compressed with GZip and renamed as **new_train.csv.gz**, **new_test.csv.gz** and **last_test.csv.gz**.
+We assume these datasets are placed in the **./Dataset** folder.
+
+If you do not have the dataset, you can download from here (https://recsys-twitter.com/data/show-downloads, registration is required).
+
+## Run the code
+
+Split the **new_train.csv.gz** dataset into **holdout_new_train.csv.gz** and **holdout_new_test.csv.gz**.
+
+```shell script
+cp ./Utils/Data/Split/HoldoutSplit.py .
+python HoldoutSplit.py
 ```
 
-At this point you can compile all Cython algorithms by running the following command. The script will compile within the current active environment. The code has been developed for Linux and Windows platforms. During the compilation you may see some warnings. 
- 
-```Python
-python run_compile_all_cython.py
+Split the **new_train.csv.gz** dataset into **cherry_train.csv.gz** and **cherry_val.csv.gz**.
+
+```shell script
+cp ./Utils/Data/Split/HoldoutCherrySplit.py .
+python HoldoutCherrySplit.py
 ```
 
+Train the neural network:
+```shell script
+chmod +x nn_run.sh
+./nn_run.sh
+```
+this script trains a bunch of NNs and places the infered probabilities in the folder "**./Dataset/Features/{test_dataset}/ensembling**" with filename "**nn_predictions_{class_label}_{model_id}.csv**"
 
-
-## Project structure
-
-### Base
-Contains some basic modules and the base classes for different Recommender types.
-
-#### Base.Evaluation
-The Evaluator class is used to evaluate a recommender object. It computes various metrics:
-* Accuracy metrics: ROC_AUC, PRECISION, RECALL, MAP, MRR, NDCG, F1, HIT_RATE, ARHR
-* Beyond-accuracy metrics: NOVELTY, DIVERSITY, COVERAGE
-
-The evaluator takes as input the URM against which you want to test the recommender, then a list of cutoff values (e.g., 5, 20) and, if necessary, an object to compute diversity.
-The function evaluateRecommender will take as input only the recommender object you want to evaluate and return both a dictionary in the form {cutoff: results}, where results is {metric: value} and a well-formatted printable string.
-
-```python
-
-    from Base.Evaluation.Evaluator import EvaluatorHoldout
-
-    evaluator_test = EvaluatorHoldout(URM_test, [5, 20])
-
-    results_run_dict, results_run_string = evaluator_test.evaluateRecommender(recommender_instance)
-
-    print(results_run_string)
-
+For our last submissions please use:
+```shell script 
+# RUN 1 - submission last_test_sub
+cp ./Blending/last_test_sub/* .
+python last_blending_sub_comment.py comment
+python last_blending_sub_like.py like
+python last_blending_sub_retweet.py retweet
+python last_blending_sub_reply.py reply
 ```
 
-
-#### Base.Similarity
-The similarity module allows to compute the item-item or user-user similarity.
-It is used by calling the Compute_Similarity class and passing which is the desired similarity and the sparse matrix you wish to use.
-
-It is able to compute the following similarities: Cosine, Adjusted Cosine, Jaccard, Tanimoto, Pearson and Euclidean (linear and exponential)
-
-```python
-
-    similarity = Compute_Similarity(URM_train, shrink=shrink, topK=topK, normalize=normalize, similarity = "cosine")
-
-    W_sparse = similarity.compute_similarity()
-
+```shell script 
+# RUN 2 - submission last_test_sub_2
+cp ./Blending/last_test_sub_2/* .
+python last_blending_sub_comment.py comment
+python last_blending_sub_like.py like
+python last_blending_sub_retweet.py retweet
+python last_blending_sub_reply.py reply
 ```
-
-
-### Recommenders
-All recommenders inherit from BaseRecommender, therefore have the same interface.
-You must provide the data when instantiating the recommender and then call the _fit_ function to build the corresponding model.
-
-Each recommender has a _compute_item_score function which, given an array of user_id, computes the prediction or _score_ for all items.
-Further operations like removing seen items and computing the recommendation list of the desired length are done by the _recommend_ function of BaseRecommender
-
-As an example:
-
-```python
-    user_id = 158
-    
-    recommender_instance = ItemKNNCFRecommender(URM_train)
-    recommender_instance.fit(topK=150)
-    recommended_items = recommender_instance.recommend(user_id, cutoff = 20, remove_seen_flag=True)
-    
-    recommender_instance = SLIM_ElasticNet(URM_train)
-    recommender_instance.fit(topK=150, l1_ratio=0.1, alpha = 1.0)
-    recommended_items = recommender_instance.recommend(user_id, cutoff = 20, remove_seen_flag=True)
-    
-```
-
-### Data Reader and splitter
-DataReader objects read the dataset from its original file and save it as a sparse matrix.
-
-DataSplitter objects take as input a DataReader and split the corresponding dataset in the chosen way.
-At each step the data is automatically saved in a folder, though it is possible to prevent this by setting _save_folder_path = False_ when calling _load_data_.
-If a DataReader or DataSplitter is called for a dataset which was already processed, the saved data is loaded.
-
-DataPostprocessing can also be applied between the dataReader and the dataSplitter and nested in one another.
-
-When you have bilt the desired combination of dataset/preprocessing/split, get the data calling _load_data_.
-
-```python
-dataset = Movielens1MReader()
-
-dataset = DataPostprocessing_K_Cores(dataset, k_cores_value=25)
-dataset = DataPostprocessing_User_sample(dataset, user_quota=0.3)
-dataset = DataPostprocessing_Implicit_URM(dataset)
-
-dataSplitter = DataSplitter_leave_k_out(dataset)
-
-dataSplitter.load_data()
-
-URM_train, URM_validation, URM_test = dataSplitter.get_holdout_split()
