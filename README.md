@@ -7,8 +7,13 @@
 </p>
 <p align="center">
   <a href="http://recsys.deib.polimi.it">
-    <img src="https://i.imgur.com/mPb3Qbd.gif" width="180" />
+    <img src="https://i.imgur.com/mPb3Qbd.gif" width="300" vertical-align="middle"/>
   </a>
+  <a href="http://recsys.deib.polimi.it">
+    <img src="bananeveralone.png" width="420" vertical-align="middle"/>
+  </a>
+</p>
+<p align="center">
 </p>
 
 ## About the challenge
